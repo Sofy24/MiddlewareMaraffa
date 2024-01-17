@@ -7,6 +7,6 @@ public class Main {
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();
         // Deploy the main verticle
-        vertx.deployVerticle(new GameVerticle());//not the game
+        vertx.deployVerticle(new MainVerticle(vertx));
     }
 }

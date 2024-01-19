@@ -2,9 +2,7 @@ package org.example;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
-import org.example.game.Card;
-import org.example.game.GameApi;
-import org.example.game.GameVerticle;
+import org.example.game.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,11 +49,17 @@ public class MainVerticle extends AbstractVerticle implements GameApi {
     }
 
     @Override
-    public void playCard(String username, int idGame, Card card) {
+    public boolean playCard(int idGame, Card<CardValue, CardSuit> card) {
+        return this.games.get(idGame).addCard(card);
+    }
 
+    @Override
+    public boolean CanStart(int idGame) {
+        return this.games.get(idGame).canStart();
     }
 
     public Map<Integer, GameVerticle> getGames() {
         return games;
     }
+
 }

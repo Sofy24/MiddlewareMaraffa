@@ -14,6 +14,8 @@ class GameApiTest {
     private final Vertx vertx = Vertx.vertx();
     private final String usernameTest = "user1";
     private final int numberOfPlayersTest = 4;
+
+    private final CardSuit undefinedSuit = CardSuit.NONE;
     private final Card<CardValue, CardSuit> cardTest = new Card<>(CardValue.THREE, CardSuit.CLUBS);
 
     /** Create a new game (GameVerticle) and ensure that it has been added correctly
@@ -75,5 +77,21 @@ class GameApiTest {
         assertFalse(main.getGames().get(gameId).canStart());
         main.getGames().get(gameId).chooseSuit(cardTest.cardSuit());
         assertTrue(main.getGames().get(gameId).canStart());
+    }
+
+    /**Reset the leading suit to start a new round*/
+    @Test
+    void startNewRound(){
+        MainVerticle main = new MainVerticle(this.vertx);
+        int gameId = main.createGame(this.usernameTest, numberOfPlayersTest);
+        for (int i = 0; i < numberOfPlayersTest - 1; i++) {
+            assertFalse(main.getGames().get(gameId).canStart());
+            main.getGames().get(gameId).addUser(this.usernameTest + i);
+        }
+        main.getGames().get(gameId).chooseSuit(cardTest.cardSuit());
+        assertTrue(main.getGames().get(gameId).addCard(this.cardTest));
+        assertEquals(cardTest.cardSuit(), main.getGames().get(gameId).getLeadingSuit());
+        main.getGames().get(gameId).startNewRound();
+        assertEquals(undefinedSuit, main.getGames().get(gameId).getLeadingSuit());
     }
 }

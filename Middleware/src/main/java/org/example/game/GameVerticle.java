@@ -15,15 +15,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * users = it keeps track of all the users added to the game*/
 public class GameVerticle extends AbstractVerticle {
     private final int id;
-
     private final AtomicInteger currentState;
     private final int numberOfPlayers;
-
     private CardSuit leadingSuit = CardSuit.NONE;
     private Map<Integer, Trick> states = new ConcurrentHashMap<>();
-
     private final List<String> users = new ArrayList<>();
-
     private Trick currentTrick;
 
     public GameVerticle(int id, String username, int numberOfPlayers) {
@@ -79,6 +75,11 @@ public class GameVerticle extends AbstractVerticle {
         this.leadingSuit = suit;
     }
 
+    /** reset the leading suit*/
+    public void startNewRound(){
+        this.chooseSuit(CardSuit.NONE);
+    }
+
     public int getId() {
         return id;
     }
@@ -99,4 +100,7 @@ public class GameVerticle extends AbstractVerticle {
         return currentTrick;
     }
 
+    public CardSuit getLeadingSuit() {
+        return leadingSuit;
+    }
 }

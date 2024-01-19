@@ -27,4 +27,6 @@ public interface GameApi {
     /**@param idGame the specific game
      * @param suit the suit choosen by the first player */
     void chooseSuit(int idGame, CardSuit suit);
+
+    void startNewRound(int idGame);
 }

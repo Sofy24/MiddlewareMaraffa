@@ -23,4 +23,8 @@ public interface GameApi {
      * @return true if all players have joined the game
      * */
     boolean CanStart(int idGame);
+
+    /**@param idGame the specific game
+     * @param suit the suit choosen by the first player */
+    void chooseSuit(int idGame, CardSuit suit);
 }

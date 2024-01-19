@@ -18,6 +18,8 @@ public class GameVerticle extends AbstractVerticle {
 
     private final AtomicInteger currentState;
     private final int numberOfPlayers;
+
+    private CardSuit leadingSuit = CardSuit.NONE;
     private Map<Integer, Trick> states = new ConcurrentHashMap<>();
 
     private final List<String> users = new ArrayList<>();
@@ -69,7 +71,12 @@ public class GameVerticle extends AbstractVerticle {
 
     /**@return true if all players have joined the game*/
     public boolean canStart() {
-        return this.users.size() == this.numberOfPlayers;
+        return this.users.size() == this.numberOfPlayers && !this.leadingSuit.equals(CardSuit.NONE);
+    }
+
+    /**@param suit the leading suit of the round*/
+    public void chooseSuit(CardSuit suit){
+        this.leadingSuit = suit;
     }
 
     public int getId() {
@@ -84,7 +91,6 @@ public class GameVerticle extends AbstractVerticle {
         this.states = states;
     }
 
-
     public AtomicInteger getCurrentState() {
         return currentState;
     }
@@ -92,4 +98,5 @@ public class GameVerticle extends AbstractVerticle {
     public Trick getCurrentTrick() {
         return currentTrick;
     }
+
 }

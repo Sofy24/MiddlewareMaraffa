@@ -14,7 +14,6 @@ class GameApiTest {
     private final Vertx vertx = Vertx.vertx();
     private final String usernameTest = "user1";
     private final int numberOfPlayersTest = 4;
-
     private final Card<CardValue, CardSuit> cardTest = new Card<>(CardValue.THREE, CardSuit.CLUBS);
 
     /** Create a new game (GameVerticle) and ensure that it has been added correctly
@@ -57,20 +56,24 @@ class GameApiTest {
         for (int i = 0; i < numberOfPlayersTest - 1; i++) {
             main.getGames().get(gameId).addUser(this.usernameTest + i);
         }
+        main.getGames().get(gameId).chooseSuit(cardTest.cardSuit());
         assertTrue(main.getGames().get(gameId).addCard(this.cardTest));
         assertEquals(List.of(this.cardTest), main.getGames().get(gameId).getCurrentTrick().getCards());
 
     }
 
-    /** The game won't start if all players have joined it* */
+    /**The round can't start if the leading suit is {@code CardSuit.NONE} and
+     * if all players have joined it*/
     @Test
-    void waitAllPlayers(){
+    void chooseSuitAndWaitAllPlayers(){
         MainVerticle main = new MainVerticle(this.vertx);
         int gameId = main.createGame(this.usernameTest, numberOfPlayersTest);
         for (int i = 0; i < numberOfPlayersTest - 1; i++) {
             assertFalse(main.getGames().get(gameId).canStart());
             main.getGames().get(gameId).addUser(this.usernameTest + i);
         }
+        assertFalse(main.getGames().get(gameId).canStart());
+        main.getGames().get(gameId).chooseSuit(cardTest.cardSuit());
         assertTrue(main.getGames().get(gameId).canStart());
     }
 }

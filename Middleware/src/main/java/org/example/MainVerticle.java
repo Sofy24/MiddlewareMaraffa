@@ -58,6 +58,11 @@ public class MainVerticle extends AbstractVerticle implements GameApi {
         return this.games.get(idGame).canStart();
     }
 
+    @Override
+    public void chooseSuit(int idGame, CardSuit suit) {
+        this.games.get(idGame).chooseSuit(suit);
+    }
+
     public Map<Integer, GameVerticle> getGames() {
         return games;
     }

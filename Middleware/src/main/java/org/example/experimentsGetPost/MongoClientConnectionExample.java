@@ -14,7 +14,7 @@ import org.bson.Document;
 
 public class MongoClientConnectionExample {
     public static void main(String[] args) throws Exception {
-        String uri = "mongodb://your_mongo_user:your_mongo_password@127.0.0.1:27017/MaraffaStatisticsDB?authSource=admin";
+        String uri = "mongodb://your_mongo_user:your_mongo_password@127.0.0.1:27012";
         try {
             MongoClient mongoClient = MongoClients.create(uri);
             MongoDatabase database = mongoClient.getDatabase("MaraffaStatisticsDB");

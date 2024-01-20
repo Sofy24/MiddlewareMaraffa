@@ -1,34 +1,41 @@
 package org.example.experimentsGetPost;
 
+import static com.mongodb.MongoClientSettings.getDefaultCodecRegistry;
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.MongoException;
-import com.mongodb.ServerApi;
-import com.mongodb.ServerApiVersion;
+import org.bson.codecs.configuration.CodecProvider;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.PojoCodecProvider;
+
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
+
 
 public class MongoClientConnectionExample {
     public static void main(String[] args) throws Exception {
-        String uri = "mongodb://your_mongo_user:your_mongo_password@127.0.0.1:27012";
+        String uri = "mongodb://your_mongo_user:your_mongo_password@127.0.0.1:27072";
         try {
+            
+            CodecProvider pojoCodecProvider = PojoCodecProvider.builder().automatic(true).build();
+            CodecRegistry pojoCodecRegistry = fromRegistries(getDefaultCodecRegistry(), fromProviders(pojoCodecProvider));
+
+
             MongoClient mongoClient = MongoClients.create(uri);
-            MongoDatabase database = mongoClient.getDatabase("MaraffaStatisticsDB");
-            MongoCollection<Document> collection = database.getCollection("MaraffaStatistics");
-            System.out.println("here");
-            // Create a document to insert
-            Document person = new Document()
-                    .append("firstName", "John")
-                    .append("lastName", "Doe")
-                    .append("age", 30);
+            MongoDatabase database = mongoClient.getDatabase("MaraffaStatisticsDB").withCodecRegistry(pojoCodecRegistry);
+            // MongoCollection<Document> collection = database.getCollection("MaraffaStatistics");
+
+            // Document person = new Document()
+            //         .append("firstName", "John")
+            //         .append("lastName", "Doe")
+            //         .append("age", 30);
+            UserJoe userJoe = new UserJoe("John", "Doe", 30);
 
             // Insert the document into the collection
-            System.out.println(collection.find().cursor().next());
-            //collection.insertOne(person);
+            // System.out.println(collection.find().cursor().next());
+            // collection.insertOne(person);
+            database.getCollection("MaraffaStatistics", UserJoe.class).insertOne(userJoe);
         } catch (Exception e){
             throw new Exception("Oh no "+e.getMessage());
         }

@@ -17,7 +17,7 @@ public class MainVerticle extends AbstractVerticle implements GameApi {
     public MainVerticle(Vertx vertx) {
         this.lastGameId = 0; //find in MONGO the id game higher
         this.vertx = vertx;
-    }
+    }/**TODO remove game when it's finished*/
 
     /**It starts the verticle*/
     @Override
@@ -33,7 +33,7 @@ public class MainVerticle extends AbstractVerticle implements GameApi {
     }
 
     @Override
-    public int createGame(String username, int numberOfPlayers) {
+    public int createGame(String username, int numberOfPlayers) {//TODO insert id as param
         lastGameId++;
         int newId = lastGameId;
         GameVerticle currentGame = new GameVerticle(newId, username, numberOfPlayers);

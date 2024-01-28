@@ -15,8 +15,9 @@ public interface GameApi {
     /** the username played a card
      * @param idGame of the game the user wants to join
      * @param card played by the user
+     * @param username user who played the card
      * @return */
-    boolean playCard(int idGame, Card<CardValue, CardSuit> card); //TODO mi sa che va ritornato lo score
+    boolean playCard(int idGame, Card<CardValue, CardSuit> card, String username); //TODO mi sa che va ritornato lo score
 
     /**
      * @param idGame the game to check

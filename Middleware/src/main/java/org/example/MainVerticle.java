@@ -3,6 +3,8 @@ package org.example;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import org.example.game.*;
+import org.example.repository.AbstractStatisticManager;
+import org.example.repository.MongoStatisticManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,10 +15,18 @@ public class MainVerticle extends AbstractVerticle implements GameApi {
     private Map<Integer, GameVerticle> games = new ConcurrentHashMap<>();
     private final Vertx vertx;
     private int lastGameId;
+    private AbstractStatisticManager statisticManager;
 
+    //TODO doppio constructor per poter controllare l'invio di statistiche
     public MainVerticle(Vertx vertx) {
         this.lastGameId = 0; //find in MONGO the id game higher
         this.vertx = vertx;
+    }/**TODO remove game when it's finished*/
+
+    public MainVerticle(Vertx vertx, AbstractStatisticManager statisticManager) {
+        this.lastGameId = 0; //find in MONGO the id game higher
+        this.vertx = vertx;
+        this.statisticManager = statisticManager;
     }/**TODO remove game when it's finished*/
 
     /**It starts the verticle*/
@@ -39,6 +49,7 @@ public class MainVerticle extends AbstractVerticle implements GameApi {
         GameVerticle currentGame = new GameVerticle(newId, username, numberOfPlayers);
         this.games.put(newId, currentGame);
         vertx.deployVerticle(currentGame);
+        if(this.statisticManager != null) this.statisticManager.createRecord(currentGame.getGameSchema()); //TODO andrebbero usati gli UUID ma vediamo se mongo di aiuta con la questione _id
         return newId;
     }
 
@@ -49,8 +60,8 @@ public class MainVerticle extends AbstractVerticle implements GameApi {
     }
 
     @Override
-    public boolean playCard(int idGame, Card<CardValue, CardSuit> card) {
-        return this.games.get(idGame).addCard(card);
+    public boolean playCard(int idGame, Card<CardValue, CardSuit> card, String username) {
+        return this.games.get(idGame).addCard(card, username);
     }
 
     @Override

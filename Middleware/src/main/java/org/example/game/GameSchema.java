@@ -1,24 +1,32 @@
 package org.example.game;
 
 import io.vertx.core.json.JsonObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.example.user.User;
 
 /**TODO/Define the mongodb schema of the game*/
 public class GameSchema {
     private String id;
-    private String firstName;
-    private String lastName;
-    private int score;
-
-    // Constructors, getters, and setters
-
-    // Convert the object to a JsonObject for MongoDB operations
-    public JsonObject toJson() {
-        return JsonObject.mapFrom(this);
+    private List<Trick> tricks;
+    public String getId() {
+        return id;
+    }
+    public List<Trick> getTricks() {
+        return tricks;
+    }
+    public GameSchema() {
     }
 
-    // Factory method to create a Person object from a JsonObject
-    public static User fromJson(JsonObject json) {
-        return json.mapTo(User.class);
+    public GameSchema(String id) {
+        this.id = id;
+        this.tricks = new ArrayList<>();
     }
+
+    public void addTrick(Trick trick){
+        this.tricks.add(trick);
+    }
+   
 }

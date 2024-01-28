@@ -7,6 +7,7 @@ import org.example.game.CardValue;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -54,13 +55,13 @@ class GameApiTest {
     void playCard() {
         MainVerticle main = new MainVerticle(this.vertx);
         int gameId = main.createGame(this.usernameTest, numberOfPlayersTest);
-        assertFalse(main.getGames().get(gameId).addCard(this.cardTest));
+        assertFalse(main.getGames().get(gameId).addCard(this.cardTest, this.usernameTest));
         for (int i = 0; i < numberOfPlayersTest - 1; i++) {
             main.getGames().get(gameId).addUser(this.usernameTest + i);
         }
         main.getGames().get(gameId).chooseSuit(cardTest.cardSuit());
-        assertTrue(main.getGames().get(gameId).addCard(this.cardTest));
-        assertEquals(List.of(this.cardTest), main.getGames().get(gameId).getCurrentTrick().getCards());
+        assertTrue(main.getGames().get(gameId).addCard(this.cardTest, this.usernameTest));
+        assertEquals(Map.of(this.cardTest, this.usernameTest), main.getGames().get(gameId).getCurrentTrick().getCards());
 
     }
 
@@ -89,7 +90,7 @@ class GameApiTest {
             main.getGames().get(gameId).addUser(this.usernameTest + i);
         }
         main.getGames().get(gameId).chooseSuit(cardTest.cardSuit());
-        assertTrue(main.getGames().get(gameId).addCard(this.cardTest));
+        assertTrue(main.getGames().get(gameId).addCard(this.cardTest, this.usernameTest));
         assertEquals(cardTest.cardSuit(), main.getGames().get(gameId).getLeadingSuit());
         main.getGames().get(gameId).startNewRound();
         assertEquals(undefinedSuit, main.getGames().get(gameId).getLeadingSuit());

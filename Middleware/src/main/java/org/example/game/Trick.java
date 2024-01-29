@@ -15,5 +15,5 @@ public interface Trick {
 
     /**@return the cards in the trick*/
     // List<Card<CardValue, CardSuit>> getCards();
-    Map<Card<CardValue, CardSuit>, String> getCards();
+    Map<String, String> getCards();
 }

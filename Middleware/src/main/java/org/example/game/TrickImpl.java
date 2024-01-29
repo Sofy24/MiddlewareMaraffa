@@ -1,14 +1,15 @@
 package org.example.game;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import org.bson.codecs.pojo.annotations.BsonIgnore;
+
 public class TrickImpl implements Trick{
-    private final Map<Card<CardValue, CardSuit>, String> cards = new HashMap<>();
+    // private final Map<Card<CardValue, CardSuit>, String> cards = new HashMap<>();
+    private final Map<String, String> cards = new HashMap<>();
+    @BsonIgnore
     private final int numberOfPlayers;
     private CardSuit leadingSuit;
 
@@ -22,12 +23,12 @@ public class TrickImpl implements Trick{
     public void addCard(Card<CardValue, CardSuit> card, String username) {
         // NON serve questo controllo
         // if(!isCompleted()){ 
-            this.cards.put(card, username);
+            this.cards.put(card.toString(), username);
         // }
     }
 
     @Override
-    public Map<Card<CardValue, CardSuit>, String> getCards() {
+    public Map<String, String> getCards() {
         return this.cards;
     }   
 
@@ -39,6 +40,7 @@ public class TrickImpl implements Trick{
         return leadingSuit;
     }
 
+    @BsonIgnore
     /**@return true if all the players have played their card*/
     @Override
     public boolean isCompleted() {

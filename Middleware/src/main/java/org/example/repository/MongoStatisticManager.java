@@ -6,10 +6,17 @@ import static com.mongodb.client.model.Updates.push;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
+import org.bson.BsonReader;
+import org.bson.BsonWriter;
+import org.bson.codecs.Codec;
+import org.bson.codecs.DecoderContext;
+import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
-import org.bson.conversions.Bson;
+import org.example.game.Card;
+import org.example.game.CardSuit;
+import org.example.game.CardValue;
 import org.example.game.GameSchema;
 import org.example.game.Trick;
 

@@ -28,5 +28,9 @@ public class GameSchema {
     public void addTrick(Trick trick){
         this.tricks.add(trick);
     }
+    @Override
+    public String toString() {
+        return "GameSchema [id=" + id + ", tricks=" + tricks + "]";
+    }
    
 }

@@ -1,18 +1,22 @@
 package org.example.repository;
 
 import static com.mongodb.MongoClientSettings.getDefaultCodecRegistry;
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Updates.push;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import org.bson.conversions.Bson;
 import org.example.game.GameSchema;
 import org.example.game.Trick;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.UpdateOptions;
 
 
 //TODO ma un bel singleton?
@@ -41,12 +45,12 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 
     @Override
     public void updateRecordWithTrick(String recordID, Trick trick) {
-        throw new UnsupportedOperationException("Unimplemented method 'updateRecordWithTrick'");
+        var res = this.database.getCollection("MaraffaStatistics", GameSchema.class).updateOne(eq("id", recordID), push("tricks", trick) , new UpdateOptions().upsert(true));
+        System.out.println("Update result: " + res);
     }
 
 
     public GameSchema getRecord(String recordID) {
-        return null;
-        // return this.database.getCollection("MaraffaStatistics", GameSchema.class).find(eq("gameID", recordID)).first();
+        return this.database.getCollection("MaraffaStatistics", GameSchema.class).find(eq("_id", recordID)).first();
     }
 }

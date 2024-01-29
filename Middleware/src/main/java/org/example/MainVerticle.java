@@ -9,6 +9,7 @@ import org.example.repository.MongoStatisticManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MainVerticle extends AbstractVerticle implements GameApi {
@@ -44,12 +45,12 @@ public class MainVerticle extends AbstractVerticle implements GameApi {
 
     @Override
     public int createGame(String username, int numberOfPlayers) {//TODO insert id as param
-        lastGameId++;
-        int newId = lastGameId;
-        GameVerticle currentGame = new GameVerticle(newId, username, numberOfPlayers);
+        // lastGameId++;
+        // int newId = lastGameId;
+        int newId = new Random().nextInt(1000);
+        GameVerticle currentGame = new GameVerticle(newId, username, numberOfPlayers, this.statisticManager);
         this.games.put(newId, currentGame);
         vertx.deployVerticle(currentGame);
-        if(this.statisticManager != null) this.statisticManager.createRecord(currentGame.getGameSchema()); //TODO andrebbero usati gli UUID ma vediamo se mongo di aiuta con la questione _id
         return newId;
     }
 

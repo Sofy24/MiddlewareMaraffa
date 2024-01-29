@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class TrickImpl implements Trick{
     private final Map<Card<CardValue, CardSuit>, String> cards = new HashMap<>();
@@ -18,9 +20,10 @@ public class TrickImpl implements Trick{
     /**@param card added to the trick, if not all the players has already played*/
     @Override
     public void addCard(Card<CardValue, CardSuit> card, String username) {
-        if(!isCompleted()){
+        // NON serve questo controllo
+        // if(!isCompleted()){ 
             this.cards.put(card, username);
-        }
+        // }
     }
 
     @Override
@@ -39,7 +42,7 @@ public class TrickImpl implements Trick{
     /**@return true if all the players have played their card*/
     @Override
     public boolean isCompleted() {
-        return this.cards.size() == this.numberOfPlayers;
+        return this.cards.values().stream().collect(Collectors.toSet()).size() == this.numberOfPlayers;
     }
 
 }

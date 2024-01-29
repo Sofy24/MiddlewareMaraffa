@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.example.repository.AbstractStatisticManager;
+
 /***
  * This class models a game using a Verticle from vertx.
  * id = the id of the verticle
@@ -26,7 +28,7 @@ public class GameVerticle extends AbstractVerticle {
     private final List<String> users = new ArrayList<>();
 
     private GameSchema gameSchema;
-
+    private AbstractStatisticManager statisticManager;
 
     public GameSchema getGameSchema() {
         return gameSchema;
@@ -40,6 +42,16 @@ public class GameVerticle extends AbstractVerticle {
     };
 
     private Trick currentTrick;
+
+    public GameVerticle(int id, String username, int numberOfPlayers, AbstractStatisticManager statisticManager) {
+        this.id = id;
+        this.currentState = new AtomicInteger(0);
+        this.numberOfPlayers = numberOfPlayers;
+        users.add(username);
+        this.gameSchema = new GameSchema(String.valueOf(id));
+        this.statisticManager = statisticManager;
+        if(this.statisticManager != null) this.statisticManager.createRecord(this.gameSchema); //TODO andrebbero usati gli UUID ma vediamo se mongo di aiuta con la questione _id
+    }
 
     public GameVerticle(int id, String username, int numberOfPlayers) {
         this.id = id;
@@ -74,12 +86,15 @@ public class GameVerticle extends AbstractVerticle {
      */
     public boolean addCard(Card<CardValue, CardSuit> card, String username) {
         if (canStart()) {
-            this.currentTrick = this.states.getOrDefault(this.currentState.get(),
-                    new TrickImpl(this.numberOfPlayers, this.leadingSuit));
+            if(this.currentTrick == null){
+                this.currentTrick = this.states.getOrDefault(this.currentState.get(),
+                    new TrickImpl(this.numberOfPlayers, this.leadingSuit)); //TODO check aggiunge un new trick sempre ????
+            } 
             if (!currentTrick.isCompleted()) {
                 currentTrick.addCard(card, username);
             } else {
                 this.gameSchema.addTrick(currentTrick);
+                if(this.statisticManager != null) this.statisticManager.updateRecordWithTrick(String.valueOf(id), currentTrick);
                 currentTrick = new TrickImpl(this.numberOfPlayers, this.leadingSuit);
                 currentTrick.addCard(card, username);
                 this.states.put(this.currentState.incrementAndGet(), currentTrick);

@@ -1,6 +1,5 @@
 package org.example.game;
 
-import java.util.List;
 import java.util.Map;
 
 public interface Trick {

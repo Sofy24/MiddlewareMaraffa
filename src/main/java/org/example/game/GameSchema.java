@@ -9,19 +9,21 @@ import org.example.user.User;
 
 /**TODO/Define the mongodb schema of the game*/
 public class GameSchema {
-    private String id;
-    private List<Trick> tricks;
-    public String getId() {
-        return id;
+    private String gameID;
+    public String getGameID() {
+        return gameID;
     }
+  
+    private List<Trick> tricks;
+
     public List<Trick> getTricks() {
         return tricks;
     }
     public GameSchema() {
     }
 
-    public GameSchema(String id) {
-        this.id = id;
+    public GameSchema(String identifier) {
+        this.gameID = identifier;
         this.tricks = new ArrayList<>();
     }
 
@@ -30,7 +32,7 @@ public class GameSchema {
     }
     @Override
     public String toString() {
-        return "GameSchema [id=" + id + ", tricks=" + tricks + "]";
+        return "GameSchema [gameID=" + gameID + ", tricks=" + tricks + "]";
     }
    
 }

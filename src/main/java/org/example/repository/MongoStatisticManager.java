@@ -52,12 +52,12 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 
     @Override
     public void updateRecordWithTrick(String recordID, Trick trick) {
-        var res = this.database.getCollection("MaraffaStatistics", GameSchema.class).updateOne(eq("id", recordID), push("tricks", trick) , new UpdateOptions().upsert(true));
+        var res = this.database.getCollection("MaraffaStatistics", GameSchema.class).updateOne(eq("gameID", recordID), push("tricks", trick) , new UpdateOptions().upsert(true));
         System.out.println("Update result: " + res);
     }
 
 
     public GameSchema getRecord(String recordID) {
-        return this.database.getCollection("MaraffaStatistics", GameSchema.class).find(eq("_id", recordID)).first();
+        return this.database.getCollection("MaraffaStatistics", GameSchema.class).find(eq("gameID", recordID)).first();
     }
 }

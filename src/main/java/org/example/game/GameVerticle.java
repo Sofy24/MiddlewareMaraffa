@@ -34,12 +34,7 @@ public class GameVerticle extends AbstractVerticle {
         return gameSchema;
     }
 
-    private final Map<TeamEnum, List<String>> teams= new HashMap<>(){
-        {
-            put(TeamEnum.A, new ArrayList<>());
-            put(TeamEnum.B, new ArrayList<>());
-        }
-    };
+   
 
     private Trick currentTrick;
 

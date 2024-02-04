@@ -3,6 +3,7 @@ package org.example.repository;
 import static com.mongodb.MongoClientSettings.getDefaultCodecRegistry;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Updates.push;
+import static com.mongodb.client.model.Updates.set;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
@@ -59,5 +60,10 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 
     public GameSchema getRecord(String recordID) {
         return this.database.getCollection("MaraffaStatistics", GameSchema.class).find(eq("gameID", recordID)).first();
+    }
+
+
+    public void updateSuit(GameSchema gameSchema) {
+        this.database.getCollection("MaraffaStatistics", GameSchema.class).updateOne(eq("gameID", gameSchema.getGameID()), set("leadingSuit", gameSchema.getLeadingSuit()) , new UpdateOptions().upsert(true));
     }
 }

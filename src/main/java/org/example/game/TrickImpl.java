@@ -11,6 +11,8 @@ public class TrickImpl implements Trick{
     private final Map<String, String> cards = new HashMap<>();
     @BsonIgnore
     private final int numberOfPlayers;
+
+    @BsonIgnore
     private CardSuit leadingSuit;
 
     public TrickImpl(int numberOfPlayers, final CardSuit leadingSuit) {

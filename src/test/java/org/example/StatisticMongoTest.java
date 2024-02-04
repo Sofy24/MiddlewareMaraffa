@@ -51,4 +51,20 @@ public class StatisticMongoTest {
         assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.FOUR, CardSuit.CLUBS), this.usernameTest + "4"));
         assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.FIVE, CardSuit.CLUBS), this.usernameTest + "1"));
     }
+
+
+    @Test
+    public void make2Trick(){
+        MainVerticle main = preapareMainVert();
+        main.getGames().get(this.gameId).chooseSuit(cardTest.cardSuit());
+        assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.THREE, CardSuit.CLUBS), this.usernameTest + "1"));
+        assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.TWO, CardSuit.CLUBS), this.usernameTest + "2"));
+        assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.ONE, CardSuit.CLUBS), this.usernameTest + "3"));
+        assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.FOUR, CardSuit.CLUBS), this.usernameTest + "4"));
+        assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.FIVE, CardSuit.CLUBS), this.usernameTest + "1"));
+        assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.SIX, CardSuit.CLUBS), this.usernameTest + "2"));
+        assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.HORSE, CardSuit.CLUBS), this.usernameTest + "4"));
+        assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.KING, CardSuit.CLUBS), this.usernameTest + "3"));
+        assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.KING, CardSuit.COINS), this.usernameTest + "1"));
+    }
 }

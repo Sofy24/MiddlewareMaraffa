@@ -43,7 +43,7 @@ public class GameVerticle extends AbstractVerticle {
         this.currentState = new AtomicInteger(0);
         this.numberOfPlayers = numberOfPlayers;
         users.add(username);
-        this.gameSchema = new GameSchema(String.valueOf(id));
+        this.gameSchema = new GameSchema(String.valueOf(id), CardSuit.NONE);
         this.statisticManager = statisticManager;
         if(this.statisticManager != null) this.statisticManager.createRecord(this.gameSchema); //TODO andrebbero usati gli UUID ma vediamo se mongo di aiuta con la questione _id
     }
@@ -53,7 +53,7 @@ public class GameVerticle extends AbstractVerticle {
         this.currentState = new AtomicInteger(0);
         this.numberOfPlayers = numberOfPlayers;
         users.add(username);
-        this.gameSchema = new GameSchema(String.valueOf(id));
+        this.gameSchema = new GameSchema(String.valueOf(id), CardSuit.NONE);
     }
 
     /** It starts the verticle */
@@ -107,6 +107,9 @@ public class GameVerticle extends AbstractVerticle {
     /** @param suit the leading suit of the round */
     public void chooseSuit(CardSuit suit) {
         this.leadingSuit = suit;
+        this.gameSchema.setLeadingSuit(suit);
+        if(this.statisticManager != null) this.statisticManager.updateSuit(this.gameSchema); //TODO serve davvero o soltanto roba che sembra utile ? 
+
     }
 
     /** reset the leading suit */

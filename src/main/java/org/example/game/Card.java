@@ -5,10 +5,10 @@ package org.example.game;
  */
 public record Card<X, Y>(X cardValue, Y cardSuit) {
     
-    // @Override
-    // public String toString() {
-    //     return "Card [cardValue=" + cardValue + ", cardSuit=" + cardSuit + "]";
-    // }
+    @Override
+    public String toString() {
+        return "Card [" + cardValue + ", " + cardSuit + "]";
+    }
 
     public X cardValue() {
         return cardValue;

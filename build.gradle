@@ -21,6 +21,13 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:2.0.5' // SLF4J API
     implementation 'ch.qos.logback:logback-classic:1.4.7' // SLF4J binding for Logback
 
+
+    // https://mvnrepository.com/artifact/io.swagger.core.v3/swagger-core
+    implementation 'io.swagger.core.v3:swagger-core:2.2.9'
+
+    // https://mvnrepository.com/artifact/com.github.phiz71/vertx-swagger-router
+    implementation 'com.github.phiz71:vertx-swagger-router:1.6.0'
+
 }
 
 test {

@@ -11,5 +11,14 @@ public class Main {
         AbstractStatisticManager mongoStatisticManager = new MongoStatisticManager();
         // Deploy the main verticle
         vertx.deployVerticle(new MainVerticle(vertx, mongoStatisticManager));
+
+
+       vertx.deployVerticle(new AppServer(), serverResult -> {
+            if (serverResult.succeeded()) {
+                System.out.println("AppServer deployed successfully");
+            } else {
+                serverResult.cause().printStackTrace();
+            }
+        });
     }
 }

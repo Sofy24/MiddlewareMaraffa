@@ -150,7 +150,6 @@ public class RouterConfig {
             fields = modelClass.load().getDeclaredFields();
             
             for (Field field : fields) {
-                System.out.println("Field: " + field.getName() + " " + field.getType().getSimpleName() + " type " + field.getType() + " Ctype " + field.getType().getComponentType());
                 if(field.getType() != null &&  field.getType().getComponentType() != null) mapParameters(field, map);
             }
 

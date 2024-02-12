@@ -35,6 +35,7 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.ErrorHandler;
 import io.vertx.ext.web.handler.StaticHandler;
+import org.example.service.GameService;
 
 public class AppServer extends AbstractVerticle {
   private static final Logger LOGGER = LoggerFactory.getLogger(AppServer.class);
@@ -51,8 +52,8 @@ public class AppServer extends AbstractVerticle {
 
   @Override
   public void start() throws Exception {
-    // RouterConfig routerConfig = new RouterConfig(PORT, new EntityService(vertx));
-    RouterConfig routerConfig = new RouterConfig(PORT);
+    RouterConfig routerConfig = new RouterConfig(PORT, new GameService());//vertx
+    //RouterConfig routerConfig = new RouterConfig(PORT);
 
     server = vertx.createHttpServer(createOptions());
     server.requestHandler(routerConfig.configurationRouter());

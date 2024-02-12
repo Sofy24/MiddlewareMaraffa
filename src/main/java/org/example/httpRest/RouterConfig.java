@@ -10,7 +10,7 @@ import java.util.Set;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.HttpServer;
+
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
 import io.vertx.ext.web.handler.BodyHandler;
@@ -27,26 +27,21 @@ import java.lang.reflect.Type;
 import generator.OpenApiRoutePublisher;
 import generator.Required;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.StaticHandler;
 import io.swagger.v3.core.util.Json;
-import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
+import org.example.service.GameService;
 
 public class RouterConfig {
     private static final String APPLICATION_JSON = "application/json";
     private int port;
-
-    // private EndPoints endPoints;
-    // private EntityService entityService;
+    //private final GameService entityService;
     private Controller controller;
 
-    public RouterConfig(final int port /*, final EntityService entityService*/) {
+    public RouterConfig(final int port, final GameService entityService) {
         this.port = port;
-        // this.endPoints = new EndPoints();
-        // this.entityService = entityService;
-        this.controller = new Controller();
+        //this.entityService = entityService;
+        this.controller = new Controller(entityService);
     }
 
     private void mapParameters(Field field, Map<String, Object> map) {
@@ -114,7 +109,7 @@ public class RouterConfig {
         // Routing section - this is where we declare which end points we want to use
         // router.get("/products").handler(endPoints::fetchAllProducts);
         // router.get("/product/:productId").handler(endPoints::fetchProduct);
-        // router.post("/product").handler(endPoints::addProduct);
+        //router.post("/create").handler(endPoints::createGame);
         // router.put("/product").handler(endPoints::putProduct);
         // router.delete("/product/:deleteProductId").handler(endPoints::deleteProduct);
 
@@ -135,14 +130,11 @@ public class RouterConfig {
          * name is then used in the end point annotation
          */
         openAPIDoc
-                .addTagsItem(new io.swagger.v3.oas.models.tags.Tag().name("Product").description("Product operations"));
-
-        openAPIDoc
-                .addTagsItem(new io.swagger.v3.oas.models.tags.Tag().name("Chat").description("Chat operations"));
+                .addTagsItem(new io.swagger.v3.oas.models.tags.Tag().name("Game").description("Game operations"));
 
         // Generate the SCHEMA section of Swagger, using the definitions in the Model
         // folder
-        ImmutableSet<ClassPath.ClassInfo> modelClasses = getClassesInPackage("org.example.entities");
+        ImmutableSet<ClassPath.ClassInfo> modelClasses = getClassesInPackage("org.example.service");
 
         Map<String, Object> map = new HashMap<String, Object>();
 

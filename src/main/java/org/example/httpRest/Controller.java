@@ -4,10 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.Schema;
+
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.RoutingContext;
@@ -21,33 +18,28 @@ public class Controller implements IController {
         return routes;
     }
 
-    // public EntityService getEntityService() {
-    //     return entityService;
-    // }
-
     public Controller(GameService entityService) {
         this.entityService = entityService;
-        this.createGame();
+        this.addRoutes();
     }
 
-    public void addRoute(IRouteResponse routeResponse){
+/*    public void addRoute(IRouteResponse routeResponse){
         if (!this.routes.contains(routeResponse)){
             this.routes.add(routeResponse);
         }
-    }
+    }*/
 
     private void setupController(){
 
     }
 
     // @Override
-    public void createGame() {
-        routes.add(
-                new RouteResponse(HttpMethod.POST, "/game/create", entityService::createGame)
+    public void addRoutes() {
+        routes.add(new RouteResponse(HttpMethod.POST, "/game/create", entityService::createGame));
+        routes.add(new RouteResponse(HttpMethod.POST, "/game/join", entityService::joinGame));
                 /*new RouteResponse(HttpMethod.POST, "/url", r -> {
                     System.out.println("Hello() " );
                 })*/
-        );
     }
 
 }

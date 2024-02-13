@@ -3,10 +3,7 @@ package org.example.game;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -20,7 +17,7 @@ import org.example.repository.AbstractStatisticManager;
  * users = it keeps track of all the users added to the game
  */
 public class GameVerticle extends AbstractVerticle {
-    private final int id;
+    private final UUID id;
     private final AtomicInteger currentState;
     private final int numberOfPlayers;
     private CardSuit leadingSuit = CardSuit.NONE;
@@ -29,16 +26,14 @@ public class GameVerticle extends AbstractVerticle {
 
     private GameSchema gameSchema;
     private AbstractStatisticManager statisticManager;
+    private Trick currentTrick;
 
     public GameSchema getGameSchema() {
         return gameSchema;
     }
 
-   
 
-    private Trick currentTrick;
-
-    public GameVerticle(int id, String username, int numberOfPlayers, AbstractStatisticManager statisticManager) {
+    public GameVerticle(UUID id, String username, int numberOfPlayers, AbstractStatisticManager statisticManager) {
         this.id = id;
         this.currentState = new AtomicInteger(0);
         this.numberOfPlayers = numberOfPlayers;
@@ -48,7 +43,7 @@ public class GameVerticle extends AbstractVerticle {
         if(this.statisticManager != null) this.statisticManager.createRecord(this.gameSchema); //TODO andrebbero usati gli UUID ma vediamo se mongo di aiuta con la questione _id
     }
 
-    public GameVerticle(int id, String username, int numberOfPlayers) {
+    public GameVerticle(UUID id, String username, int numberOfPlayers) {
         this.id = id;
         this.currentState = new AtomicInteger(0);
         this.numberOfPlayers = numberOfPlayers;
@@ -117,7 +112,7 @@ public class GameVerticle extends AbstractVerticle {
         this.chooseSuit(CardSuit.NONE);
     }
 
-    public int getId() {
+    public UUID getId() {
         return id;
     }
 

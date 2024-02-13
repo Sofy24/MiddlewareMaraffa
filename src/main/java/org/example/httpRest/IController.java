@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface IController {
 
-    void createGame();
+    //void createGame();
 
     // abstract public void joinChat();
 

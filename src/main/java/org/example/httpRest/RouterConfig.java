@@ -1,12 +1,7 @@
 package org.example.httpRest;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -34,19 +29,17 @@ import org.example.service.GameService;
 
 public class RouterConfig {
     private static final String APPLICATION_JSON = "application/json";
-    private int port;
-    //private final GameService entityService;
-    private Controller controller;
+    private final int port;
+    private final Controller controller;
 
     public RouterConfig(final int port, final GameService entityService) {
         this.port = port;
-        //this.entityService = entityService;
         this.controller = new Controller(entityService);
     }
 
     private void mapParameters(Field field, Map<String, Object> map) {
-        Class type = field.getType();
-        Class componentType = field.getType().getComponentType();
+        Class<?> type = field.getType();
+        Class<?> componentType = field.getType().getComponentType();
 
         if (isPrimitiveOrWrapper(type)) {
             Schema primitiveSchema = new Schema();
@@ -76,6 +69,7 @@ public class RouterConfig {
                 type.equals(Character.class) ||
                 type.equals(Byte.class) ||
                 type.equals(Boolean.class) ||
+                type.equals(UUID.class) ||
                 type.equals(String.class);
     }
 
@@ -105,14 +99,6 @@ public class RouterConfig {
             context.next();
         });
         router.route().failureHandler(ErrorHandler.create(vertx, true));
-
-        // Routing section - this is where we declare which end points we want to use
-        // router.get("/products").handler(endPoints::fetchAllProducts);
-        // router.get("/product/:productId").handler(endPoints::fetchProduct);
-        //router.post("/create").handler(endPoints::createGame);
-        // router.put("/product").handler(endPoints::putProduct);
-        // router.delete("/product/:deleteProductId").handler(endPoints::deleteProduct);
-
 
         for(IRouteResponse route : controller.getRoutes()){
             router.route(route.getMethod(), route.getRoute()).handler(route.getHandler());

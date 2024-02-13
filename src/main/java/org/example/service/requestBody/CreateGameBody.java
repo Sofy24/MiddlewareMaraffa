@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class CreateGameBody {
     @JsonProperty("username")
     private String username;
-    @JsonProperty("number of the players")
+    @JsonProperty("numberOfPlayers")
     private Integer numberOfPlayers;
 
     public String getUsername() {

@@ -1,4 +1,4 @@
-package org.example.service.requestBody;
+package org.example.service.schema;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.example.utils.Constants;

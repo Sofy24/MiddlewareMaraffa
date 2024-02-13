@@ -63,7 +63,7 @@ public class MainVerticle extends AbstractVerticle implements GameApi {
     }
 
     @Override
-    public boolean CanStart(int idGame) {
+    public boolean canStart(int idGame) {
         return this.games.get(idGame).canStart();
     }
 

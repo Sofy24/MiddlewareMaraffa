@@ -25,7 +25,7 @@ public interface GameApi {
      * @param idGame the game to check
      * @return true if all players have joined the game
      * */
-    boolean CanStart(int idGame);
+    boolean canStart(int idGame);
 
     /**@param idGame the specific game
      * @param suit the suit choosen by the first player */

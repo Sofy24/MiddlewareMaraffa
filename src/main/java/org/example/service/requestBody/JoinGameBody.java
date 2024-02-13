@@ -1,13 +1,14 @@
 package org.example.service.requestBody;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.example.utils.Constants;
 
 import java.util.Objects;
 
 public class JoinGameBody {
-    @JsonProperty("gameID")
+    @JsonProperty(Constants.GAME_ID)
     private String gameID;
-    @JsonProperty("username")
+    @JsonProperty(Constants.USERNAME)
     private String username;
 
     public String getGameID() {

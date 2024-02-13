@@ -9,6 +9,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.RoutingContext;
 import org.example.service.GameService;
+import org.example.utils.Constants;
 
 public class Controller implements IController {
     private final GameService entityService;
@@ -35,11 +36,9 @@ public class Controller implements IController {
 
     // @Override
     public void addRoutes() {
-        routes.add(new RouteResponse(HttpMethod.POST, "/game/create", entityService::createGame));
-        routes.add(new RouteResponse(HttpMethod.POST, "/game/join", entityService::joinGame));
-                /*new RouteResponse(HttpMethod.POST, "/url", r -> {
-                    System.out.println("Hello() " );
-                })*/
+        routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.CREATE_GAME , entityService::createGame));
+        routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.JOIN_GAME, entityService::joinGame));
+        routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.PLAY_CARD, entityService::playCard));
     }
 
 }

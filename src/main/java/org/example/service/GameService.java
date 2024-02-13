@@ -11,11 +11,16 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.RoutingContext;
+import org.example.game.Card;
+import org.example.game.CardSuit;
+import org.example.game.CardValue;
 import org.example.game.GameVerticle;
 import org.example.httpRest.RouteResponseValue;
 import org.example.repository.AbstractStatisticManager;
 import org.example.service.requestBody.CreateGameBody;
 import org.example.service.requestBody.JoinGameBody;
+import org.example.service.requestBody.PlayCardBody;
+import org.example.utils.Constants;
 
 import java.util.Map;
 import java.util.UUID;
@@ -32,10 +37,8 @@ public class GameService {
         this.vertx = vertx;
     }
 
-    @Operation(summary = "Create new game", method = "POST", operationId = "game/create", //! operationId must be the same as controller
-            tags = {
-                    "Game"
-            },
+    @Operation(summary = "Create new game", method = Constants.CREATE_GAME_METHOD, operationId = Constants.CREATE_GAME, //! operationId must be the same as controller
+            tags = { Constants.GAME_TAG },
             /*parameters = {
                     @Parameter(in = ParameterIn.PATH, name = "gameID",
                             required = true, description = "The unique ID belonging to the game", schema = @Schema(type = "string"))
@@ -47,12 +50,11 @@ public class GameService {
                             mediaType = "application/json",
                             encoding = @Encoding(contentType = "application/json"),
                             schema = @Schema(implementation = CreateGameBody.class, example =
-                                    "{\n" +
-                                            "  \"username\": \"string\",\n" +
-                                            "  \"numberOfPlayers\": 0\n" +
-                                            "}")
-                    )
-
+                                            "{\n" +
+                                                    "  \"" + Constants.USERNAME + "\": \"string\",\n" +
+                                                    "  \"" + Constants.NUMBER_OF_PLAYERS + "\": 0\n" +
+                                                    "}")
+                            )
             ),
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK",
@@ -68,21 +70,19 @@ public class GameService {
             }
     )
     public void createGame(RoutingContext context) {
-        Integer numberOfPlayers = (Integer) context.body().asJsonObject().getValue("numberOfPlayers");
-        String username = String.valueOf(context.body().asJsonObject().getValue("username"));
+        Integer numberOfPlayers = (Integer) context.body().asJsonObject().getValue(Constants.NUMBER_OF_PLAYERS);
+        String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
         JsonObject jsonGame = new JsonObject();
         UUID newId = UUID.randomUUID();
         GameVerticle currentGame = new GameVerticle(newId, username, numberOfPlayers, this.statisticManager);
         this.games.put(newId, currentGame);
         vertx.deployVerticle(currentGame);
-        jsonGame.addProperty("id", String.valueOf(newId));
+        jsonGame.addProperty(Constants.GAME_ID, String.valueOf(newId));
         context.response().end(jsonGame.toString());
     }
 
-    @Operation(summary = "Join a specific game", method = "POST", operationId = "game/join",
-            tags = {
-                    "Game"
-            },
+    @Operation(summary = "Join a specific game", method = Constants.JOIN_GAME_METHOD, operationId = Constants.JOIN_GAME,
+            tags = { Constants.GAME_TAG },
             requestBody = @RequestBody(
                     description = "username and id of the game are required",
                     required = true,
@@ -91,8 +91,8 @@ public class GameService {
                             encoding = @Encoding(contentType = "application/json"),
                             schema = @Schema(implementation = JoinGameBody.class, example =
                                     "{\n" +
-                                            "  \"gameID\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
-                                            "  \"username\": \"string\"\n" +
+                                            "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
+                                            "  \"" + Constants.USERNAME + "\": \"string\"\n" +
                                             "}")
                     )
 
@@ -111,13 +111,58 @@ public class GameService {
             }
     )
     public void joinGame(RoutingContext context) {
-        String uuidAsString = (String) context.body().asJsonObject().getValue("gameID");
+        String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
         UUID gameID = UUID.fromString(uuidAsString);
-        String username = String.valueOf(context.body().asJsonObject().getValue("username"));
+        String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
         if(this.games.get(gameID) != null){
             this.games.get(gameID).addUser(username);
             context.response().end("Game "+ gameID +" joined by " + username);
         }
-        context.response().setStatusCode(404).end("Game "+ gameID +" joined by " + username);
+        context.response().setStatusCode(404).end("Game "+ gameID + " or username " + username + " not found ");
+    }
+
+    @Operation(summary = "A player plays a card in a specific game", method = Constants.PLAY_CARD_METHOD, operationId = Constants.PLAY_CARD,
+            tags = { Constants.GAME_TAG },
+            requestBody = @RequestBody(
+                    description = "username, card and id of the game are required",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            encoding = @Encoding(contentType = "application/json"),
+                            schema = @Schema(implementation = PlayCardBody.class, example =
+                                    "{\n" +
+                                            "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
+                                            "  \"" + Constants.USERNAME + "\": \"string\",\n" +
+                                            "  \"" + Constants.CARD_VALUE + "\": 0,\n" +
+                                            "  \"" + Constants.CARD_SUIT + "\": \"string\"\n" +
+                                            "}")
+                    )
+
+            ),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    encoding = @Encoding(contentType = "application/json"),
+                                    schema = @Schema(name = "game",
+                                            implementation = PlayCardBody.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "Game or username not found."),
+                    @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            }
+    )
+    public void playCard(RoutingContext context){
+        String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
+        UUID gameID = UUID.fromString(uuidAsString);
+        Integer cardValue = (Integer) context.body().asJsonObject().getValue(Constants.CARD_VALUE);
+        String cardSuit = String.valueOf(context.body().asJsonObject().getValue(Constants.CARD_SUIT));
+        Card<CardValue, CardSuit> card = new Card<>(CardValue.fromInteger(cardValue), CardSuit.fromUppercaseString(cardSuit.toUpperCase()));
+        String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
+        if(this.games.get(gameID) != null){
+            this.games.get(gameID).addCard(card, username);
+            context.response().end("Card "+ card +" played by " + username);
+        }
+        context.response().setStatusCode(404).end("Game "+ gameID +" not found");
     }
 }

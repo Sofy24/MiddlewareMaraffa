@@ -1,11 +1,12 @@
 package org.example.service.requestBody;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.example.utils.Constants;
 
 public class CreateGameBody {
-    @JsonProperty("username")
+    @JsonProperty(Constants.USERNAME)
     private String username;
-    @JsonProperty("numberOfPlayers")
+    @JsonProperty(Constants.NUMBER_OF_PLAYERS)
     private Integer numberOfPlayers;
 
     public String getUsername() {

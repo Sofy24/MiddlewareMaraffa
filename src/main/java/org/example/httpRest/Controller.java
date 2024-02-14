@@ -3,13 +3,14 @@ package org.example.httpRest;
 import java.util.ArrayList;
 import java.util.List;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonObject;
+
 import org.example.service.GameService;
 import org.example.utils.Constants;
 
 public class Controller implements IController {
     private final GameService entityService;
     private final List<IRouteResponse> routes = new ArrayList<>();
-
 
     public Controller(GameService entityService) {
         this.entityService = entityService;
@@ -18,7 +19,15 @@ public class Controller implements IController {
 
     /**Add all Maraffa's routes*/
     private void addRoutes() {
-        routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.CREATE_GAME , entityService::createGame));
+        // routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.CREATE_GAME , entityService::createGame));
+        routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.CREATE_GAME , routingCtx -> { 
+        Integer numberOfPlayers = (Integer) routingCtx.body().asJsonObject().getValue(Constants.NUMBER_OF_PLAYERS);
+        String username = String.valueOf(routingCtx.body().asJsonObject().getValue(Constants.USERNAME));
+            JsonObject jsonGame =  this.entityService.createGame(numberOfPlayers, username, routingCtx);
+            routingCtx.response().end(jsonGame.toString());
+            // entityService::createGame
+        }
+            ));
         routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.JOIN_GAME, entityService::joinGame));
         routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.PLAY_CARD, entityService::playCard));
         routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CAN_START, entityService::canStart));

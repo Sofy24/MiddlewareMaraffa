@@ -2,7 +2,6 @@ package org.example.service;
 
 
 
-import com.google.gson.JsonObject;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -12,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import org.example.game.Card;
 import org.example.game.CardSuit;
@@ -20,6 +20,8 @@ import org.example.game.GameVerticle;
 import org.example.repository.AbstractStatisticManager;
 import org.example.service.schema.*;
 import org.example.utils.Constants;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Map;
 import java.util.UUID;
@@ -68,16 +70,19 @@ public class GameService {
                     @ApiResponse(responseCode = "500", description = "Internal Server Error.")
             }
     )
-    public void createGame(RoutingContext context) {
-        Integer numberOfPlayers = (Integer) context.body().asJsonObject().getValue(Constants.NUMBER_OF_PLAYERS);
-        String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
+//     public void createGame(RoutingContext context) {
+    public JsonObject createGame(Integer numberOfPlayers, String username, RoutingContext... context) {
+        // Integer numberOfPlayers = (Integer) context.body().asJsonObject().getValue(Constants.NUMBER_OF_PLAYERS);
+        // String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
         JsonObject jsonGame = new JsonObject();
         UUID newId = UUID.randomUUID();
         GameVerticle currentGame = new GameVerticle(newId, username, numberOfPlayers, this.statisticManager);
         this.games.put(newId, currentGame);
         vertx.deployVerticle(currentGame);
-        jsonGame.addProperty(Constants.GAME_ID, String.valueOf(newId));
-        context.response().end(jsonGame.toString());
+        jsonGame.put(Constants.GAME_ID, String.valueOf(newId));
+        // jsonGame.addProperty(Constants.GAME_ID, String.valueOf(newId));
+        return jsonGame;
+        // if(context.length > 0) context[0].response().end(jsonGame.toString());
     }
 
     @Operation(summary = "Join a specific game", method = Constants.JOIN_GAME_METHOD, operationId = Constants.JOIN_GAME,

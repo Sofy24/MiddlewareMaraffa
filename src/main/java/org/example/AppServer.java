@@ -7,6 +7,8 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import org.example.repository.AbstractStatisticManager;
+import org.example.repository.MongoStatisticManager;
 import org.example.service.GameService;
 
 public class AppServer extends AbstractVerticle {
@@ -14,6 +16,7 @@ public class AppServer extends AbstractVerticle {
   private static final int PORT = 8080;
   private static final String HOST = "localhost";
   private HttpServer server;
+  AbstractStatisticManager mongoStatisticManager = new MongoStatisticManager();
 
   public AppServer() {
 
@@ -21,14 +24,14 @@ public class AppServer extends AbstractVerticle {
 
   @Override
   public void start() throws Exception {
-    RouterConfig routerConfig = new RouterConfig(PORT, new GameService(vertx));
+    RouterConfig routerConfig = new RouterConfig(PORT, new GameService(vertx, mongoStatisticManager));
     server = vertx.createHttpServer(createOptions());
     server.requestHandler(routerConfig.configurationRouter());
     server.listen(res -> {
       {
         if (res.succeeded()) {
           LOGGER.info("Server is now listening!");
-          System.out.println("Server is now listening!"+server.actualPort());
+          System.out.println("Server is now listening!");
         } else {
           LOGGER.error("Failed to bind!");
           System.out.println("Failed to bind!");

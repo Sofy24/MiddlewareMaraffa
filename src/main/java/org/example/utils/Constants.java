@@ -1,6 +1,5 @@
 package org.example.utils;
 
-import io.vertx.core.http.HttpMethod;
 
 public class Constants {
     //params

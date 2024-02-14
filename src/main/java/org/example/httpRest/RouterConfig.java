@@ -149,7 +149,6 @@ public class RouterConfig {
 
             map = new HashMap<String, Object>();
         }
-        //
 
         // Serve the Swagger JSON spec out on /swagger
         router.get("/swagger").handler(res -> {
@@ -168,8 +167,7 @@ public class RouterConfig {
     public ImmutableSet<ClassPath.ClassInfo> getClassesInPackage(String pckgname) {
         try {
             ClassPath classPath = ClassPath.from(Thread.currentThread().getContextClassLoader());
-            ImmutableSet<ClassPath.ClassInfo> classes = classPath.getTopLevelClasses(pckgname);
-            return classes;
+            return classPath.getTopLevelClasses(pckgname);
         } catch (Exception e) {
             return null;
         }

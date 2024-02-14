@@ -29,11 +29,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameService {
     private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
     private final Vertx vertx;
-    private AbstractStatisticManager statisticManager; //TODO inizializzalo
-
+    private AbstractStatisticManager statisticManager;
 
     public GameService(Vertx vertx) {
         this.vertx = vertx;
+    }
+
+    public GameService(Vertx vertx, AbstractStatisticManager statisticManager) {
+        this.vertx = vertx;
+        this.statisticManager = statisticManager;
     }
 
     @Operation(summary = "Create new game", method = Constants.CREATE_GAME_METHOD, operationId = Constants.CREATE_GAME, //! operationId must be the same as controller
@@ -116,6 +120,38 @@ public class GameService {
         context.response().setStatusCode(404).end("Game "+ gameID + " or username " + username + " not found ");
     }
 
+    @Operation(summary = "Check if a game can start", method = Constants.CAN_START_METHOD, operationId = Constants.CAN_START, //! operationId must be the same as controller
+            tags = { Constants.GAME_TAG },
+            parameters = {
+                    @Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID,
+                            required = false, description = "The unique ID belonging to the game", schema = @Schema(type = "string") )
+            },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(
+                                    mediaType = "application/json; charset=utf-8",
+                                    encoding = @Encoding(contentType = "application/json"),
+                                    schema = @Schema(name = "game",
+                                            implementation = CanStartResponse.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "Game not found."),
+                    @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            }
+    )
+    public void canStart(RoutingContext context) {
+        UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
+        if(this.games.get(gameID) != null){
+            if (this.games.get(gameID).canStart()) {
+                context.response().end("The game " + gameID + " can start");
+            } else {
+                context.response().end("The game " + gameID + " can't start");
+            }
+        }
+
+        context.response().setStatusCode(404).end("Game "+ gameID +" not found");
+    }
+
     @Operation(summary = "A player plays a card in a specific game", method = Constants.PLAY_CARD_METHOD, operationId = Constants.PLAY_CARD,
             tags = { Constants.GAME_TAG },
             requestBody = @RequestBody(
@@ -161,38 +197,6 @@ public class GameService {
         context.response().setStatusCode(404).end("Game "+ gameID +" not found");
     }
 
-    @Operation(summary = "Check if a game can start", method = Constants.CAN_START_METHOD, operationId = Constants.CAN_START, //! operationId must be the same as controller
-            tags = { Constants.GAME_TAG },
-            parameters = {
-                    @Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID,
-                            required = false, description = "The unique ID belonging to the game", schema = @Schema(type = "string") )
-            },
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "OK",
-                            content = @Content(
-                                    mediaType = "application/json; charset=utf-8",
-                                    encoding = @Encoding(contentType = "application/json"),
-                                    schema = @Schema(name = "game",
-                                            implementation = CanStartResponse.class)
-                            )
-                    ),
-                    @ApiResponse(responseCode = "404", description = "Game not found."),
-                    @ApiResponse(responseCode = "500", description = "Internal Server Error.")
-            }
-    )
-    public void canStart(RoutingContext context) {
-        UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
-        if(this.games.get(gameID) != null){
-            if (this.games.get(gameID).canStart()) {
-                context.response().end("The game " + gameID + " can start");
-            } else {
-                context.response().end("The game " + gameID + " can't start");
-            }
-        }
-
-        context.response().setStatusCode(404).end("Game "+ gameID +" not found");
-    }
-
     @Operation(summary = "Choose the trump", method = Constants.CHOOSE_TRUMP_METHOD, operationId = Constants.CHOOSE_TRUMP,
             tags = { Constants.GAME_TAG },
             requestBody = @RequestBody(
@@ -230,7 +234,7 @@ public class GameService {
             this.games.get(gameID).chooseSuit(CardSuit.fromUppercaseString(cardSuit.toUpperCase()));
             context.response().end( CardSuit.fromUppercaseString(cardSuit.toUpperCase()) + " setted as trump ");
         }
-        context.response().setStatusCode(404).end("Game "+ gameID +" not found");
+        context.response().setStatusCode(404).end("Game " + gameID + " not found");
     }
 
     @Operation(summary = "Start a new round in a specific game", method = Constants.START_NEW_ROUND_METHOD, operationId = Constants.START_NEW_ROUND,

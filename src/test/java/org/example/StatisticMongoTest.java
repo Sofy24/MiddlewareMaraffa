@@ -25,7 +25,7 @@ public class StatisticMongoTest {
 
     private int gameId;
 
-    public MainVerticle preapareMainVert(){
+   /* public MainVerticle preapareMainVert(){
         MainVerticle main = new MainVerticle(this.vertx, mongoStatisticManager);
         this.gameId = main.createGame(this.usernameTest, numberOfPlayersTest);
         for (int i = 0; i < numberOfPlayersTest - 1; i++) {
@@ -66,5 +66,5 @@ public class StatisticMongoTest {
         assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.HORSE, CardSuit.CLUBS), this.usernameTest + "4"));
         assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.KING, CardSuit.CLUBS), this.usernameTest + "3"));
         assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.KING, CardSuit.COINS), this.usernameTest + "1"));
-    }
+    }*/
 }

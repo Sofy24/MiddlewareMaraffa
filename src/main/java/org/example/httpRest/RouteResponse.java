@@ -8,7 +8,6 @@ public class RouteResponse implements IRouteResponse {
     HttpMethod method;
     String route;
     Handler<RoutingContext> handler;
-    
 
     public RouteResponse(HttpMethod method, String route, Handler<RoutingContext> handler) {
         this.method = method;

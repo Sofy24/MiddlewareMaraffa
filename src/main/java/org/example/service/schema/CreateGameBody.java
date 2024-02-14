@@ -9,6 +9,11 @@ public class CreateGameBody {
     @JsonProperty(Constants.NUMBER_OF_PLAYERS)
     private Integer numberOfPlayers;
 
+    public CreateGameBody(String username, Integer numberOfPlayers) {
+        this.username = username;
+        this.numberOfPlayers = numberOfPlayers;
+    }
+
     public String getUsername() {
         return username;
     }

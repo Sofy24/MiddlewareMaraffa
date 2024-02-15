@@ -28,31 +28,54 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-public class GameService {
+public class GameServiceDecorator {
     private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
-    private Vertx vertx;
 
     private AbstractStatisticManager statisticManager;
-
-    public GameService(Vertx vertx) {
-        this.vertx = vertx;
+    private GameService gameService;
+    public GameServiceDecorator(Vertx vertx) {
+        this.gameService = new GameService(vertx);
     }
 
-    public GameService(Vertx vertx, AbstractStatisticManager statisticManager) {
-        this.vertx = vertx;
-        this.statisticManager = statisticManager;
+    public GameServiceDecorator(Vertx vertx, AbstractStatisticManager statisticManager) {
+        this.gameService = new GameService(vertx, statisticManager);
     }
 
-    public JsonObject createGame(Integer numberOfPlayers, String username) {
-        JsonObject jsonGame = new JsonObject();
-        UUID newId = UUID.randomUUID();
-        GameVerticle currentGame;
-        if(this.statisticManager != null ) currentGame = new GameVerticle(newId, username, numberOfPlayers, this.statisticManager);
-        else currentGame = new GameVerticle(newId, username, numberOfPlayers);
-        this.games.put(newId, currentGame);
-        vertx.deployVerticle(currentGame);
-        jsonGame.put(Constants.GAME_ID, String.valueOf(newId));
-        return jsonGame;
+    @Operation(summary = "Create new game", method = Constants.CREATE_GAME_METHOD, operationId = Constants.CREATE_GAME, //! operationId must be the same as controller
+            tags = { Constants.GAME_TAG },
+            requestBody = @RequestBody(
+                    description = "username and the number of players are required",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            encoding = @Encoding(contentType = "application/json"),
+                            schema = @Schema(implementation = CreateGameBody.class, example =
+                                            "{\n" +
+                                                    "  \"" + Constants.USERNAME + "\": \"string\",\n" +
+                                                    "  \"" + Constants.NUMBER_OF_PLAYERS + "\": 0\n" +
+                                                    "}")
+                            )
+            ),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    encoding = @Encoding(contentType = "application/json"),
+                                    schema = @Schema(name = "game-creation",
+                                            implementation = CreateGameBody.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "Game not found."),
+                    @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            }
+    )
+//     public void createGame(RoutingContext context) {
+    public void createGame(RoutingContext context) {
+        Integer numberOfPlayers = (Integer) context.body().asJsonObject().getValue(Constants.NUMBER_OF_PLAYERS);
+        String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
+        JsonObject jsonGame = this.gameService.createGame(numberOfPlayers, username);
+        context.response().end(jsonGame.toString());
+        // return jsonGame;
     }
 
     @Operation(summary = "Join a specific game", method = Constants.JOIN_GAME_METHOD, operationId = Constants.JOIN_GAME,

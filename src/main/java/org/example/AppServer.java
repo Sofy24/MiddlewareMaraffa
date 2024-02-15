@@ -9,7 +9,7 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import org.example.repository.AbstractStatisticManager;
 import org.example.repository.MongoStatisticManager;
-import org.example.service.GameService;
+import org.example.service.GameServiceDecorator;
 
 public class AppServer extends AbstractVerticle {
   private static final Logger LOGGER = LoggerFactory.getLogger(AppServer.class);
@@ -24,7 +24,7 @@ public class AppServer extends AbstractVerticle {
 
   @Override
   public void start() throws Exception {
-    RouterConfig routerConfig = new RouterConfig(PORT, new GameService(vertx, mongoStatisticManager));
+    RouterConfig routerConfig = new RouterConfig(PORT, new GameServiceDecorator(vertx, mongoStatisticManager));
     server = vertx.createHttpServer(createOptions());
     server.requestHandler(routerConfig.configurationRouter());
     server.listen(res -> {

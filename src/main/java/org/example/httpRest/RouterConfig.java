@@ -25,7 +25,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.vertx.ext.web.Router;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.media.Schema;
-import org.example.service.GameService;
+import org.example.service.GameServiceDecorator;
 import org.example.utils.Constants;
 
 public class RouterConfig {
@@ -33,7 +33,7 @@ public class RouterConfig {
     private final int port;
     private final Controller controller;
 
-    public RouterConfig(final int port, final GameService entityService) {
+    public RouterConfig(final int port, final GameServiceDecorator entityService) {
         this.port = port;
         this.controller = new Controller(entityService);
     }

@@ -46,8 +46,8 @@ public class GameService {
     public JsonObject createGame(Integer numberOfPlayers, String username) {
         JsonObject jsonGame = new JsonObject();
         UUID newId = UUID.randomUUID();
-        GameVerticle currentGame;
-        if(this.statisticManager != null ) currentGame = new GameVerticle(newId, username, numberOfPlayers, this.statisticManager);
+        GameVerticle currentGame; // = new GameVerticle(newId, username, numberOfPlayers);
+        if (this.statisticManager != null ) currentGame = new GameVerticle(newId, username, numberOfPlayers, this.statisticManager);
         else currentGame = new GameVerticle(newId, username, numberOfPlayers);
         this.games.put(newId, currentGame);
         vertx.deployVerticle(currentGame);

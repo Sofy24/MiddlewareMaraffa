@@ -30,9 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class GameServiceDecorator {
     private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
-
-    private AbstractStatisticManager statisticManager;
-    private GameService gameService;
+    private final GameService gameService;
     public GameServiceDecorator(Vertx vertx) {
         this.gameService = new GameService(vertx);
     }
@@ -40,21 +38,22 @@ public class GameServiceDecorator {
     public GameServiceDecorator(Vertx vertx, AbstractStatisticManager statisticManager) {
         this.gameService = new GameService(vertx, statisticManager);
     }
-
-    @Operation(summary = "Create new game", method = Constants.CREATE_GAME_METHOD, operationId = Constants.CREATE_GAME, //! operationId must be the same as controller
+    
+    @Operation(summary = "Create new game", method = Constants.CREATE_GAME_METHOD, operationId = Constants.CREATE_GAME,
             tags = { Constants.GAME_TAG },
             requestBody = @RequestBody(
-                    description = "username and the number of players are required",
+                    description = "insert username and the number of players",
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
                             encoding = @Encoding(contentType = "application/json"),
                             schema = @Schema(implementation = CreateGameBody.class, example =
-                                            "{\n" +
-                                                    "  \"" + Constants.USERNAME + "\": \"string\",\n" +
-                                                    "  \"" + Constants.NUMBER_OF_PLAYERS + "\": 0\n" +
-                                                    "}")
-                            )
+                                    "{\n" +
+                                            "  \"" + Constants.NUMBER_OF_PLAYERS + "\": 4,\n" +
+                                            "  \"" + Constants.USERNAME + "\": \"string\"\n" +
+                                            "}")
+                    )
+
             ),
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK",
@@ -65,17 +64,14 @@ public class GameServiceDecorator {
                                             implementation = CreateGameBody.class)
                             )
                     ),
-                    @ApiResponse(responseCode = "404", description = "Game not found."),
                     @ApiResponse(responseCode = "500", description = "Internal Server Error.")
             }
     )
-//     public void createGame(RoutingContext context) {
     public void createGame(RoutingContext context) {
         Integer numberOfPlayers = (Integer) context.body().asJsonObject().getValue(Constants.NUMBER_OF_PLAYERS);
         String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
         JsonObject jsonGame = this.gameService.createGame(numberOfPlayers, username);
         context.response().end(jsonGame.toString());
-        // return jsonGame;
     }
 
     @Operation(summary = "Join a specific game", method = Constants.JOIN_GAME_METHOD, operationId = Constants.JOIN_GAME,

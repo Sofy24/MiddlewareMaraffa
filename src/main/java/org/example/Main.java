@@ -12,7 +12,6 @@ public class Main {
         // Deploy the main verticle
         vertx.deployVerticle(new MainVerticle(vertx, mongoStatisticManager));
 
-
        vertx.deployVerticle(new AppServer(), serverResult -> {
             if (serverResult.succeeded()) {
                 System.out.println("AppServer deployed successfully");

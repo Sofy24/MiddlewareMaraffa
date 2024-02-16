@@ -4,7 +4,6 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import org.example.game.*;
 import org.example.repository.AbstractStatisticManager;
-import org.example.repository.MongoStatisticManager;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,7 +68,7 @@ public class MainVerticle extends AbstractVerticle implements GameApi {
 
     @Override
     public void chooseSuit(int idGame, CardSuit suit) {
-        this.games.get(idGame).chooseSuit(suit);
+        this.games.get(idGame).chooseTrump(suit);
     }
 
     @Override

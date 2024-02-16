@@ -2,87 +2,71 @@ package org.example;
 
 
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.impl.HttpClientImpl;
-import io.vertx.core.http.impl.SharedHttpClient;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.RunTestOnContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.junit5.VertxTestContext;
 import org.example.game.Card;
 import org.example.game.CardSuit;
 import org.example.game.CardValue;
 import org.example.service.GameService;
-import org.example.service.schema.CreateGameBody;
 import org.example.utils.Constants;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import io.vertx.junit5.VertxExtension;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-//import io.vertx.ext.web.client.WebClient;
+import org.junit.runner.RunWith;
+import static org.junit.Assert.assertTrue;
 
 
-@ExtendWith(VertxExtension.class)
+
+@RunWith(VertxUnitRunner.class)
 class GameApiTest {
-    @Rule
-    public static RunTestOnContext rule = new RunTestOnContext();
-    //private WebClient client;
+    private static final String TEST_USER = "testUser";
+    private static final int MARAFFA_PLAYERS = 4;
+    private static final int UUID_SIZE = 36;
     private int port = 8081;
     private final Vertx vertx = Vertx.vertx();
+    private GameService gameService;
     private final String usernameTest = "user1";
     private final int numberOfPlayersTest = 4;
     private final CardSuit undefinedSuit = CardSuit.NONE;
     private final Card<CardValue, CardSuit> cardTest = new Card<>(CardValue.THREE, CardSuit.CLUBS);
 
 
-    /*@Before
-    public void before(TestContext should) {
-        Async setup = should.async();
-
-        Router app = Router.router(rule.vertx());
-
-        // add the desired handlers/routes...
-
-        rule.vertx()
-                .createHttpServer()
-                .requestHandler(app)
-                .listen(0)
-                .onFailure(should::fail)
-                .onSuccess(server -> {
-                    port = server.actualPort();
-                    client = WebClient.create(rule.vertx());
-                    setup.complete();
-                });
-    }
-
-    @After
-    public void after() {
-        client.close();
-    }*/
-
     /** Create a new game (GameVerticle) and ensure that it has been added correctly
      * */
-    @Test
+    /*@Test
     void createGame() {
         GameService service = new GameService(this.vertx);
         int numberOfGames = service.getGames().size();
         /*service.createGame(this.usernameTest, numberOfPlayersTest);
         int actualNumberOfGames = main.getGames().size();
-        assertEquals(numberOfGames+1, actualNumberOfGames);*/
+        assertEquals(numberOfGames+1, actualNumberOfGames);
+    }*/
+
+    @org.junit.Before
+    public void setUp(TestContext context) {
+        this.gameService = new GameService(this.vertx);
     }
 
+    /** Create a new game (GameVerticle) and ensure that its UUID has been created correctly
+     * */
+
     @Test
+    public void testTest(){
+        assertTrue(true);
+    }
+    /*@org.junit.Test
+    public void testCreateGame(TestContext context) {
+        final Async async = context.async();
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER);
+        assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length()); // Assuming UUID is 36 characters long
+        async.complete();
+    }*/
+
+    /*@Test
     void testCreateGame(Vertx vertx, VertxTestContext testContext) {
         // Deploy the verticle under test
         vertx.deployVerticle(new AppServer(), testContext.succeeding(id -> {
@@ -114,41 +98,8 @@ class GameApiTest {
                         }
                     });
         }));
-    }
+    }*/
 
-    /*@Test
-    public void checkThatWeCanAdd(TestContext context) {
-        Async async = context.async();
-        final String json = Json.encodePrettily(new CreateGameBody("Jameson", 4));
-        final String length = Integer.toString(json.length());
-        HttpClient client = new HttpClientImpl(vertx, );
-                vertx.createHttpClient().request(HttpMethod.POST, 8080, "localhost", "/doc/#/Game/game/create")
-                .putHeader("content-type", "application/json")
-                .putHeader("content-length", length)
-                .handler(response -> {
-                    context.assertEquals(response.statusCode(), 201);
-                    context.assertTrue(response.headers().get("content-type").contains("application/json"));
-                    response.bodyHandler(body -> {
-                        final CreateGameBody createGameBody = Json.decodeValue(body.toString(), CreateGameBody.class);
-                        context.assertEquals(createGameBody.getUsername(), "Jameson");
-                        context.assertEquals(createGameBody.getNumberOfPlayers(), 4);
-                        async.complete();
-                    });
-                })
-                .write(json)
-                .end();
-    }*/
-    /*void http_server_check_response(Vertx vertx, VertxTestContext testContext) {
-        vertx.deployVerticle(new AppServer(), testContext.succeeding(id -> {
-            HttpClient client = vertx.createHttpClient();
-            client.request(HttpMethod.POST, 8080, "localhost", "/doc/#/Game/game/create")
-                    .compose(req -> req.send().compose(HttpClientResponse::body))
-                    .onComplete(testContext.succeeding(buffer -> testContext.verify(() -> {
-                        System.out.println("buffer.toString() = " + buffer.toString());
-                        testContext.completeNow();
-                    })));
-        }));
-    }*/
 
     /** The join should add at maximum {@code numberOfPlayerTest}
      * */

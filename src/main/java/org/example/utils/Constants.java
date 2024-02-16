@@ -24,4 +24,12 @@ public class Constants {
     public static final String START_NEW_ROUND_METHOD = "PATCH";
     //tags
     public static final String GAME_TAG = "Game";
+    //json attributes
+    public static final String CAN_START_ATTR = "canStart";
+    public static final String JOIN_ATTR = "join";
+    public static final String NOT_FOUND = "notFound";
+    public static final String FULL = "full";
+    public static final String MESSAGE = "message";
+    public static final String ALREADY_JOINED = "alreadyJoined";
+
 }

@@ -60,7 +60,7 @@ public class GameVerticle extends AbstractVerticle {
 
     /** @return true if the user is added */
     public boolean addUser(String username) {
-        if (this.users.size() < this.numberOfPlayers && !this.users.contains(username)) {
+        if (!this.users.contains(username)) {
             this.users.add(username);
             return true;
         }
@@ -100,7 +100,7 @@ public class GameVerticle extends AbstractVerticle {
     }
 
     /** @param suit the leading suit of the round */
-    public void chooseSuit(CardSuit suit) {
+    public void chooseTrump(CardSuit suit) {
         this.leadingSuit = suit;
         this.gameSchema.setLeadingSuit(suit);
         if(this.statisticManager != null) this.statisticManager.updateSuit(this.gameSchema); //TODO serve davvero o soltanto roba che sembra utile ? 
@@ -109,7 +109,7 @@ public class GameVerticle extends AbstractVerticle {
 
     /** reset the leading suit */
     public void startNewRound() {
-        this.chooseSuit(CardSuit.NONE);
+        this.chooseTrump(CardSuit.NONE);
     }
 
     public UUID getId() {
@@ -134,5 +134,15 @@ public class GameVerticle extends AbstractVerticle {
 
     public CardSuit getLeadingSuit() {
         return leadingSuit;
+    }
+
+    /**@return the number of players who have already joined the game*/
+    public int getNumberOfPlayersIn(){
+        return this.users.size();
+    }
+
+    /**@return the number of players for this game*/
+    public int getMaxNumberOfPlayers(){
+        return this.numberOfPlayers;
     }
 }

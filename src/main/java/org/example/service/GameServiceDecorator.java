@@ -21,7 +21,6 @@ import org.example.repository.AbstractStatisticManager;
 import org.example.service.schema.*;
 import org.example.utils.Constants;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Map;
 import java.util.UUID;
@@ -38,7 +37,7 @@ public class GameServiceDecorator {
     public GameServiceDecorator(Vertx vertx, AbstractStatisticManager statisticManager) {
         this.gameService = new GameService(vertx, statisticManager);
     }
-    
+
     @Operation(summary = "Create new game", method = Constants.CREATE_GAME_METHOD, operationId = Constants.CREATE_GAME,
             tags = { Constants.GAME_TAG },
             requestBody = @RequestBody(
@@ -100,6 +99,7 @@ public class GameServiceDecorator {
                             )
                     ),
                     @ApiResponse(responseCode = "404", description = "Game not found."),
+                    @ApiResponse(responseCode = "401", description = "Reached the limit of maximum players in the game."),
                     @ApiResponse(responseCode = "500", description = "Internal Server Error.")
             }
     )
@@ -107,11 +107,12 @@ public class GameServiceDecorator {
         String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
         UUID gameID = UUID.fromString(uuidAsString);
         String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
-        if(this.games.get(gameID) != null){
-            this.games.get(gameID).addUser(username);
-            context.response().end("Game "+ gameID +" joined by " + username);
+        if(this.gameService.joinGame(gameID, username).containsKey(Constants.NOT_FOUND) ){
+            context.response().setStatusCode(404).end(this.gameService.joinGame(gameID, username).getString(Constants.MESSAGE));
+        } else if (this.gameService.joinGame(gameID, username).containsKey(Constants.FULL) ) {
+            context.response().setStatusCode(401).end(this.gameService.joinGame(gameID, username).getString(Constants.MESSAGE));
         }
-        context.response().setStatusCode(404).end("Game "+ gameID + " or username " + username + " not found ");
+        context.response().end(this.gameService.joinGame(gameID, username).getString(Constants.MESSAGE));
     }
 
     @Operation(summary = "Check if a game can start", method = Constants.CAN_START_METHOD, operationId = Constants.CAN_START, //! operationId must be the same as controller
@@ -135,15 +136,12 @@ public class GameServiceDecorator {
     )
     public void canStart(RoutingContext context) {
         UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
-        if(this.games.get(gameID) != null){
-            if (this.games.get(gameID).canStart()) {
-                context.response().end("The game " + gameID + " can start");
-            } else {
-                context.response().end("The game " + gameID + " can't start");
-            }
-        }
+        String message = this.gameService.canStart(gameID).getString(Constants.CAN_START_ATTR);
+        if(!this.gameService.canStart(gameID).containsKey(Constants.NOT_FOUND)){
+            context.response().end(message);
 
-        context.response().setStatusCode(404).end("Game "+ gameID +" not found");
+        }
+        context.response().setStatusCode(404).end(message);
     }
 
     @Operation(summary = "A player plays a card in a specific game", method = Constants.PLAY_CARD_METHOD, operationId = Constants.PLAY_CARD,
@@ -184,11 +182,11 @@ public class GameServiceDecorator {
         String cardSuit = String.valueOf(context.body().asJsonObject().getValue(Constants.CARD_SUIT));
         Card<CardValue, CardSuit> card = new Card<>(CardValue.fromInteger(cardValue), CardSuit.fromUppercaseString(cardSuit.toUpperCase()));
         String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
-        if(this.games.get(gameID) != null){
-            this.games.get(gameID).addCard(card, username);
+        if(this.gameService.playCard(gameID, username, card)){
             context.response().end(card +" played by " + username);
+        } else {
+            context.response().setStatusCode(404).end("Game " + gameID + " not found");
         }
-        context.response().setStatusCode(404).end("Game "+ gameID +" not found");
     }
 
     @Operation(summary = "Choose the trump", method = Constants.CHOOSE_TRUMP_METHOD, operationId = Constants.CHOOSE_TRUMP,
@@ -220,15 +218,15 @@ public class GameServiceDecorator {
                     @ApiResponse(responseCode = "500", description = "Internal Server Error.")
             }
     )
-    public void chooseSuit(RoutingContext context) {
+    public void chooseTrump(RoutingContext context) {
         String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
         UUID gameID = UUID.fromString(uuidAsString);
         String cardSuit = String.valueOf(context.body().asJsonObject().getValue(Constants.CARD_SUIT));
-        if(this.games.get(gameID) != null){
-            this.games.get(gameID).chooseSuit(CardSuit.fromUppercaseString(cardSuit.toUpperCase()));
+        if(this.gameService.chooseTrump(gameID, cardSuit)){
             context.response().end( CardSuit.fromUppercaseString(cardSuit.toUpperCase()) + " setted as trump ");
+        } else {
+            context.response().setStatusCode(404).end("Game " + gameID + " not found");
         }
-        context.response().setStatusCode(404).end("Game " + gameID + " not found");
     }
 
     @Operation(summary = "Start a new round in a specific game", method = Constants.START_NEW_ROUND_METHOD, operationId = Constants.START_NEW_ROUND,
@@ -262,11 +260,11 @@ public class GameServiceDecorator {
     public void startNewRound(RoutingContext context) {
         String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
         UUID gameID = UUID.fromString(uuidAsString);
-        if(this.games.get(gameID) != null){
-            this.games.get(gameID).startNewRound();
+        if(this.gameService.startNewRound(gameID)){
             context.response().end("New round started");
+        } else {
+            context.response().setStatusCode(404).end("Game " + gameID + " not found");
         }
-        context.response().setStatusCode(404).end("Game "+ gameID +" not found");
     }
 
     public Map<UUID, GameVerticle> getGames() {

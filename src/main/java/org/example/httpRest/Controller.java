@@ -3,9 +3,7 @@ package org.example.httpRest;
 import java.util.ArrayList;
 import java.util.List;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.JsonObject;
 
-import org.example.service.GameService;
 import org.example.service.GameServiceDecorator;
 import org.example.utils.Constants;
 
@@ -24,7 +22,7 @@ public class Controller implements IController {
         routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.JOIN_GAME, entityService::joinGame));
         routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.PLAY_CARD, entityService::playCard));
         routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CAN_START, entityService::canStart));
-        routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.CHOOSE_TRUMP , entityService::chooseSuit));
+        routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.CHOOSE_TRUMP , entityService::chooseTrump));
         routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.START_NEW_ROUND, entityService::startNewRound));
     }
 

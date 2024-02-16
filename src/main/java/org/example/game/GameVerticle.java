@@ -20,7 +20,7 @@ public class GameVerticle extends AbstractVerticle {
     private final UUID id;
     private final AtomicInteger currentState;
     private final int numberOfPlayers;
-    private CardSuit leadingSuit = CardSuit.NONE;
+    private CardSuit trump = CardSuit.NONE;
     private Map<Integer, Trick> states = new ConcurrentHashMap<>();
     private final List<String> users = new ArrayList<>();
 
@@ -78,14 +78,14 @@ public class GameVerticle extends AbstractVerticle {
         if (canStart()) {
             if(this.currentTrick == null){
                 this.currentTrick = this.states.getOrDefault(this.currentState.get(),
-                    new TrickImpl(this.numberOfPlayers, this.leadingSuit)); //TODO check aggiunge un new trick sempre ????
+                    new TrickImpl(this.numberOfPlayers, this.trump)); //TODO check aggiunge un new trick sempre ????
             } 
             if (!currentTrick.isCompleted()) {
                 currentTrick.addCard(card, username);
             } else {
                 this.gameSchema.addTrick(currentTrick);
                 if(this.statisticManager != null) this.statisticManager.updateRecordWithTrick(String.valueOf(id), currentTrick);
-                currentTrick = new TrickImpl(this.numberOfPlayers, this.leadingSuit);
+                currentTrick = new TrickImpl(this.numberOfPlayers, this.trump);
                 currentTrick.addCard(card, username);
                 this.states.put(this.currentState.incrementAndGet(), currentTrick);
             }
@@ -96,18 +96,18 @@ public class GameVerticle extends AbstractVerticle {
 
     /** @return true if all players have joined the game */
     public boolean canStart() {
-        return this.users.size() == this.numberOfPlayers && !this.leadingSuit.equals(CardSuit.NONE);
+        return this.users.size() == this.numberOfPlayers && !this.trump.equals(CardSuit.NONE);
     }
 
     /** @param suit the leading suit of the round */
     public void chooseTrump(CardSuit suit) {
-        this.leadingSuit = suit;
-        this.gameSchema.setLeadingSuit(suit);
+        this.trump = suit;
+        this.gameSchema.setTrump(suit);
         if(this.statisticManager != null) this.statisticManager.updateSuit(this.gameSchema); //TODO serve davvero o soltanto roba che sembra utile ? 
 
     }
 
-    /** reset the leading suit */
+    /** reset the trump */
     public void startNewRound() {
         this.chooseTrump(CardSuit.NONE);
     }
@@ -132,8 +132,8 @@ public class GameVerticle extends AbstractVerticle {
         return currentTrick;
     }
 
-    public CardSuit getLeadingSuit() {
-        return leadingSuit;
+    public CardSuit getTrump() {
+        return trump;
     }
 
     /**@return the number of players who have already joined the game*/

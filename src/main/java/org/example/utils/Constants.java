@@ -31,5 +31,7 @@ public class Constants {
     public static final String FULL = "full";
     public static final String MESSAGE = "message";
     public static final String ALREADY_JOINED = "alreadyJoined";
+    public static final String ILLEGAL_TRUMP = "illegalTrump";
+    public static final String TRUMP = "trump";
 
 }

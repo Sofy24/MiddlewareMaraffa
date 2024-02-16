@@ -10,8 +10,7 @@ public enum CardSuit {
             case "SWORDS" -> SWORDS;
             case "CLUBS" -> CLUBS;
             case "COINS" -> COINS;
-            case "" -> NONE;
-            default -> throw new IllegalArgumentException("Invalid suit: " + suit);
+            default -> NONE;
         };
     }
 }

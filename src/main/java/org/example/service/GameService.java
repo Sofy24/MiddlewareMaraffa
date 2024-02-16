@@ -65,13 +65,15 @@ public class GameService {
         JsonObject jsonCanStart = new JsonObject();
         if(this.games.get(gameID) != null){
             if (this.games.get(gameID).canStart()) {
-                return jsonCanStart.put(Constants.CAN_START_ATTR, "The game " + gameID + " can start");
+                jsonCanStart.put(Constants.CAN_START_ATTR, true);
+                return jsonCanStart.put(Constants.MESSAGE, "The game " + gameID + " can start");
             } else {
-                return jsonCanStart.put(Constants.CAN_START_ATTR, "The game " + gameID + " can't start");
+                jsonCanStart.put(Constants.CAN_START_ATTR, false);
+                return jsonCanStart.put(Constants.MESSAGE, "The game " + gameID + " can't start");
             }
         }
         jsonCanStart.put(Constants.NOT_FOUND, false);
-        return jsonCanStart.put(Constants.CAN_START_ATTR, "Game "+ gameID +" not found");
+        return jsonCanStart.put(Constants.MESSAGE, "Game "+ gameID +" not found");
     }
 
     public boolean playCard(UUID gameID, String username, Card<CardValue, CardSuit> card){
@@ -82,12 +84,24 @@ public class GameService {
         return false;
     }
 
-    public boolean chooseTrump(UUID gameID, String cardSuit) {
+    public JsonObject chooseTrump(UUID gameID, String cardSuit) {
+        JsonObject jsonTrump = new JsonObject();
         if(this.games.get(gameID) != null){
-            this.games.get(gameID).chooseTrump(CardSuit.fromUppercaseString(cardSuit.toUpperCase()));
-            return true;
+            try {
+                CardSuit trump = CardSuit.fromUppercaseString(cardSuit.toUpperCase());
+                this.games.get(gameID).chooseTrump(trump);
+                jsonTrump.put(Constants.MESSAGE, trump + " setted as trump");
+            } catch (Exception e) {
+                jsonTrump.put(Constants.TRUMP, false);
+                jsonTrump.put(Constants.ILLEGAL_TRUMP, true);
+                return jsonTrump;
+            }
+            jsonTrump.put(Constants.TRUMP, true);
+            return jsonTrump;
         }
-        return false;
+        jsonTrump.put(Constants.TRUMP, false);
+        jsonTrump.put(Constants.NOT_FOUND, false);
+        return jsonTrump.put(Constants.MESSAGE, "Game "+ gameID +" not found");
     }
 
     public boolean startNewRound(UUID gameID) {

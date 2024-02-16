@@ -1,22 +1,18 @@
 package org.example.game;
 
-import io.vertx.core.json.JsonObject;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import org.example.user.User;
 
 /**TODO/Define the mongodb schema of the game*/
 public class GameSchema {
     private String gameID;
-    private CardSuit leadingSuit;
-    public void setLeadingSuit(CardSuit leadingSuit) {
-        this.leadingSuit = leadingSuit;
+    private CardSuit trump;
+    public void setTrump(CardSuit trump) {
+        this.trump = trump;
     }
 
-    public CardSuit getLeadingSuit() {
-        return leadingSuit;
+    public CardSuit getTrump() {
+        return trump;
     }
     private List<Trick> tricks;
 
@@ -30,9 +26,9 @@ public class GameSchema {
     public GameSchema() {
     }
 
-    public GameSchema(String identifier, CardSuit leadingSuit) {
+    public GameSchema(String identifier, CardSuit trump) {
         this.gameID = identifier;
-        this.leadingSuit = leadingSuit;
+        this.trump = trump;
         this.tricks = new ArrayList<>();
     }
 

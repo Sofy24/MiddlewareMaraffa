@@ -2,7 +2,7 @@ package org.example.game;
 
 /**An enum with the values of the cards*/
 public enum CardValue {
-    ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, KNAVE, HORSE, KING;
+    ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, KNAVE, HORSE, KING, NONE;
 
     public static CardValue fromInteger(Integer number) {
         return switch (number) {
@@ -16,7 +16,7 @@ public enum CardValue {
             case 11 -> KNAVE;
             case 12 -> HORSE;
             case 13 -> KING;
-            default -> throw new IllegalArgumentException("Invalid number: " + number);
+            default -> NONE;
         };
     }
 }

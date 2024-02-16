@@ -1,6 +1,9 @@
 package org.example;
 
 
+import org.example.game.Card;
+import org.example.game.CardSuit;
+import org.example.game.CardValue;
 import org.example.service.GameService;
 import org.example.utils.Constants;
 import org.junit.Before;
@@ -14,16 +17,19 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(VertxUnitRunner.class)
 public class GameTest {
 
     private static final String TEST_USER = "testUser";
+    private static final String TRUMP = "coins";
+    private static final String FAKE_TRUMP = "hammers";
+    private static final CardSuit UNDEFINED_TRUMP = CardSuit.NONE;
     private static final int MARAFFA_PLAYERS = 4;
     private static final int UUID_SIZE = 36;
     private static final UUID FAKE_UUID = UUID.randomUUID();
+    private static final Card<CardValue, CardSuit> TEST_CARD = new Card<>(CardValue.HORSE, CardSuit.CLUBS);
     private Vertx vertx;
     private GameService gameService;
     /**
@@ -86,4 +92,82 @@ public class GameTest {
         assertTrue(joinResponse.containsKey(Constants.ALREADY_JOINED));
         async.complete();
     }
+
+    /**The round can't start if the trump is {@code CardSuit.NONE} and
+     * if all players haven't joined it*/
+    @Test
+    void chooseTrumpAndWaitAllPlayersTest(TestContext context){
+        final Async async = context.async();
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER);
+        assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+        for (int i = 0; i < MARAFFA_PLAYERS - 2; i++) {
+            JsonObject canStartResponse = this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
+            assertFalse(canStartResponse.getBoolean(Constants.CAN_START_ATTR));
+            JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
+            assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+        }
+        JsonObject canStartResponse = this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
+        assertFalse(canStartResponse.getBoolean(Constants.CAN_START_ATTR));
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
+        assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+        canStartResponse = this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
+        assertTrue(canStartResponse.getBoolean(Constants.CAN_START_ATTR));
+        async.complete();
+    }
+
+    /**The trump is not a legal suit*/
+    @Test
+    void chooseWrongTest(TestContext context){
+        final Async async = context.async();
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER);
+        assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+        for (int i = 0; i < MARAFFA_PLAYERS - 2; i++) {
+            JsonObject canStartResponse = this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
+            assertFalse(canStartResponse.getBoolean(Constants.CAN_START_ATTR));
+            JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
+            assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+        }
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), FAKE_TRUMP);
+        assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+        assertTrue(chooseTrumpResponse.getBoolean(Constants.ILLEGAL_TRUMP));
+        async.complete();
+    }
+
+    /**Reset the trump in order to start a new round */
+    @Test
+    void startNewRoundTest(TestContext context){
+        final Async async = context.async();
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER);
+        assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+        for (int i = 0; i < MARAFFA_PLAYERS - 2; i++) {
+            JsonObject canStartResponse = this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
+            assertFalse(canStartResponse.getBoolean(Constants.CAN_START_ATTR));
+            JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
+            assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+        }
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
+        assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+        assertTrue(this.gameService.startNewRound(UUID.fromString(gameResponse.getString(Constants.GAME_ID))));
+        assertEquals(UNDEFINED_TRUMP, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getTrump());
+        async.complete();
+    }
+
+    /** The card can be played only when the game is started*/
+    @Test
+    void playCardTest(TestContext context) {
+        final Async async = context.async();
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER);
+        assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+        for (int i = 0; i < MARAFFA_PLAYERS - 2; i++) {
+            assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD));
+            JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
+            assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+        }
+        assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD));
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
+        assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+        assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD));
+        async.complete();
+    }
+
 }

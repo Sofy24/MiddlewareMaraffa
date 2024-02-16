@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.impl.SelfSignedCertificateImpl;
 import io.vertx.ext.web.RoutingContext;
 import org.example.game.Card;
 import org.example.game.CardSuit;
@@ -136,7 +137,7 @@ public class GameServiceDecorator {
     )
     public void canStart(RoutingContext context) {
         UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
-        String message = this.gameService.canStart(gameID).getString(Constants.CAN_START_ATTR);
+        String message = this.gameService.canStart(gameID).getString(Constants.MESSAGE);
         if(!this.gameService.canStart(gameID).containsKey(Constants.NOT_FOUND)){
             context.response().end(message);
 
@@ -172,6 +173,7 @@ public class GameServiceDecorator {
                             )
                     ),
                     @ApiResponse(responseCode = "404", description = "Game or username not found."),
+                    @ApiResponse(responseCode = "401", description = "Invalid card."),
                     @ApiResponse(responseCode = "500", description = "Internal Server Error.")
             }
     )
@@ -182,10 +184,14 @@ public class GameServiceDecorator {
         String cardSuit = String.valueOf(context.body().asJsonObject().getValue(Constants.CARD_SUIT));
         Card<CardValue, CardSuit> card = new Card<>(CardValue.fromInteger(cardValue), CardSuit.fromUppercaseString(cardSuit.toUpperCase()));
         String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
-        if(this.gameService.playCard(gameID, username, card)){
-            context.response().end(card +" played by " + username);
+        if(card.cardSuit().equals(CardSuit.NONE) || card.cardValue().equals(CardValue.NONE)){
+            context.response().setStatusCode(401).end("Invalid " + card);
         } else {
-            context.response().setStatusCode(404).end("Game " + gameID + " not found");
+            if (this.gameService.playCard(gameID, username, card)) {
+                context.response().end(card + " played by " + username);
+            } else {
+                context.response().setStatusCode(404).end("Game " + gameID + " not found");
+            }
         }
     }
 
@@ -215,6 +221,7 @@ public class GameServiceDecorator {
                             )
                     ),
                     @ApiResponse(responseCode = "404", description = "Game not found."),
+                    @ApiResponse(responseCode = "401", description = "Invalid suit."),
                     @ApiResponse(responseCode = "500", description = "Internal Server Error.")
             }
     )
@@ -222,10 +229,13 @@ public class GameServiceDecorator {
         String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
         UUID gameID = UUID.fromString(uuidAsString);
         String cardSuit = String.valueOf(context.body().asJsonObject().getValue(Constants.CARD_SUIT));
-        if(this.gameService.chooseTrump(gameID, cardSuit)){
-            context.response().end( CardSuit.fromUppercaseString(cardSuit.toUpperCase()) + " setted as trump ");
+        String message = this.gameService.canStart(gameID).getString(Constants.CAN_START_ATTR);
+        if(!this.gameService.chooseTrump(gameID, cardSuit).containsKey(Constants.NOT_FOUND)){
+            context.response().end(message);
+        } else if (this.gameService.chooseTrump(gameID, cardSuit).containsKey(Constants.ILLEGAL_TRUMP)){
+            context.response().setStatusCode(401).end(message);
         } else {
-            context.response().setStatusCode(404).end("Game " + gameID + " not found");
+            context.response().setStatusCode(404).end(message);
         }
     }
 

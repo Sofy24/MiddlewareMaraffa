@@ -281,7 +281,7 @@ public class GameServiceDecorator {
                                             implementation = StateResponse.class)
                             )
                     ),
-                    @ApiResponse(responseCode = "404", description = "Game not found."),
+                    @ApiResponse(responseCode = "404", description = "Game or trick not found."),
                     @ApiResponse(responseCode = "500", description = "Internal Server Error.")
             }
     )

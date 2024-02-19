@@ -7,7 +7,7 @@ import java.util.Map;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
 
 public class TrickImpl implements Trick{
-    // private final Map<Card<CardValue, CardSuit>, String> cards = new HashMap<>();
+    // Card=user, trump
     private final Map<String, String> cards = new HashMap<>();
     //private //metti la call
     @BsonIgnore
@@ -40,11 +40,11 @@ public class TrickImpl implements Trick{
         return trump;
     }
 
-    @BsonIgnore
     /**@return true if all the players have played their card*/
+    @BsonIgnore
     @Override
     public boolean isCompleted() {
-        return new HashSet<>(this.cards.values()).size() == this.numberOfPlayers;
+        return this.cards.keySet().size() == this.numberOfPlayers;
     }
 
     @Override

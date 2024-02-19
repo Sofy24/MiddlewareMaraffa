@@ -112,6 +112,10 @@ public class GameService {
         JsonObject jsonState = new JsonObject();
         if(this.games.get(gameID) != null){
             Trick currentTrick = this.games.get(gameID).getStates().get(this.games.get(gameID).getCurrentState().get());
+            if (currentTrick == null){
+                jsonState.put(Constants.NOT_FOUND, false);
+                return jsonState.put(Constants.MESSAGE, "Trick not found");
+            }
             jsonState.put(Constants.MESSAGE, currentTrick.toString());
             return jsonState;
         }

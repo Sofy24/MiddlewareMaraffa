@@ -78,16 +78,14 @@ public class GameVerticle extends AbstractVerticle {
         if (canStart()) {
             if(this.currentTrick == null){
                 this.currentTrick = this.states.getOrDefault(this.currentState.get(),
-                    new TrickImpl(this.numberOfPlayers, this.trump)); //TODO check aggiunge un new trick sempre ????
+                    new TrickImpl(this.numberOfPlayers, this.trump));
             } 
-            if (!currentTrick.isCompleted()) {
-                currentTrick.addCard(card, username);
-            } else {
+            currentTrick.addCard(card, username);
+            if (currentTrick.isCompleted()) {
                 this.gameSchema.addTrick(currentTrick);
                 if(this.statisticManager != null) this.statisticManager.updateRecordWithTrick(String.valueOf(id), currentTrick);
-                currentTrick = new TrickImpl(this.numberOfPlayers, this.trump);
-                currentTrick.addCard(card, username);
                 this.states.put(this.currentState.incrementAndGet(), currentTrick);
+                currentTrick = this.trump == CardSuit.NONE ? null : new TrickImpl(this.numberOfPlayers, this.trump);
             }
             return true;
         }

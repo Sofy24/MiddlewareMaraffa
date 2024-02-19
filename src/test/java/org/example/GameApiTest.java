@@ -3,9 +3,6 @@ package org.example;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.example.game.Card;
 import org.example.game.CardSuit;
 import org.example.game.CardValue;
@@ -21,7 +18,6 @@ import static org.junit.Assert.assertTrue;
 
 
 
-@RunWith(VertxUnitRunner.class)
 class GameApiTest {
     private static final String TEST_USER = "testUser";
     private static final int MARAFFA_PLAYERS = 4;
@@ -46,18 +42,18 @@ class GameApiTest {
         assertEquals(numberOfGames+1, actualNumberOfGames);
     }*/
 
-    @org.junit.Before
-    public void setUp(TestContext context) {
-        this.gameService = new GameService(this.vertx);
-    }
+    // @org.junit.Before
+    // public void setUp(TestContext context) {
+    //     this.gameService = new GameService(this.vertx);
+    // }
 
-    /** Create a new game (GameVerticle) and ensure that its UUID has been created correctly
-     * */
+    // /** Create a new game (GameVerticle) and ensure that its UUID has been created correctly
+    //  * */
 
-    @Test
-    public void testTest(){
-        assertTrue(true);
-    }
+    // @Test
+    // public void testTest(){
+    //     assertTrue(true);
+    // }
     /*@org.junit.Test
     public void testCreateGame(TestContext context) {
         final Async async = context.async();

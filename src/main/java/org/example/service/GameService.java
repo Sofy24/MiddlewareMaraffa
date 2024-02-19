@@ -4,10 +4,7 @@ package org.example.service;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import org.example.game.Card;
-import org.example.game.CardSuit;
-import org.example.game.CardValue;
-import org.example.game.GameVerticle;
+import org.example.game.*;
 import org.example.repository.AbstractStatisticManager;
 import org.example.utils.Constants;
 import java.util.Map;
@@ -77,7 +74,7 @@ public class GameService {
     }
 
     public boolean playCard(UUID gameID, String username, Card<CardValue, CardSuit> card){
-        if(this.games.get(gameID) != null){
+        if(this.games.get(gameID) != null && this.games.get(gameID).canStart()){
             this.games.get(gameID).addCard(card, username);
             return true;
         }
@@ -87,11 +84,10 @@ public class GameService {
     public JsonObject chooseTrump(UUID gameID, String cardSuit) {
         JsonObject jsonTrump = new JsonObject();
         if(this.games.get(gameID) != null){
-            try {
-                CardSuit trump = CardSuit.fromUppercaseString(cardSuit.toUpperCase());
-                this.games.get(gameID).chooseTrump(trump);
-                jsonTrump.put(Constants.MESSAGE, trump + " setted as trump");
-            } catch (Exception e) {
+            CardSuit trump = CardSuit.fromUppercaseString(cardSuit.toUpperCase());
+            this.games.get(gameID).chooseTrump(trump);
+            jsonTrump.put(Constants.MESSAGE, trump + " setted as trump");
+            if (trump.equals(CardSuit.NONE)) {
                 jsonTrump.put(Constants.TRUMP, false);
                 jsonTrump.put(Constants.ILLEGAL_TRUMP, true);
                 return jsonTrump;
@@ -110,6 +106,70 @@ public class GameService {
             return true;
         }
         return false;
+    }
+
+    public JsonObject getState(UUID gameID) {
+        JsonObject jsonState = new JsonObject();
+        if(this.games.get(gameID) != null){
+            Trick currentTrick = this.games.get(gameID).getStates().get(this.games.get(gameID).getCurrentState().get());
+            jsonState.put(Constants.MESSAGE, currentTrick.toString());
+            return jsonState;
+        }
+        jsonState.put(Constants.NOT_FOUND, false);
+        return jsonState.put(Constants.MESSAGE, "Game "+ gameID +" not found");
+    }
+
+    public JsonObject cardsOnHand(UUID gameID, String username) {
+        JsonObject jsonCardsOnHand = new JsonObject();
+        /*if(this.games.get(gameID) != null){
+            Trick currentTrick = this.games.get(gameID).getStates().get(this.games.get(gameID).getCurrentState().get());
+            jsonCardsOnHand.put(Constants.MESSAGE, currentTrick.toString());
+            return jsonCardsOnHand;
+        }*/
+        jsonCardsOnHand.put(Constants.NOT_FOUND, false);
+        return jsonCardsOnHand.put(Constants.MESSAGE, "Game "+ gameID +" not found");
+    }
+
+    public JsonObject cardsOnTable(UUID gameID) {
+        JsonObject jsonCardsOnTable = new JsonObject();
+        /*if(this.games.get(gameID) != null){
+            Trick currentTrick = this.games.get(gameID).getStates().get(this.games.get(gameID).getCurrentState().get());
+            jsonCardsOnHand.put(Constants.MESSAGE, currentTrick.toString());
+            return jsonCardsOnHand;
+        }*/
+        jsonCardsOnTable.put(Constants.NOT_FOUND, false);
+        return jsonCardsOnTable.put(Constants.MESSAGE, "Game "+ gameID +" not found");
+    }
+
+    public JsonObject isEnded(UUID gameID) {
+        JsonObject jsonEnd = new JsonObject();
+        /*if(this.games.get(gameID) != null){
+            Trick currentTrick = this.games.get(gameID).getStates().get(this.games.get(gameID).getCurrentState().get());
+            jsonCardsOnHand.put(Constants.MESSAGE, currentTrick.toString());
+            return jsonCardsOnHand;
+        }*/
+        jsonEnd.put(Constants.NOT_FOUND, false);
+        return jsonEnd.put(Constants.MESSAGE, "Game "+ gameID +" not found");
+    }
+
+    public JsonObject makeCall(UUID gameID, String call, String username) {
+        JsonObject jsonCall = new JsonObject();
+        /*if(this.games.get(gameID) != null){
+            try {
+                Call call = Call.fromUppercaseString(call.toUpperCase());
+                this.games.get(gameID).makeCall(call);
+                jsonTrump.put(Constants.MESSAGE, call + " setted as trump");
+            } catch (Exception e) {
+                jsonTrump.put(Constants.TRUMP, false);
+                jsonTrump.put(Constants.ILLEGAL_TRUMP, true);
+                return jsonTrump;
+            }
+            jsonTrump.put(Constants.TRUMP, true);
+            return jsonTrump;
+        }*/
+        //jsonCall.put(Constants.TRUMP, false);
+        jsonCall.put(Constants.NOT_FOUND, false);
+        return jsonCall.put(Constants.MESSAGE, "Game "+ gameID +" not found");
     }
 
     public Map<UUID, GameVerticle> getGames() {

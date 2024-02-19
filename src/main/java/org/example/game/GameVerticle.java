@@ -20,8 +20,9 @@ public class GameVerticle extends AbstractVerticle {
     private final UUID id;
     private final AtomicInteger currentState;
     private final int numberOfPlayers;
+    private final IDeck deck = new Deck();
     private CardSuit trump = CardSuit.NONE;
-    private Map<Integer, Trick> states = new ConcurrentHashMap<>();
+    private Map<Integer, Trick> states = new ConcurrentHashMap<>(); //quando lo stato arriva a numerocarte/numerogiocatori
     private final List<String> users = new ArrayList<>();
 
     private GameSchema gameSchema;
@@ -31,7 +32,6 @@ public class GameVerticle extends AbstractVerticle {
     public GameSchema getGameSchema() {
         return gameSchema;
     }
-
 
     public GameVerticle(UUID id, String username, int numberOfPlayers, AbstractStatisticManager statisticManager) {
         this.id = id;

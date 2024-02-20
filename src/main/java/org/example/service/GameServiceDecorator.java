@@ -100,12 +100,13 @@ public class GameServiceDecorator {
         String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
         UUID gameID = UUID.fromString(uuidAsString);
         String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
-        if(this.gameService.joinGame(gameID, username).containsKey(Constants.NOT_FOUND) ){
-            context.response().setStatusCode(404).end(this.gameService.joinGame(gameID, username).getString(Constants.MESSAGE));
-        } else if (this.gameService.joinGame(gameID, username).containsKey(Constants.FULL) ) {
-            context.response().setStatusCode(401).end(this.gameService.joinGame(gameID, username).getString(Constants.MESSAGE));
+        JsonObject joinResponse = this.gameService.joinGame(gameID, username);
+        if(joinResponse.containsKey(Constants.NOT_FOUND) ){
+            context.response().setStatusCode(404).end(joinResponse.getString(Constants.MESSAGE));
+        } else if (joinResponse.containsKey(Constants.FULL) ) {
+            context.response().setStatusCode(401).end(joinResponse.getString(Constants.MESSAGE));
         }
-        context.response().end(this.gameService.joinGame(gameID, username).getString(Constants.MESSAGE));
+        context.response().end(joinResponse.getString(Constants.MESSAGE));
     }
 
     @Operation(summary = "Check if a game can start", method = Constants.CAN_START_METHOD, operationId = Constants.CAN_START, //! operationId must be the same as controller
@@ -129,10 +130,10 @@ public class GameServiceDecorator {
     )
     public void canStart(RoutingContext context) {
         UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
-        String message = this.gameService.canStart(gameID).getString(Constants.MESSAGE);
-        if(!this.gameService.canStart(gameID).containsKey(Constants.NOT_FOUND)){
+        JsonObject startResponse = this.gameService.canStart(gameID);
+        String message = startResponse.getString(Constants.MESSAGE);
+        if(!startResponse.containsKey(Constants.NOT_FOUND)){
             context.response().end(message);
-
         }
         context.response().setStatusCode(404).end(message);
     }
@@ -219,13 +220,13 @@ public class GameServiceDecorator {
         String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
         UUID gameID = UUID.fromString(uuidAsString);
         String cardSuit = String.valueOf(context.body().asJsonObject().getValue(Constants.CARD_SUIT));
-        String message = this.gameService.canStart(gameID).getString(Constants.CAN_START_ATTR);
-        if(!this.gameService.chooseTrump(gameID, cardSuit).containsKey(Constants.NOT_FOUND)){
-            context.response().end(message);
-        } else if (this.gameService.chooseTrump(gameID, cardSuit).containsKey(Constants.ILLEGAL_TRUMP)){
-            context.response().setStatusCode(401).end(message);
+        JsonObject trumpResponse = this.gameService.chooseTrump(gameID, cardSuit);
+        if(!trumpResponse.containsKey(Constants.NOT_FOUND)){
+            context.response().end(trumpResponse.getString(Constants.MESSAGE));
+        } else if (trumpResponse.containsKey(Constants.ILLEGAL_TRUMP)){
+            context.response().setStatusCode(401).end(trumpResponse.getString(Constants.MESSAGE));
         } else {
-            context.response().setStatusCode(404).end(message);
+            context.response().setStatusCode(404).end(trumpResponse.getString(Constants.MESSAGE));
         }
     }
 
@@ -288,10 +289,11 @@ public class GameServiceDecorator {
     public void getState(RoutingContext context) {
         UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
         String message = this.gameService.getState(gameID).getString(Constants.MESSAGE);
-        if(!this.gameService.canStart(gameID).containsKey(Constants.NOT_FOUND)){
+        if(this.gameService.getGames().get(gameID).canStart()){
             context.response().end(message);
+        } else {
+            context.response().setStatusCode(404).end(message);
         }
-        context.response().setStatusCode(404).end(message);
     }
 
     @Operation(summary = "Get the cards on the hands of a specific player", method = Constants.CARDS_ON_HAND_METHOD, operationId = Constants.CARDS_ON_HAND, //! operationId must be the same as controller
@@ -416,13 +418,13 @@ public class GameServiceDecorator {
         UUID gameID = UUID.fromString(uuidAsString);
         String cardSuit = String.valueOf(context.body().asJsonObject().getValue(Constants.CARD_SUIT));
         String message = this.gameService.canStart(gameID).getString(Constants.CAN_START_ATTR);
-        if(!this.gameService.chooseTrump(gameID, cardSuit).containsKey(Constants.NOT_FOUND)){
+        /*if(!this.gameService.chooseTrump(gameID, cardSuit).containsKey(Constants.NOT_FOUND)){
             context.response().end(message);
         } else if (this.gameService.chooseTrump(gameID, cardSuit).containsKey(Constants.ILLEGAL_TRUMP)){
             context.response().setStatusCode(401).end(message);
         } else {
             context.response().setStatusCode(404).end(message);
-        }
+        }*/
     }
 
     public Map<UUID, GameVerticle> getGames() {

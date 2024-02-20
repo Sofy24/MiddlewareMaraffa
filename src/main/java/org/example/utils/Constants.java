@@ -19,10 +19,10 @@ public class Constants {
     public static final String CAN_START = "game/canStart/:" + GAME_ID;
     public static final String CHOOSE_TRUMP = "game/chooseTrump";
     public static final String START_NEW_ROUND = "game/startNewRound";
-    public static final String STATE = "game/state";
-    public static final String CARDS_ON_HAND = "game/cardsOnHand";
-    public static final String CARDS_ON_TABLE = "game/cardsOnTable";
-    public static final String END = "game/end";
+    public static final String STATE = "game/state/:" + GAME_ID;
+    public static final String CARDS_ON_HAND = "game/cardsOnHand/:" + GAME_ID;
+    public static final String CARDS_ON_TABLE = "game/cardsOnTable/:" + GAME_ID;
+    public static final String END = "game/end/:" + GAME_ID;;
     public static final String MAKE_CALL = "game/makeCall";
     //methods
     public static final String CREATE_GAME_METHOD = "POST";

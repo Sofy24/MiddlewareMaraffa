@@ -13,9 +13,9 @@ public enum CardValue {
             case 5 -> FIVE;
             case 6 -> SIX;
             case 7 -> SEVEN;
-            case 11 -> KNAVE;
-            case 12 -> HORSE;
-            case 13 -> KING;
+            case 8 -> KNAVE;
+            case 9 -> HORSE;
+            case 10 -> KING;
             default -> NONE;
         };
     }

@@ -8,6 +8,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.example.repository.AbstractStatisticManager;
+import org.example.utils.Constants;
+
+import static java.lang.Math.floor;
 
 /***
  * This class models a game using a Verticle from vertx.
@@ -142,5 +145,11 @@ public class GameVerticle extends AbstractVerticle {
     /**@return the number of players for this game*/
     public int getMaxNumberOfPlayers(){
         return this.numberOfPlayers;
+    }
+
+    /**@return true if the round is a*/
+    public boolean isRoundEnded(){
+        double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
+        return this.currentState.get() == numberOfTricksInRound;
     }
 }

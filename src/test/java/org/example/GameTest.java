@@ -15,6 +15,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
+import static java.lang.Math.floor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,10 +36,7 @@ public class GameTest {
     private static final int UUID_SIZE = 36;
     private static final UUID FAKE_UUID = UUID.randomUUID();
     private static final Card<CardValue, CardSuit> TEST_CARD = new Card<>(CardValue.HORSE, CardSuit.CLUBS);
-    private static final List<Card<CardValue, CardSuit>> TEST_CARDS = List.of(new Card<>(CardValue.KING, CardSuit.CUPS), new Card<>(CardValue.KNAVE, CardSuit.COINS), new Card<>(CardValue.SEVEN, CardSuit.SWORDS));
-//    private static final Card<CardValue, CardSuit> TEST_SECOND_CARD = new Card<>(CardValue.KING, CardSuit.CUPS);
-//    private static final Card<CardValue, CardSuit> TEST_THIRD_CARD = new Card<>(CardValue.KNAVE, CardSuit.COINS);
-//    private static final Card<CardValue, CardSuit> TEST_FORTH_CARD = new Card<>(CardValue.SEVEN, CardSuit.SWORDS);
+    private static final List<Card<CardValue, CardSuit>> TEST_CARDS = List.of(new Card<>(CardValue.KING, CardSuit.CUPS), new Card<>(CardValue.KNAVE, CardSuit.COINS), new Card<>(CardValue.SEVEN, CardSuit.SWORDS), TEST_CARD);
     private Vertx vertx;
     private GameService gameService;
 
@@ -201,6 +199,26 @@ public class GameTest {
         }
         stateResponse = this.gameService.getState(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
         assertFalse(stateResponse.containsKey(Constants.NOT_FOUND));
+        context.completeNow();
+    }
+
+    /** A round should not end if less than @code{{Constants.NUMBER_OF_CARDS}} are played*/
+    @Test
+    public void isRoundEndedTest(VertxTestContext context) {
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER + "0");
+        Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+        for (int i = 1; i < MARAFFA_PLAYERS; i++) {
+            assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD));
+            JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
+            assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+        }
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
+        assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+        assertFalse(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
+        for (int i = 0; i < Constants.NUMBER_OF_CARDS; i++) {
+            assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + (i % MARAFFA_PLAYERS), TEST_CARDS.get(i % MARAFFA_PLAYERS)));
+        }
+        assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
         context.completeNow();
     }
 

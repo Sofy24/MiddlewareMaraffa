@@ -124,6 +124,17 @@ public class GameService {
         return jsonState.put(Constants.MESSAGE, "Game "+ gameID +" not found");
     }
 
+    public JsonObject isRoundEnded(UUID gameID) {
+        JsonObject jsonEnd = new JsonObject();
+        if(this.games.get(gameID) != null){
+            jsonEnd.put(Constants.ENDED, this.games.get(gameID).isRoundEnded());
+            jsonEnd.put(Constants.MESSAGE, this.games.get(gameID).isRoundEnded());
+            return jsonEnd;
+        }
+        jsonEnd.put(Constants.ENDED, false);
+        return jsonEnd.put(Constants.MESSAGE, "Game "+ gameID +" not found");
+    }
+
     public JsonObject cardsOnHand(UUID gameID, String username) {
         JsonObject jsonCardsOnHand = new JsonObject();
         /*if(this.games.get(gameID) != null){
@@ -146,16 +157,6 @@ public class GameService {
         return jsonCardsOnTable.put(Constants.MESSAGE, "Game "+ gameID +" not found");
     }
 
-    public JsonObject isEnded(UUID gameID) {
-        JsonObject jsonEnd = new JsonObject();
-        /*if(this.games.get(gameID) != null){
-            Trick currentTrick = this.games.get(gameID).getStates().get(this.games.get(gameID).getCurrentState().get());
-            jsonCardsOnHand.put(Constants.MESSAGE, currentTrick.toString());
-            return jsonCardsOnHand;
-        }*/
-        jsonEnd.put(Constants.NOT_FOUND, false);
-        return jsonEnd.put(Constants.MESSAGE, "Game "+ gameID +" not found");
-    }
 
     public JsonObject makeCall(UUID gameID, String call, String username) {
         JsonObject jsonCall = new JsonObject();

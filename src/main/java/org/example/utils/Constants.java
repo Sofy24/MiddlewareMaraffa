@@ -12,6 +12,7 @@ public class Constants {
     public static final String CARD_SUIT = "cardSuit";
     public static final String TRICK = "trick";
     public static final String CALL = "call";
+    public static final String ENDED = "isEnded";
     //routes
     public static final String CREATE_GAME = "game/create";
     public static final String JOIN_GAME = "game/join";
@@ -47,5 +48,7 @@ public class Constants {
     public static final String ALREADY_JOINED = "alreadyJoined";
     public static final String ILLEGAL_TRUMP = "illegalTrump";
     public static final String TRUMP = "trump";
+    //game constants
+    public static final int NUMBER_OF_CARDS = 40;
 
 }

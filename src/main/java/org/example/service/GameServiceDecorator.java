@@ -296,6 +296,34 @@ public class GameServiceDecorator {
         }
     }
 
+    @Operation(summary = "Check if the round is ended", method = Constants.END_METHOD, operationId = Constants.END, //! operationId must be the same as controller
+            tags = { Constants.GAME_TAG },
+            parameters = {
+                    @Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID,
+                            required = true, description = "The unique ID belonging to the game", schema = @Schema(type = "string") )
+            },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(
+                                    mediaType = "application/json; charset=utf-8",
+                                    encoding = @Encoding(contentType = "application/json"),
+                                    schema = @Schema(name = "game",
+                                            implementation = isRoundEnded.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "Game not found."),
+                    @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            }
+    )
+    public void isRoundEnded(RoutingContext context) {
+        UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
+        JsonObject jsonEnd = this.gameService.isRoundEnded(gameID);
+        if(!jsonEnd.containsKey(Constants.NOT_FOUND)){
+            context.response().end(jsonEnd.getString(Constants.MESSAGE));
+        }
+        context.response().setStatusCode(404).end(jsonEnd.getString(Constants.MESSAGE));
+    }
+
     @Operation(summary = "Get the cards on the hands of a specific player", method = Constants.CARDS_ON_HAND_METHOD, operationId = Constants.CARDS_ON_HAND, //! operationId must be the same as controller
             tags = { Constants.GAME_TAG },
             parameters = {
@@ -355,33 +383,6 @@ public class GameServiceDecorator {
         context.response().setStatusCode(404).end(message);*/
     }
 
-    @Operation(summary = "Check if the game is ended", method = Constants.END_METHOD, operationId = Constants.END, //! operationId must be the same as controller
-            tags = { Constants.GAME_TAG },
-            parameters = {
-                    @Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID,
-                            required = true, description = "The unique ID belonging to the game", schema = @Schema(type = "string") )
-            },
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "OK",
-                            content = @Content(
-                                    mediaType = "application/json; charset=utf-8",
-                                    encoding = @Encoding(contentType = "application/json"),
-                                    schema = @Schema(name = "game",
-                                            implementation = CanStartResponse.class)
-                            )
-                    ),
-                    @ApiResponse(responseCode = "404", description = "Game not found."),
-                    @ApiResponse(responseCode = "500", description = "Internal Server Error.")
-            }
-    )
-    public void isEnded(RoutingContext context) {
-        UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
-        /*String message = this.gameService.getState(gameID).getString(Constants.MESSAGE);
-        if(!this.gameService.canStart(gameID).containsKey(Constants.NOT_FOUND)){
-            context.response().end(message);
-        }
-        context.response().setStatusCode(404).end(message);*/
-    }
 
     @Operation(summary = "Make a call", method = Constants.MAKE_CALL_METHOD, operationId = Constants.MAKE_CALL,
             tags = { Constants.GAME_TAG },

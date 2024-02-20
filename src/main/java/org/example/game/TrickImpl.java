@@ -3,13 +3,14 @@ package org.example.game;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.bson.codecs.pojo.annotations.BsonIgnore;
 
 public class TrickImpl implements Trick{
-    // Card=user, trump
     private final Map<String, String> cards = new HashMap<>();
-    //private //metti la call
+
+    private Call call = Call.NONE;
     @BsonIgnore
     private final int numberOfPlayers;
 
@@ -25,6 +26,15 @@ public class TrickImpl implements Trick{
     @Override
     public void addCard(Card<CardValue, CardSuit> card, String username) {
         this.cards.put(card.toString(), username);
+    }
+
+    public Call getCall() {
+        return call;
+    }
+
+    public void setCall(Call call, String username) {
+        //if (username.equals(this.cards.get(0)))
+        this.call = call;
     }
 
     @Override
@@ -52,6 +62,7 @@ public class TrickImpl implements Trick{
         return "Trick{" +
                 "cards=" + cards +
                 ", trump=" + trump +
+                ", call=" + call +
                 '}';
     }
 }

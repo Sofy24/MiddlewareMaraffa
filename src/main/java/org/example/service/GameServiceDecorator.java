@@ -417,15 +417,17 @@ public class GameServiceDecorator {
     public void makeCall(RoutingContext context) {
         String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
         UUID gameID = UUID.fromString(uuidAsString);
-        String cardSuit = String.valueOf(context.body().asJsonObject().getValue(Constants.CARD_SUIT));
-        String message = this.gameService.canStart(gameID).getString(Constants.CAN_START_ATTR);
-        /*if(!this.gameService.chooseTrump(gameID, cardSuit).containsKey(Constants.NOT_FOUND)){
-            context.response().end(message);
-        } else if (this.gameService.chooseTrump(gameID, cardSuit).containsKey(Constants.ILLEGAL_TRUMP)){
-            context.response().setStatusCode(401).end(message);
+        String call = String.valueOf(context.body().asJsonObject().getValue(Constants.CALL));
+        String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
+        JsonObject jsonCall = this.gameService.makeCall(gameID, call, username);
+        if(!jsonCall.containsKey(Constants.NOT_FOUND)){
+            if(jsonCall.getBoolean(Constants.MESSAGE)){
+                context.response().end("Call " + call + " setted!");
+            }
+            context.response().setStatusCode(404).end("Invalid call");
         } else {
-            context.response().setStatusCode(404).end(message);
-        }*/
+            context.response().setStatusCode(404).end(jsonCall.getString(Constants.MESSAGE));
+        }
     }
 
     public Map<UUID, GameVerticle> getGames() {

@@ -31,6 +31,8 @@ public class GameTest {
     private static final String TEST_USER = "testUser";
     private static final String TRUMP = "coins";
     private static final String FAKE_TRUMP = "hammers";
+    private static final String CALL = "busso";
+    private static final String FAKE_CALL = "suono";
     private static final CardSuit UNDEFINED_TRUMP = CardSuit.NONE;
     private static final int MARAFFA_PLAYERS = 4;
     private static final int UUID_SIZE = 36;
@@ -219,6 +221,40 @@ public class GameTest {
             assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + (i % MARAFFA_PLAYERS), TEST_CARDS.get(i % MARAFFA_PLAYERS)));
         }
         assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
+        context.completeNow();
+    }
+
+    /**Only the first player can make a call*/
+    @Test
+    public void onlyFirstPlayerCanMakeACallTest(VertxTestContext context){
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER);
+        Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+        for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+            JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
+            assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+        }
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
+        assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+        JsonObject callResponse = this.gameService.makeCall(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), CALL, TEST_USER + "0");
+        assertFalse(callResponse.getBoolean(Constants.MESSAGE));
+        callResponse = this.gameService.makeCall(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), CALL, TEST_USER);
+        assertTrue(callResponse.getBoolean(Constants.MESSAGE));
+        context.completeNow();
+    }
+
+    /**The call is not a legal call*/
+    @Test
+    public void chooseWrongCallTest(VertxTestContext context){
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER);
+        Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+        for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+            JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
+            assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+        }
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
+        assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+        JsonObject callResponse = this.gameService.makeCall(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), FAKE_CALL, TEST_USER);
+        assertFalse(callResponse.getBoolean(Constants.MESSAGE));
         context.completeNow();
     }
 

@@ -127,12 +127,23 @@ public class GameService {
     public JsonObject isRoundEnded(UUID gameID) {
         JsonObject jsonEnd = new JsonObject();
         if(this.games.get(gameID) != null){
-            jsonEnd.put(Constants.ENDED, this.games.get(gameID).isRoundEnded());
-            jsonEnd.put(Constants.MESSAGE, this.games.get(gameID).isRoundEnded());
+            Boolean isEnded = this.games.get(gameID).isRoundEnded();
+            jsonEnd.put(Constants.ENDED, isEnded);
+            jsonEnd.put(Constants.MESSAGE, isEnded);
             return jsonEnd;
         }
         jsonEnd.put(Constants.ENDED, false);
         return jsonEnd.put(Constants.MESSAGE, "Game "+ gameID +" not found");
+    }
+
+    public JsonObject makeCall(UUID gameID, String call, String username) {
+        JsonObject jsonCall = new JsonObject();
+        if(this.games.get(gameID) != null){
+            boolean success = this.games.get(gameID).makeCall(Call.fromUppercaseString(call.toUpperCase()), username);
+            return jsonCall.put(Constants.MESSAGE, success);
+        }
+        jsonCall.put(Constants.NOT_FOUND, false);
+        return jsonCall.put(Constants.MESSAGE, "Game "+ gameID +" not found");
     }
 
     public JsonObject cardsOnHand(UUID gameID, String username) {
@@ -158,25 +169,6 @@ public class GameService {
     }
 
 
-    public JsonObject makeCall(UUID gameID, String call, String username) {
-        JsonObject jsonCall = new JsonObject();
-        /*if(this.games.get(gameID) != null){
-            try {
-                Call call = Call.fromUppercaseString(call.toUpperCase());
-                this.games.get(gameID).makeCall(call);
-                jsonTrump.put(Constants.MESSAGE, call + " setted as trump");
-            } catch (Exception e) {
-                jsonTrump.put(Constants.TRUMP, false);
-                jsonTrump.put(Constants.ILLEGAL_TRUMP, true);
-                return jsonTrump;
-            }
-            jsonTrump.put(Constants.TRUMP, true);
-            return jsonTrump;
-        }*/
-        //jsonCall.put(Constants.TRUMP, false);
-        jsonCall.put(Constants.NOT_FOUND, false);
-        return jsonCall.put(Constants.MESSAGE, "Game "+ gameID +" not found");
-    }
 
     public Map<UUID, GameVerticle> getGames() {
         return games;

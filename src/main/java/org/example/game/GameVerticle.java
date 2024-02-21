@@ -27,8 +27,7 @@ public class GameVerticle extends AbstractVerticle {
     private CardSuit trump = CardSuit.NONE;
     private Map<Integer, Trick> states = new ConcurrentHashMap<>(); //quando lo stato arriva a numerocarte/numerogiocatori
     private final List<String> users = new ArrayList<>();
-
-    private GameSchema gameSchema;
+    private final GameSchema gameSchema;
     private AbstractStatisticManager statisticManager;
     private Trick currentTrick;
 
@@ -111,6 +110,20 @@ public class GameVerticle extends AbstractVerticle {
     /** reset the trump */
     public void startNewRound() {
         this.chooseTrump(CardSuit.NONE);
+    }
+
+    /**@param call the call
+     * @param username the user who makes the call
+     * @return true if the call is made correctly */
+    public boolean makeCall(Call call, String username){
+        if (currentTrick == null){
+            this.currentTrick = this.states.getOrDefault(this.currentState.get(),
+                    new TrickImpl(this.numberOfPlayers, this.trump));
+        }
+        if (users.get(0).equals(username)){
+            this.currentTrick.setCall(call, username);
+        }
+        return !this.currentTrick.getCall().equals(Call.NONE);
     }
 
     public UUID getId() {

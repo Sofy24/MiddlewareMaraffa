@@ -84,7 +84,7 @@ public class GameService {
     public JsonObject chooseTrump(UUID gameID, String cardSuit) {
         JsonObject jsonTrump = new JsonObject();
         if(this.games.get(gameID) != null){
-            CardSuit trump = CardSuit.fromUppercaseString(cardSuit.toUpperCase());
+            CardSuit trump = CardSuit.valueOf(cardSuit);
             this.games.get(gameID).chooseTrump(trump);
             jsonTrump.put(Constants.MESSAGE, trump + " setted as trump");
             if (trump.equals(CardSuit.NONE)) {

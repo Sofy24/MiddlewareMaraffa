@@ -150,8 +150,8 @@ public class GameServiceDecorator {
                                     "{\n" +
                                             "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
                                             "  \"" + Constants.USERNAME + "\": \"string\",\n" +
-                                            "  \"" + Constants.CARD_VALUE + "\": 0,\n" +
-                                            "  \"" + Constants.CARD_SUIT + "\": \"string\"\n" +
+                                            "  \"" + Constants.CARD_VALUE + "\": \"FOUR\",\n" +
+                                            "  \"" + Constants.CARD_SUIT + "\": \"COINS\"\n" +
                                             "}")
                     )
             ),
@@ -172,9 +172,11 @@ public class GameServiceDecorator {
     public void playCard(RoutingContext context){
         String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
         UUID gameID = UUID.fromString(uuidAsString);
-        Integer cardValue = (Integer) context.body().asJsonObject().getValue(Constants.CARD_VALUE);
-        String cardSuit = String.valueOf(context.body().asJsonObject().getValue(Constants.CARD_SUIT));
-        Card<CardValue, CardSuit> card = new Card<>(CardValue.fromInteger(cardValue), CardSuit.fromUppercaseString(cardSuit.toUpperCase()));
+        String cardValue = context.body().asJsonObject().getString(Constants.CARD_VALUE);
+        String cardSuit = context.body().asJsonObject().getString(Constants.CARD_SUIT);
+        System.out.println(CardValue.valueOf(cardValue));
+        System.out.println(CardSuit.valueOf(cardSuit));
+        Card<CardValue, CardSuit> card = new Card<>(CardValue.valueOf(cardValue), CardSuit.valueOf(cardSuit));
         String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
         if(card.cardSuit().equals(CardSuit.NONE) || card.cardValue().equals(CardValue.NONE)){
             context.response().setStatusCode(401).end("Invalid " + card);

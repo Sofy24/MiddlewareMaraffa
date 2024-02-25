@@ -11,7 +11,7 @@ public class PlayCardBody {
     @JsonProperty(Constants.USERNAME)
     private String username;
     @JsonProperty(Constants.CARD_VALUE)
-    private Integer cardValue;
+    private String cardValue;
     @JsonProperty(Constants.CARD_SUIT)
     private String cardSuit;
 

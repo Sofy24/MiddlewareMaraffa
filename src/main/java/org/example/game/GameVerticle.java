@@ -96,7 +96,7 @@ public class GameVerticle extends AbstractVerticle {
 
     /** @return true if all players have joined the game */
     public boolean canStart() {
-        return this.users.size() == this.numberOfPlayers && !this.trump.equals(CardSuit.NONE);
+        return this.users.size() == this.numberOfPlayers; // && !this.trump.equals(CardSuit.NONE);
     }
 
     /** @param suit the leading suit of the round */

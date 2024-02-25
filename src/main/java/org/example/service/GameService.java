@@ -55,7 +55,8 @@ public class GameService {
             return jsonJoin.put(Constants.MESSAGE, "Reached the limit of maximum players in the game "+ gameID);
         }
         jsonJoin.put(Constants.NOT_FOUND, false);
-        return jsonJoin.put(Constants.MESSAGE, "Game "+ gameID + " not found ");
+        jsonJoin.put(Constants.MESSAGE, "Game "+ gameID + " not found ");
+        return jsonJoin;
     }
 
     public JsonObject canStart(UUID gameID) {

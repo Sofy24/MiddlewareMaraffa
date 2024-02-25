@@ -29,7 +29,7 @@ import java.util.UUID;
 public class GameTest {
 
     private static final String TEST_USER = "testUser";
-    private static final String TRUMP = "coins";
+    private static final String TRUMP = "COINS";
     private static final String FAKE_TRUMP = "hammers";
     private static final String CALL = "busso";
     private static final String FAKE_CALL = "suono";

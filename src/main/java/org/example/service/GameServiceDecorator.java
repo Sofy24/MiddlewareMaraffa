@@ -74,9 +74,9 @@ public class GameServiceDecorator {
                         context.response().setStatusCode(404).end(joinResponse.getString(Constants.MESSAGE));
                 } else if (joinResponse.containsKey(Constants.FULL)) {
                         context.response().setStatusCode(401).end(joinResponse.getString(Constants.MESSAGE));
+                }else{
+                        context.response().end(joinResponse.toBuffer());
                 }
-                System.out.println(joinResponse.toString());
-                context.response().end(joinResponse.toBuffer());
         }
 
         @Operation(summary = "Check if a game can start", method = Constants.CAN_START_METHOD, operationId = Constants.CAN_START, // !
@@ -128,7 +128,8 @@ public class GameServiceDecorator {
                         context.response().setStatusCode(401).end("Invalid " + card);
                 } else {
                         if (this.gameService.playCard(gameID, username, card)) {
-                                context.response().end(card + " played by " + username);
+                                context.response().end();
+                                // context.response().end(card + " played by " + username);
                         } else {
                                 context.response().setStatusCode(404).end("Game " + gameID + " not found");
                         }
@@ -152,11 +153,11 @@ public class GameServiceDecorator {
                 String cardSuit = context.body().asJsonObject().getString(Constants.CARD_SUIT);
                 JsonObject trumpResponse = this.gameService.chooseTrump(gameID, cardSuit);
                 if (!trumpResponse.containsKey(Constants.NOT_FOUND)) {
-                        context.response().end(trumpResponse.getString(Constants.MESSAGE));
+                        context.response().end(trumpResponse.toBuffer());
                 } else if (trumpResponse.containsKey(Constants.ILLEGAL_TRUMP)) {
-                        context.response().setStatusCode(401).end(trumpResponse.getString(Constants.MESSAGE));
+                        context.response().setStatusCode(401).end(trumpResponse.toBuffer());
                 } else {
-                        context.response().setStatusCode(404).end(trumpResponse.getString(Constants.MESSAGE));
+                        context.response().setStatusCode(404).end(trumpResponse.toBuffer());
                 }
         }
 
@@ -224,8 +225,9 @@ public class GameServiceDecorator {
                 JsonObject jsonEnd = this.gameService.isRoundEnded(gameID);
                 if (!jsonEnd.containsKey(Constants.NOT_FOUND)) {
                         context.response().end(jsonEnd.getString(Constants.MESSAGE));
+                }else{
+                        context.response().setStatusCode(404).end(jsonEnd.getString(Constants.MESSAGE));
                 }
-                context.response().setStatusCode(404).end(jsonEnd.getString(Constants.MESSAGE));
         }
 
         @Operation(summary = "Get the cards on the hands of a specific player", method = Constants.CARDS_ON_HAND_METHOD, operationId = Constants.CARDS_ON_HAND, // !

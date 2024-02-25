@@ -104,7 +104,6 @@ public class GameVerticle extends AbstractVerticle {
         this.trump = suit;
         this.gameSchema.setTrump(suit);
         if(this.statisticManager != null) this.statisticManager.updateSuit(this.gameSchema); //TODO serve davvero o soltanto roba che sembra utile ? 
-
     }
 
     /** reset the trump */

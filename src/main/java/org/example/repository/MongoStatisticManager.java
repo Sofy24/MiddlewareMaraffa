@@ -32,7 +32,7 @@ public class MongoStatisticManager extends AbstractStatisticManager {
             CodecRegistry pojoCodecRegistry = fromRegistries(getDefaultCodecRegistry(), fromProviders(pojoCodecProvider));
 
             MongoClient mongoClient = MongoClients.create(uri);
-            this.database = mongoClient.getDatabase("MaraffaStatisticsDB").withCodecRegistry(pojoCodecRegistry);
+            this.database = mongoClient.getDatabase("MaraffaStatisticsDB-test").withCodecRegistry(pojoCodecRegistry);
         } catch (Exception e){
             System.out.println("Error in MongoStatisticManager constructor: " + e.getMessage());
         }

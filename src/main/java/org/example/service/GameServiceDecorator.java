@@ -111,8 +111,46 @@ public class GameServiceDecorator {
         context.response().end(joinResponse.getString(Constants.MESSAGE));
     }
 
-    @Operation(summary = "Check if a game can start", method = Constants.CAN_START_METHOD, operationId = Constants.CAN_START, //! operationId must be the same as controller
+    @Operation(summary = "Start a specific game", method = Constants.START_GAME_METHOD, operationId = Constants.START_GAME,
             tags = { Constants.GAME_TAG },
+            requestBody = @RequestBody(
+                    description = "id of the game is required",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            encoding = @Encoding(contentType = "application/json"),
+                            schema = @Schema(implementation = StartBody.class, example =
+                                    "{\n" +
+                                            "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\"\n" +
+                                            "}")
+                    )
+            ),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    encoding = @Encoding(contentType = "application/json"),
+                                    schema = @Schema(name = "game",
+                                            implementation = StartBody.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "Game not found."),
+                    @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            }
+    )
+    public void startGame(RoutingContext context) {
+        String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
+        UUID gameID = UUID.fromString(uuidAsString);
+        JsonObject startResponse = this.gameService.startGame(gameID);
+        String message = startResponse.getString(Constants.MESSAGE);
+        if(!startResponse.containsKey(Constants.NOT_FOUND)){
+            context.response().end(message);
+        }
+        context.response().setStatusCode(404).end(message);
+    }
+
+    @Operation(summary = "Check if a round can start", method = Constants.CAN_START_METHOD, operationId = Constants.CAN_START, //! operationId must be the same as controller
+            tags = { Constants.ROUND_TAG },
             parameters = {
                     @Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID,
                             required = true, description = "The unique ID belonging to the game", schema = @Schema(type = "string") )
@@ -240,7 +278,7 @@ public class GameServiceDecorator {
                     content = @Content(
                             mediaType = "application/json",
                             encoding = @Encoding(contentType = "application/json"),
-                            schema = @Schema(implementation = StartNewRoundBody.class, example =
+                            schema = @Schema(implementation = StartBody.class, example =
                                     "{\n" +
                                             "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\"\n" +
                                             "}")
@@ -252,7 +290,7 @@ public class GameServiceDecorator {
                                     mediaType = "application/json",
                                     encoding = @Encoding(contentType = "application/json"),
                                     schema = @Schema(name = "game",
-                                            implementation = StartNewRoundBody.class)
+                                            implementation = StartBody.class)
                             )
                     ),
                     @ApiResponse(responseCode = "404", description = "Game not found."),
@@ -310,7 +348,7 @@ public class GameServiceDecorator {
                                     mediaType = "application/json; charset=utf-8",
                                     encoding = @Encoding(contentType = "application/json"),
                                     schema = @Schema(name = "game",
-                                            implementation = isRoundEnded.class)
+                                            implementation = isRoundEndedResponse.class)
                             )
                     ),
                     @ApiResponse(responseCode = "404", description = "Game not found."),
@@ -338,7 +376,7 @@ public class GameServiceDecorator {
                                     mediaType = "application/json; charset=utf-8",
                                     encoding = @Encoding(contentType = "application/json"),
                                     schema = @Schema(name = "game",
-                                            implementation = isRoundEnded.class)
+                                            implementation = isRoundEndedResponse.class)
                             )
                     ),
                     @ApiResponse(responseCode = "404", description = "Game not found."),

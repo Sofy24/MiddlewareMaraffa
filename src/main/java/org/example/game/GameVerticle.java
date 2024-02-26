@@ -113,6 +113,11 @@ public class GameVerticle extends AbstractVerticle {
 
     }
 
+    /**@return true if all the players are in*/
+    public boolean startGame(){
+        return this.users.size() == this.numberOfPlayers;
+    }
+
     /** reset the trump */
     public void startNewRound() {
         this.chooseTrump(CardSuit.NONE);

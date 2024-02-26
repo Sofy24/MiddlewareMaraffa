@@ -22,6 +22,7 @@ public class Controller implements IController {
         routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.JOIN_GAME, entityService::joinGame));
         routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.PLAY_CARD, entityService::playCard));
         routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CAN_START, entityService::canStart));
+        routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.START_GAME, entityService::startGame));
         routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.CHOOSE_TRUMP , entityService::chooseTrump));
         routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.START_NEW_ROUND, entityService::startNewRound));
         routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.STATE, entityService::getState));

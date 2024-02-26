@@ -58,14 +58,29 @@ public class GameService {
         return jsonJoin.put(Constants.MESSAGE, "Game "+ gameID + " not found ");
     }
 
+    public JsonObject startGame(UUID gameID){
+        JsonObject jsonStartGame = new JsonObject();
+        if(this.games.get(gameID) != null){
+            if (this.games.get(gameID).startGame()) {
+                jsonStartGame.put(Constants.START_ATTR, true);
+                return jsonStartGame.put(Constants.MESSAGE, "The game " + gameID + " can start");
+            } else {
+                jsonStartGame.put(Constants.START_ATTR, false);
+                return jsonStartGame.put(Constants.MESSAGE, "Not all the players are in");
+            }
+        }
+        jsonStartGame.put(Constants.NOT_FOUND, false);
+        return jsonStartGame.put(Constants.MESSAGE, "Game "+ gameID +" not found");
+    }
+
     public JsonObject canStart(UUID gameID) {
         JsonObject jsonCanStart = new JsonObject();
         if(this.games.get(gameID) != null){
             if (this.games.get(gameID).canStart()) {
-                jsonCanStart.put(Constants.CAN_START_ATTR, true);
+                jsonCanStart.put(Constants.START_ATTR, true);
                 return jsonCanStart.put(Constants.MESSAGE, "The game " + gameID + " can start");
             } else {
-                jsonCanStart.put(Constants.CAN_START_ATTR, false);
+                jsonCanStart.put(Constants.START_ATTR, false);
                 return jsonCanStart.put(Constants.MESSAGE, "The game " + gameID + " can't start");
             }
         }

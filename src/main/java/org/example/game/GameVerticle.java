@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.example.repository.AbstractStatisticManager;
 import org.example.utils.Constants;
+import org.example.utils.Pair;
 
 import static java.lang.Math.floor;
 
@@ -23,9 +24,11 @@ public class GameVerticle extends AbstractVerticle {
     private final UUID id;
     private final AtomicInteger currentState;
     private final int numberOfPlayers;
+    private Pair<Integer, Integer> currentScore;
+    private final int expectedScore;
     private final IDeck deck = new Deck();
     private CardSuit trump = CardSuit.NONE;
-    private Map<Integer, Trick> states = new ConcurrentHashMap<>(); //quando lo stato arriva a numerocarte/numerogiocatori
+    private Map<Integer, Trick> states = new ConcurrentHashMap<>();
     private final List<String> users = new ArrayList<>();
     private final GameSchema gameSchema;
     private AbstractStatisticManager statisticManager;
@@ -35,8 +38,10 @@ public class GameVerticle extends AbstractVerticle {
         return gameSchema;
     }
 
-    public GameVerticle(UUID id, String username, int numberOfPlayers, AbstractStatisticManager statisticManager) {
+    public GameVerticle(UUID id, String username, int numberOfPlayers, int expectedScore, AbstractStatisticManager statisticManager) {
         this.id = id;
+        this.expectedScore = expectedScore;
+        this.currentScore = new Pair<>(0,0);
         this.currentState = new AtomicInteger(0);
         this.numberOfPlayers = numberOfPlayers;
         users.add(username);
@@ -45,8 +50,10 @@ public class GameVerticle extends AbstractVerticle {
         if(this.statisticManager != null) this.statisticManager.createRecord(this.gameSchema); //TODO andrebbero usati gli UUID ma vediamo se mongo di aiuta con la questione _id
     }
 
-    public GameVerticle(UUID id, String username, int numberOfPlayers) {
+    public GameVerticle(UUID id, String username, int numberOfPlayers, int expectedScore) {
         this.id = id;
+        this.expectedScore = expectedScore;
+        this.currentScore = new Pair<>(0,0);
         this.currentState = new AtomicInteger(0);
         this.numberOfPlayers = numberOfPlayers;
         users.add(username);
@@ -56,7 +63,6 @@ public class GameVerticle extends AbstractVerticle {
     /** It starts the verticle */
     @Override
     public void start(Promise<Void> startPromise) {
-
         startPromise.complete();
     }
 
@@ -160,9 +166,14 @@ public class GameVerticle extends AbstractVerticle {
         return this.numberOfPlayers;
     }
 
-    /**@return true if the round is a*/
+    /**@return true if the round is ended*/
     public boolean isRoundEnded(){
         double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
         return this.currentState.get() == numberOfTricksInRound;
+    }
+
+    /**@return true if the game is ended*/
+    public boolean isGameEnded(){
+        return this.currentScore.getX() >= this.expectedScore || this.currentScore.getY() >= this.expectedScore;
     }
 }

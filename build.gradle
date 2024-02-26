@@ -22,8 +22,9 @@ dependencies {
     implementation 'io.vertx:vertx-web-client:' + vertxVersion
     implementation 'io.vertx:vertx-junit5:'+ vertxVersion
     implementation 'org.mongodb:mongodb-driver-sync:4.5.0'
-    implementation 'org.slf4j:slf4j-api:2.0.5' // SLF4J API
-    implementation 'ch.qos.logback:logback-classic:1.4.7' // SLF4J binding for Logback
+    implementation 'org.slf4j:slf4j-simple:2.0.9'
+    implementation 'org.slf4j:slf4j-api:2.0.9' // SLF4J API
+    implementation 'ch.qos.logback:logback-classic:1.4.11' // SLF4J binding for Logback
 
 
     implementation 'io.vertx:vertx-web-api-contract:4.5.0'

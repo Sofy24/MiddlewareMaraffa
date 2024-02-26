@@ -27,12 +27,12 @@ public class GameService {
         this.statisticManager = statisticManager;
     }
 
-    public JsonObject createGame(Integer numberOfPlayers, String username) {
+    public JsonObject createGame(Integer numberOfPlayers, String username, int expectedScore) {
         JsonObject jsonGame = new JsonObject();
         UUID newId = UUID.randomUUID();
-        GameVerticle currentGame = new GameVerticle(newId, username, numberOfPlayers);
-        /*if (this.statisticManager != null ) currentGame = new GameVerticle(newId, username, numberOfPlayers, this.statisticManager);
-        else currentGame = new GameVerticle(newId, username, numberOfPlayers);*/
+        GameVerticle currentGame;
+        if (this.statisticManager != null ) currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore, this.statisticManager);
+        else currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore);
         this.games.put(newId, currentGame);
         vertx.deployVerticle(currentGame);
         jsonGame.put(Constants.GAME_ID, String.valueOf(newId));
@@ -128,6 +128,18 @@ public class GameService {
         JsonObject jsonEnd = new JsonObject();
         if(this.games.get(gameID) != null){
             Boolean isEnded = this.games.get(gameID).isRoundEnded();
+            jsonEnd.put(Constants.ENDED, isEnded);
+            jsonEnd.put(Constants.MESSAGE, isEnded);
+            return jsonEnd;
+        }
+        jsonEnd.put(Constants.ENDED, false);
+        return jsonEnd.put(Constants.MESSAGE, "Game "+ gameID +" not found");
+    }
+
+    public JsonObject isGameEnded(UUID gameID) {
+        JsonObject jsonEnd = new JsonObject();
+        if(this.games.get(gameID) != null){
+            Boolean isEnded = this.games.get(gameID).isGameEnded();
             jsonEnd.put(Constants.ENDED, isEnded);
             jsonEnd.put(Constants.MESSAGE, isEnded);
             return jsonEnd;

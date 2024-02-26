@@ -44,7 +44,8 @@ public class GameServiceDecorator {
                             schema = @Schema(implementation = CreateGameBody.class, example =
                                     "{\n" +
                                             "  \"" + Constants.NUMBER_OF_PLAYERS + "\": 4,\n" +
-                                            "  \"" + Constants.USERNAME + "\": \"string\"\n" +
+                                            "  \"" + Constants.USERNAME + "\": \"string\",\n" +
+                                            "  \"" + Constants.EXPECTED_SCORE + "\": 41\n" +
                                             "}")
                     )
             ),
@@ -63,7 +64,8 @@ public class GameServiceDecorator {
     public void createGame(RoutingContext context) {
         Integer numberOfPlayers = (Integer) context.body().asJsonObject().getValue(Constants.NUMBER_OF_PLAYERS);
         String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
-        JsonObject jsonGame = this.gameService.createGame(numberOfPlayers, username);
+        Integer expectedScore = (Integer) context.body().asJsonObject().getValue(Constants.EXPECTED_SCORE);
+        JsonObject jsonGame = this.gameService.createGame(numberOfPlayers, username, expectedScore);
         context.response().end(jsonGame.toString());
     }
 
@@ -139,7 +141,7 @@ public class GameServiceDecorator {
     }
 
     @Operation(summary = "A player plays a card in a specific game", method = Constants.PLAY_CARD_METHOD, operationId = Constants.PLAY_CARD,
-            tags = { Constants.GAME_TAG },
+            tags = { Constants.ROUND_TAG },
             requestBody = @RequestBody(
                     description = "username, card and id of the game are required",
                     required = true,
@@ -188,7 +190,7 @@ public class GameServiceDecorator {
     }
 
     @Operation(summary = "Choose the trump", method = Constants.CHOOSE_TRUMP_METHOD, operationId = Constants.CHOOSE_TRUMP,
-            tags = { Constants.GAME_TAG },
+            tags = { Constants.ROUND_TAG },
             requestBody = @RequestBody(
                     description = "trump and id of the game are required",
                     required = true,
@@ -231,7 +233,7 @@ public class GameServiceDecorator {
     }
 
     @Operation(summary = "Start a new round in a specific game", method = Constants.START_NEW_ROUND_METHOD, operationId = Constants.START_NEW_ROUND,
-            tags = { Constants.GAME_TAG },
+            tags = { Constants.ROUND_TAG },
             requestBody = @RequestBody(
                     description = "id of the game is required",
                     required = true,
@@ -296,8 +298,8 @@ public class GameServiceDecorator {
         }
     }
 
-    @Operation(summary = "Check if the round is ended", method = Constants.END_METHOD, operationId = Constants.END, //! operationId must be the same as controller
-            tags = { Constants.GAME_TAG },
+    @Operation(summary = "Check if the round is ended", method = Constants.END_METHOD, operationId = Constants.END_ROUND, //! operationId must be the same as controller
+            tags = { Constants.ROUND_TAG },
             parameters = {
                     @Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID,
                             required = true, description = "The unique ID belonging to the game", schema = @Schema(type = "string") )
@@ -324,38 +326,7 @@ public class GameServiceDecorator {
         context.response().setStatusCode(404).end(jsonEnd.getString(Constants.MESSAGE));
     }
 
-    @Operation(summary = "Get the cards on the hands of a specific player", method = Constants.CARDS_ON_HAND_METHOD, operationId = Constants.CARDS_ON_HAND, //! operationId must be the same as controller
-            tags = { Constants.GAME_TAG },
-            parameters = {
-                    @Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID,
-                            required = true, description = "The unique ID belonging to the game", schema = @Schema(type = "string") ),
-                    @Parameter(in = ParameterIn.PATH, name = Constants.USERNAME,
-                            required = true, description = "A username", schema = @Schema(type = "string") )
-            },
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "OK",
-                            content = @Content(
-                                    mediaType = "application/json; charset=utf-8",
-                                    encoding = @Encoding(contentType = "application/json"),
-                                    schema = @Schema(name = "game",
-                                            implementation = CanStartResponse.class)
-                            )
-                    ),
-                    @ApiResponse(responseCode = "404", description = "Game not found."),
-                    @ApiResponse(responseCode = "500", description = "Internal Server Error.")
-            }
-    )
-    public void cardsOnHand(RoutingContext context) {
-        UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
-        UUID username = UUID.fromString(context.pathParam(Constants.USERNAME));
-        /*String message = this.gameService.getState(gameID).getString(Constants.MESSAGE);
-        if(!this.gameService.canStart(gameID).containsKey(Constants.NOT_FOUND)){
-            context.response().end(message);
-        }
-        context.response().setStatusCode(404).end(message);*/
-    }
-
-    @Operation(summary = "Get the cards on the table", method = Constants.CARDS_ON_TABLE_METHOD, operationId = Constants.CARDS_ON_TABLE, //! operationId must be the same as controller
+    @Operation(summary = "Check if the game is ended", method = Constants.END_METHOD, operationId = Constants.END_GAME, //! operationId must be the same as controller
             tags = { Constants.GAME_TAG },
             parameters = {
                     @Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID,
@@ -367,25 +338,24 @@ public class GameServiceDecorator {
                                     mediaType = "application/json; charset=utf-8",
                                     encoding = @Encoding(contentType = "application/json"),
                                     schema = @Schema(name = "game",
-                                            implementation = CanStartResponse.class)
+                                            implementation = isRoundEnded.class)
                             )
                     ),
                     @ApiResponse(responseCode = "404", description = "Game not found."),
                     @ApiResponse(responseCode = "500", description = "Internal Server Error.")
             }
     )
-    public void cardsOnTable(RoutingContext context) {
+    public void isGameEnded(RoutingContext context) {
         UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
-        /*String message = this.gameService.getState(gameID).getString(Constants.MESSAGE);
-        if(!this.gameService.canStart(gameID).containsKey(Constants.NOT_FOUND)){
-            context.response().end(message);
+        JsonObject jsonEnd = this.gameService.isGameEnded(gameID);
+        if(!jsonEnd.containsKey(Constants.NOT_FOUND)){
+            context.response().end(jsonEnd.getString(Constants.MESSAGE));
         }
-        context.response().setStatusCode(404).end(message);*/
+        context.response().setStatusCode(404).end(jsonEnd.getString(Constants.MESSAGE));
     }
 
-
     @Operation(summary = "Make a call", method = Constants.MAKE_CALL_METHOD, operationId = Constants.MAKE_CALL,
-            tags = { Constants.GAME_TAG },
+            tags = { Constants.ROUND_TAG },
             requestBody = @RequestBody(
                     description = "call, username and id of the game are required",
                     required = true,
@@ -428,6 +398,65 @@ public class GameServiceDecorator {
         } else {
             context.response().setStatusCode(404).end(jsonCall.getString(Constants.MESSAGE));
         }
+    }
+
+    @Operation(summary = "Get the cards on the hands of a specific player", method = Constants.CARDS_ON_HAND_METHOD, operationId = Constants.CARDS_ON_HAND, //! operationId must be the same as controller
+            tags = { Constants.ROUND_TAG },
+            parameters = {
+                    @Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID,
+                            required = true, description = "The unique ID belonging to the game", schema = @Schema(type = "string") ),
+                    @Parameter(in = ParameterIn.PATH, name = Constants.USERNAME,
+                            required = true, description = "A username", schema = @Schema(type = "string") )
+            },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(
+                                    mediaType = "application/json; charset=utf-8",
+                                    encoding = @Encoding(contentType = "application/json"),
+                                    schema = @Schema(name = "game",
+                                            implementation = CanStartResponse.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "Game not found."),
+                    @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            }
+    )
+    public void cardsOnHand(RoutingContext context) {
+        UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
+        UUID username = UUID.fromString(context.pathParam(Constants.USERNAME));
+        /*String message = this.gameService.getState(gameID).getString(Constants.MESSAGE);
+        if(!this.gameService.canStart(gameID).containsKey(Constants.NOT_FOUND)){
+            context.response().end(message);
+        }
+        context.response().setStatusCode(404).end(message);*/
+    }
+
+    @Operation(summary = "Get the cards on the table", method = Constants.CARDS_ON_TABLE_METHOD, operationId = Constants.CARDS_ON_TABLE, //! operationId must be the same as controller
+            tags = { Constants.ROUND_TAG },
+            parameters = {
+                    @Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID,
+                            required = true, description = "The unique ID belonging to the game", schema = @Schema(type = "string") )
+            },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(
+                                    mediaType = "application/json; charset=utf-8",
+                                    encoding = @Encoding(contentType = "application/json"),
+                                    schema = @Schema(name = "game",
+                                            implementation = CanStartResponse.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "Game not found."),
+                    @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            }
+    )
+    public void cardsOnTable(RoutingContext context) {
+        UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
+        /*String message = this.gameService.getState(gameID).getString(Constants.MESSAGE);
+        if(!this.gameService.canStart(gameID).containsKey(Constants.NOT_FOUND)){
+            context.response().end(message);
+        }
+        context.response().setStatusCode(404).end(message);*/
     }
 
     public Map<UUID, GameVerticle> getGames() {

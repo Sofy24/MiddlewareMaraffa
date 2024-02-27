@@ -10,6 +10,16 @@ public class CreateGameBody {
     private String username;
     @JsonProperty(Constants.NUMBER_OF_PLAYERS)
     private Integer numberOfPlayers;
+    @JsonProperty(Constants.EXPECTED_SCORE)
+    private Integer expectedScore;
+
+    public Integer getExpectedScore() {
+        return expectedScore;
+    }
+
+    public void setExpectedScore(Integer expectedScore) {
+        this.expectedScore = expectedScore;
+    }
 
     public String getUsername() {
         return username;

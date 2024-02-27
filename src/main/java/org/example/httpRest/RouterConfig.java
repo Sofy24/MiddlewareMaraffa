@@ -117,7 +117,8 @@ public class RouterConfig {
          * name is then used in the end point annotation
          */
         openAPIDoc
-                .addTagsItem(new io.swagger.v3.oas.models.tags.Tag().name(Constants.GAME_TAG).description("Game operations"));
+                .addTagsItem(new io.swagger.v3.oas.models.tags.Tag().name(Constants.GAME_TAG).description("Game operations"))
+                .addTagsItem(new io.swagger.v3.oas.models.tags.Tag().name(Constants.ROUND_TAG).description("Round operations"));
 
         // Generate the SCHEMA section of Swagger, using the definitions in the Model
         // folder

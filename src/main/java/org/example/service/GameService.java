@@ -27,12 +27,12 @@ public class GameService {
         this.statisticManager = statisticManager;
     }
 
-    public JsonObject createGame(Integer numberOfPlayers, String username) {
+    public JsonObject createGame(Integer numberOfPlayers, String username, int expectedScore) {
         JsonObject jsonGame = new JsonObject();
         UUID newId = UUID.randomUUID();
-        GameVerticle currentGame; //= new GameVerticle(newId, username, numberOfPlayers);
-        if (this.statisticManager != null ) currentGame = new GameVerticle(newId, username, numberOfPlayers, this.statisticManager);
-        else currentGame = new GameVerticle(newId, username, numberOfPlayers);
+        GameVerticle currentGame;
+        if (this.statisticManager != null ) currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore, this.statisticManager);
+        else currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore);
         this.games.put(newId, currentGame);
         vertx.deployVerticle(currentGame);
         jsonGame.put(Constants.GAME_ID, String.valueOf(newId));
@@ -59,14 +59,29 @@ public class GameService {
         return jsonJoin;
     }
 
+    public JsonObject startGame(UUID gameID){
+        JsonObject jsonStartGame = new JsonObject();
+        if(this.games.get(gameID) != null){
+            if (this.games.get(gameID).startGame()) {
+                jsonStartGame.put(Constants.START_ATTR, true);
+                return jsonStartGame.put(Constants.MESSAGE, "The game " + gameID + " can start");
+            } else {
+                jsonStartGame.put(Constants.START_ATTR, false);
+                return jsonStartGame.put(Constants.MESSAGE, "Not all the players are in");
+            }
+        }
+        jsonStartGame.put(Constants.NOT_FOUND, false);
+        return jsonStartGame.put(Constants.MESSAGE, "Game "+ gameID +" not found");
+    }
+
     public JsonObject canStart(UUID gameID) {
         JsonObject jsonCanStart = new JsonObject();
         if(this.games.get(gameID) != null){
             if (this.games.get(gameID).canStart()) {
-                jsonCanStart.put(Constants.CAN_START_ATTR, true);
+                jsonCanStart.put(Constants.START_ATTR, true);
                 return jsonCanStart.put(Constants.MESSAGE, "The game " + gameID + " can start");
             } else {
-                jsonCanStart.put(Constants.CAN_START_ATTR, false);
+                jsonCanStart.put(Constants.START_ATTR, false);
                 return jsonCanStart.put(Constants.MESSAGE, "The game " + gameID + " can't start");
             }
         }
@@ -129,6 +144,18 @@ public class GameService {
         JsonObject jsonEnd = new JsonObject();
         if(this.games.get(gameID) != null){
             Boolean isEnded = this.games.get(gameID).isRoundEnded();
+            jsonEnd.put(Constants.ENDED, isEnded);
+            jsonEnd.put(Constants.MESSAGE, isEnded);
+            return jsonEnd;
+        }
+        jsonEnd.put(Constants.ENDED, false);
+        return jsonEnd.put(Constants.MESSAGE, "Game "+ gameID +" not found");
+    }
+
+    public JsonObject isGameEnded(UUID gameID) {
+        JsonObject jsonEnd = new JsonObject();
+        if(this.games.get(gameID) != null){
+            Boolean isEnded = this.games.get(gameID).isGameEnded();
             jsonEnd.put(Constants.ENDED, isEnded);
             jsonEnd.put(Constants.MESSAGE, isEnded);
             return jsonEnd;

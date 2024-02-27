@@ -15,7 +15,8 @@ public interface Trick {
     boolean isCompleted();
 
     /**@return the cards in the trick*/
-    Map<String, Pair<Integer, String>> getCards();
+    // Map<String, Pair<Integer, String>> getCards();
+    Map<String, String> getCards();
 
     /**@param call the call
      * @param username the user who makes the call

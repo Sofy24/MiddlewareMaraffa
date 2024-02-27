@@ -1,16 +1,16 @@
 package org.example.game;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.example.utils.Pair;
 
 public class TrickImpl implements Trick{
-    private final Map<String, Pair<Integer, String>> cards = new HashMap<>();
+    // private final Map<String, Pair<Integer, String>> cards = new HashMap<>();
+    private final Map<String, String> cards = new LinkedHashMap<>(); // linked to keep the order of the cards
     private AtomicInteger currentUser;
     private Call call = Call.NONE;
     @BsonIgnore
@@ -28,8 +28,9 @@ public class TrickImpl implements Trick{
     /**@param card added to the trick, if not all the players has already played*/
     @Override
     public void addCard(Card<CardValue, CardSuit> card, String username) {
-        this.cards.put(card.toString(), new Pair<>(this.currentUser.getAndIncrement(), username));
-    }
+        // this.cards.put(card.toString(), new Pair<>(this.currentUser.getAndIncrement(), username));
+        this.cards.put(card.toString(), username);
+    }    
 
     public Call getCall() {
         return call;
@@ -41,7 +42,8 @@ public class TrickImpl implements Trick{
     }
 
     @Override
-    public Map<String, Pair<Integer, String>> getCards() {
+    public Map<String, String> getCards() {
+    // public Map<String, Pair<Integer, String>> getCards() {
         return this.cards;
     }   
 

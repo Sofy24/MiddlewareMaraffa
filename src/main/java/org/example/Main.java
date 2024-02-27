@@ -10,7 +10,7 @@ public class Main {
         Vertx vertx = Vertx.vertx();
         AbstractStatisticManager mongoStatisticManager = new MongoStatisticManager();
         // Deploy the main verticle
-        vertx.deployVerticle(new MainVerticle(vertx, mongoStatisticManager));
+        // vertx.deployVerticle(new MainVerticle(vertx, mongoStatisticManager));
 
        vertx.deployVerticle(new AppServer(), serverResult -> {
             if (serverResult.succeeded()) {

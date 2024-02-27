@@ -67,11 +67,11 @@ public class GameServiceDecorator {
             }
     )
     public void createGame(RoutingContext context) {
-        Integer numberOfPlayers = (Integer) context.body().asJsonObject().getValue(Constants.NUMBER_OF_PLAYERS);
-        String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
-        Integer expectedScore = (Integer) context.body().asJsonObject().getValue(Constants.EXPECTED_SCORE);
+        Integer numberOfPlayers = context.body().asJsonObject().getInteger(Constants.NUMBER_OF_PLAYERS);
+        String username = context.body().asJsonObject().getString(Constants.USERNAME);
+        Integer expectedScore = context.body().asJsonObject().getInteger(Constants.EXPECTED_SCORE);
         JsonObject jsonGame = this.gameService.createGame(numberOfPlayers, username, expectedScore);
-        context.response().end(jsonGame.toString());
+        context.response().end(jsonGame.toBuffer());
     }
 
         @Operation(summary = "Join a specific game", method = Constants.JOIN_GAME_METHOD, operationId = Constants.JOIN_GAME, tags = {
@@ -157,13 +157,13 @@ public class GameServiceDecorator {
             }
     )
     public void canStart(RoutingContext context) {
-        UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
-        JsonObject startResponse = this.gameService.canStart(gameID);
-        String message = startResponse.getString(Constants.MESSAGE);
-        if(!startResponse.containsKey(Constants.NOT_FOUND)){
-            context.response().end(message);
-        }
-        context.response().setStatusCode(404).end(message);
+            UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
+            JsonObject startResponse = this.gameService.canStart(gameID);
+            if (!startResponse.containsKey(Constants.NOT_FOUND)) {
+                    context.response().end(startResponse.toBuffer());
+            } else {
+                    context.response().setStatusCode(404).end(startResponse.toBuffer());
+            }
     }
 
     @Operation(summary = "A player plays a card in a specific game", method = Constants.PLAY_CARD_METHOD, operationId = Constants.PLAY_CARD,
@@ -197,22 +197,23 @@ public class GameServiceDecorator {
                     @ApiResponse(responseCode = "500", description = "Internal Server Error.")
             }
     )
-    public void playCard(RoutingContext context){
-        String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
-        UUID gameID = UUID.fromString(uuidAsString);
-        Integer cardValue = (Integer) context.body().asJsonObject().getValue(Constants.CARD_VALUE);
-        String cardSuit = String.valueOf(context.body().asJsonObject().getValue(Constants.CARD_SUIT));
-        Card<CardValue, CardSuit> card = new Card<>(CardValue.fromInteger(cardValue), CardSuit.fromUppercaseString(cardSuit.toUpperCase()));
-        String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
-        if(card.cardSuit().equals(CardSuit.NONE) || card.cardValue().equals(CardValue.NONE)){
-            context.response().setStatusCode(401).end("Invalid " + card);
-        } else {
-            if (this.gameService.playCard(gameID, username, card)) {
-                context.response().end(card + " played by " + username);
+    public void playCard(RoutingContext context) {
+            String uuidAsString = context.body().asJsonObject().getString(Constants.GAME_ID);
+            UUID gameID = UUID.fromString(uuidAsString);
+            String cardValue = context.body().asJsonObject().getString(Constants.CARD_VALUE);
+            String cardSuit = context.body().asJsonObject().getString(Constants.CARD_SUIT);
+            Card<CardValue, CardSuit> card = new Card<>(CardValue.valueOf(cardValue), CardSuit.valueOf(cardSuit));
+            String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
+            if (card.cardSuit().equals(CardSuit.NONE) || card.cardValue().equals(CardValue.NONE)) {
+                    context.response().setStatusCode(401).end("Invalid " + card);
             } else {
-                context.response().setStatusCode(404).end("Game " + gameID + " not found");
+                    if (this.gameService.playCard(gameID, username, card)) {
+                            context.response().end();
+                            // context.response().end(card + " played by " + username);
+                    } else {
+                            context.response().setStatusCode(404).end("Game " + gameID + " not found");
+                    }
             }
-        }
     }
 
     @Operation(summary = "Choose the trump", method = Constants.CHOOSE_TRUMP_METHOD, operationId = Constants.CHOOSE_TRUMP,
@@ -245,17 +246,17 @@ public class GameServiceDecorator {
             }
     )
     public void chooseTrump(RoutingContext context) {
-        String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
-        UUID gameID = UUID.fromString(uuidAsString);
-        String cardSuit = String.valueOf(context.body().asJsonObject().getValue(Constants.CARD_SUIT));
-        JsonObject trumpResponse = this.gameService.chooseTrump(gameID, cardSuit);
-        if(!trumpResponse.containsKey(Constants.NOT_FOUND)){
-            context.response().end(trumpResponse.getString(Constants.MESSAGE));
-        } else if (trumpResponse.containsKey(Constants.ILLEGAL_TRUMP)){
-            context.response().setStatusCode(401).end(trumpResponse.getString(Constants.MESSAGE));
-        } else {
-            context.response().setStatusCode(404).end(trumpResponse.getString(Constants.MESSAGE));
-        }
+         String uuidAsString = context.body().asJsonObject().getString(Constants.GAME_ID);
+                UUID gameID = UUID.fromString(uuidAsString);
+                String cardSuit = context.body().asJsonObject().getString(Constants.CARD_SUIT);
+                JsonObject trumpResponse = this.gameService.chooseTrump(gameID, cardSuit);
+                if (!trumpResponse.containsKey(Constants.NOT_FOUND)) {
+                        context.response().end(trumpResponse.toBuffer());
+                } else if (trumpResponse.containsKey(Constants.ILLEGAL_TRUMP)) {
+                        context.response().setStatusCode(401).end(trumpResponse.toBuffer());
+                } else {
+                        context.response().setStatusCode(404).end(trumpResponse.toBuffer());
+                }
     }
 
     @Operation(summary = "Start a new round in a specific game", method = Constants.START_NEW_ROUND_METHOD, operationId = Constants.START_NEW_ROUND,
@@ -286,13 +287,13 @@ public class GameServiceDecorator {
             }
     )
     public void startNewRound(RoutingContext context) {
-        String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
-        UUID gameID = UUID.fromString(uuidAsString);
-        if(this.gameService.startNewRound(gameID)){
-            context.response().end("New round started");
-        } else {
-            context.response().setStatusCode(404).end("Game " + gameID + " not found");
-        }
+           String uuidAsString = context.body().asJsonObject().getString(Constants.GAME_ID);
+                UUID gameID = UUID.fromString(uuidAsString);
+                if (this.gameService.startNewRound(gameID)) {
+                        context.response().end("New round started");
+                } else {
+                        context.response().setStatusCode(404).end("Game " + gameID + " not found");
+                }
     }
 
         @Operation(summary = "Get the state of a specific game", method = Constants.STATE_METHOD, operationId = Constants.STATE, // !
@@ -344,8 +345,9 @@ public class GameServiceDecorator {
         JsonObject jsonEnd = this.gameService.isRoundEnded(gameID);
         if(!jsonEnd.containsKey(Constants.NOT_FOUND)){
             context.response().end(jsonEnd.getString(Constants.MESSAGE));
+        }else{
+            context.response().setStatusCode(404).end(jsonEnd.getString(Constants.MESSAGE));
         }
-        context.response().setStatusCode(404).end(jsonEnd.getString(Constants.MESSAGE));
     }
 
     @Operation(summary = "Check if the game is ended", method = Constants.END_METHOD, operationId = Constants.END_GAME, //! operationId must be the same as controller
@@ -372,8 +374,9 @@ public class GameServiceDecorator {
         JsonObject jsonEnd = this.gameService.isGameEnded(gameID);
         if(!jsonEnd.containsKey(Constants.NOT_FOUND)){
             context.response().end(jsonEnd.getString(Constants.MESSAGE));
+        }else{
+            context.response().setStatusCode(404).end(jsonEnd.getString(Constants.MESSAGE));
         }
-        context.response().setStatusCode(404).end(jsonEnd.getString(Constants.MESSAGE));
     }
 
     @Operation(summary = "Make a call", method = Constants.MAKE_CALL_METHOD, operationId = Constants.MAKE_CALL,
@@ -409,11 +412,11 @@ public class GameServiceDecorator {
     public void makeCall(RoutingContext context) {
         String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
         UUID gameID = UUID.fromString(uuidAsString);
-        String call = String.valueOf(context.body().asJsonObject().getValue(Constants.CALL));
-        String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
-        JsonObject jsonCall = this.gameService.makeCall(gameID, call, username);
-        if(!jsonCall.containsKey(Constants.NOT_FOUND)){
-            if(jsonCall.getBoolean(Constants.MESSAGE)){
+          String call = context.body().asJsonObject().getString(Constants.CALL);
+                String username = context.body().asJsonObject().getString(Constants.USERNAME);
+                JsonObject jsonCall = this.gameService.makeCall(gameID, call, username);
+                if (!jsonCall.containsKey(Constants.NOT_FOUND)) {
+                        if (jsonCall.getBoolean(Constants.MESSAGE)) {
                 context.response().end("Call " + call + " setted!");
             }
             context.response().setStatusCode(404).end("Invalid call");

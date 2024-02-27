@@ -74,8 +74,7 @@ public class RouterConfig {
                 type.equals(String.class);
     }
 
-    public Router configurationRouter() {
-        Vertx vertx = Vertx.vertx();
+    public Router configurationRouter(Vertx vertx) {
         Router router = Router.router(vertx);
         router.route().consumes(APPLICATION_JSON);
         router.route().produces(APPLICATION_JSON);

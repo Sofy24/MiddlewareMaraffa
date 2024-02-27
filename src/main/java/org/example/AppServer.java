@@ -26,7 +26,7 @@ public class AppServer extends AbstractVerticle {
   public void start() throws Exception {
     RouterConfig routerConfig = new RouterConfig(PORT, new GameServiceDecorator(vertx, mongoStatisticManager));
     server = vertx.createHttpServer(createOptions());
-    server.requestHandler(routerConfig.configurationRouter());
+    server.requestHandler(routerConfig.configurationRouter(vertx));
     server.listen(res -> {
       {
         if (res.succeeded()) {

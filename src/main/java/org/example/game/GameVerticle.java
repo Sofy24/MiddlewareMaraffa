@@ -6,6 +6,8 @@ import io.vertx.core.Promise;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.example.repository.AbstractStatisticManager;
 import org.example.utils.Constants;
@@ -33,6 +35,8 @@ public class GameVerticle extends AbstractVerticle {
     private final GameSchema gameSchema;
     private AbstractStatisticManager statisticManager;
     private Trick currentTrick;
+    private Team team1;
+    private Team team2;
 
     public GameSchema getGameSchema() {
         return gameSchema;
@@ -114,7 +118,12 @@ public class GameVerticle extends AbstractVerticle {
 
     /**@return true if all the players are in*/
     public boolean startGame(){
-        return this.users.size() == this.numberOfPlayers;
+        if(this.users.size() == this.numberOfPlayers){
+            this.team1 = new Team(IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 == 0).mapToObj(this.users::get).toList(), "A");
+            this.team2 = new Team(IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 != 0).mapToObj(this.users::get).toList(), "B");
+            return true;
+        }
+        return false;
     }
 
     /** reset the trump */

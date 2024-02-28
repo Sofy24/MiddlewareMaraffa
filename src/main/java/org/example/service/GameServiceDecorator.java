@@ -333,7 +333,7 @@ public class GameServiceDecorator {
                                     mediaType = "application/json; charset=utf-8",
                                     encoding = @Encoding(contentType = "application/json"),
                                     schema = @Schema(name = "game",
-                                            implementation = isRoundEndedResponse.class)
+                                            implementation = IsRoundEndedResponse.class)
                             )
                     ),
                     @ApiResponse(responseCode = "404", description = "Game not found."),
@@ -362,7 +362,7 @@ public class GameServiceDecorator {
                                     mediaType = "application/json; charset=utf-8",
                                     encoding = @Encoding(contentType = "application/json"),
                                     schema = @Schema(name = "game",
-                                            implementation = isRoundEndedResponse.class)
+                                            implementation = IsRoundEndedResponse.class)
                             )
                     ),
                     @ApiResponse(responseCode = "404", description = "Game not found."),
@@ -422,6 +422,30 @@ public class GameServiceDecorator {
             context.response().setStatusCode(404).end("Invalid call");
         } else {
             context.response().setStatusCode(404).end(jsonCall.getString(Constants.MESSAGE));
+        }
+    }
+
+    @Operation(summary = "Get all the games", method = Constants.GAMES_METHOD, operationId = Constants.GAMES, //! operationId must be the same as controller
+            tags = { Constants.GAME_TAG },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(
+                                    mediaType = "application/json; charset=utf-8",
+                                    encoding = @Encoding(contentType = "application/json"),
+                                    schema = @Schema(name = "game",
+                                            implementation = GetGamesResponse.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "Game not found."),
+                    @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            }
+    )
+    public void getGames(RoutingContext context) {
+        JsonObject jsonGetGames = this.gameService.getJsonGames();
+        if (jsonGetGames.fieldNames().size() > 0){
+            context.response().end(jsonGetGames.fieldNames().toString());
+        } else {
+            context.response().setStatusCode(404).end("Game not found");
         }
     }
 

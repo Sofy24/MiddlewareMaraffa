@@ -27,9 +27,11 @@ public class Controller implements IController {
         routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.START_NEW_ROUND, entityService::startNewRound));
         routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.STATE, entityService::getState));
         routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.END_ROUND, entityService::isRoundEnded));
+        routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.MAKE_CALL , entityService::makeCall));
+        routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GAMES, entityService::getGames));
         routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CARDS_ON_HAND, entityService::cardsOnHand));
         routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CARDS_ON_TABLE, entityService::cardsOnTable));
-        routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.MAKE_CALL , entityService::makeCall));
+//TODO delete game
     }
 
     public List<IRouteResponse> getRoutes() {

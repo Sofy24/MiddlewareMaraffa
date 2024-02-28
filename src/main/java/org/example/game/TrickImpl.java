@@ -1,23 +1,25 @@
 package org.example.game;
 
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.example.utils.Pair;
 
 public class TrickImpl implements Trick{
     // private final Map<String, Pair<Integer, String>> cards = new HashMap<>();
     private final Map<String, String> cards = new LinkedHashMap<>(); // linked to keep the order of the cards
-    private AtomicInteger currentUser;
+    private final AtomicInteger currentUser;
+
     private Call call = Call.NONE;
     @BsonIgnore
     private final int numberOfPlayers;
 
     @BsonIgnore
-    private CardSuit trump;
+    private final CardSuit trump;
 
     public TrickImpl(int numberOfPlayers, final CardSuit trump) {
         this.numberOfPlayers = numberOfPlayers;
@@ -39,6 +41,11 @@ public class TrickImpl implements Trick{
     @Override
     public void setCall(Call call, String username) {
         this.call = call;
+    }
+
+    public List<?> getUsersCards(){
+        //TODO restituisci la lista con le carte nell'ordine in cui sono state giocate
+        return  null;
     }
 
     @Override

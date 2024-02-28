@@ -26,6 +26,7 @@ public class Constants {
     public static final String END_ROUND = "round/end/:" + GAME_ID;
     public static final String END_GAME = "game/end/:" + GAME_ID;
     public static final String MAKE_CALL = "round/makeCall";
+    public static final String GAMES = "game/getGames";
     //methods
     public static final String CREATE_GAME_METHOD = "POST";
     public static final String JOIN_GAME_METHOD = "PATCH";
@@ -39,6 +40,8 @@ public class Constants {
     public static final String CARDS_ON_TABLE_METHOD = "GET";
     public static final String END_METHOD = "GET";
     public static final String MAKE_CALL_METHOD = "POST";
+    public static final String GAMES_METHOD = "GET";
+
     //tags
     public static final String GAME_TAG = "Game";
     public static final String ROUND_TAG = "Round";

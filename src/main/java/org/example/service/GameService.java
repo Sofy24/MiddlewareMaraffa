@@ -196,9 +196,13 @@ public class GameService {
         return jsonCardsOnTable.put(Constants.MESSAGE, "Game "+ gameID +" not found");
     }
 
-
-
     public Map<UUID, GameVerticle> getGames() {
-        return games;
+        return this.games;
+    }
+
+    public JsonObject getJsonGames() {
+        JsonObject jsonGames = new JsonObject();
+        this.games.forEach((g, v) -> jsonGames.put(String.valueOf(g), g));
+        return jsonGames;
     }
 }

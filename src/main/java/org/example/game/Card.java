@@ -1,7 +1,7 @@
 package org.example.game;
 
 /**
- * A class modelling the concept of "card"
+ * A record modelling the concept of "card"
  */
 public record Card<X, Y> (CardValue cardValue, CardSuit cardSuit) {
     

@@ -5,15 +5,15 @@ import org.example.utils.Constants;
 
 import java.util.Objects;
 
-public class isRoundEndedResponse {
+public class IsRoundEndedResponse {
     @JsonProperty(Constants.ENDED)
     private Boolean isEnded;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof isRoundEndedResponse)) return false;
-        isRoundEndedResponse that = (isRoundEndedResponse) o;
+        if (!(o instanceof IsRoundEndedResponse)) return false;
+        IsRoundEndedResponse that = (IsRoundEndedResponse) o;
         return isEnded == that.isEnded;
     }
 

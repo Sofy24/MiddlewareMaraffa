@@ -10,16 +10,17 @@ repositories {
 }
 
 dependencies {
-    String vertxVersion = "4.4.0"
+    String vertxVersion = "4.5.0"
     testImplementation 'junit:junit:4.13.2'
     // testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
 
-    //implementation 'io.vertx:vertx-web:' + vertxVersion
+    implementation 'io.vertx:vertx-web:' + vertxVersion
     // testImplementation 'io.vertx:vertx-unit:' + vertxVersion
     implementation 'io.vertx:vertx-core:' + vertxVersion
     implementation 'io.vertx:vertx-web-client:' + vertxVersion
+    implementation 'io.vertx:vertx-web-api-contract:' + vertxVersion
     implementation 'io.vertx:vertx-junit5:'+ vertxVersion
     implementation 'org.mongodb:mongodb-driver-sync:4.5.0'
     implementation 'org.slf4j:slf4j-simple:2.0.9'
@@ -27,7 +28,6 @@ dependencies {
     implementation 'ch.qos.logback:logback-classic:1.4.11' // SLF4J binding for Logback
 
 
-    implementation 'io.vertx:vertx-web-api-contract:4.5.0'
     // https://mvnrepository.com/artifact/io.swagger.core.v3/swagger-core
     implementation 'io.swagger.core.v3:swagger-core:2.2.9'
 

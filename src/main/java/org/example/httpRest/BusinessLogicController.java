@@ -4,8 +4,10 @@ import java.util.concurrent.CompletableFuture;
 
 import org.example.game.Trick;
 
+
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -59,9 +61,7 @@ public class BusinessLogicController {
                 .send(handler -> {
                     System.out.println("Got any response ??");
                     if (handler.succeeded()) {
-                        System.out.println("Got the shuffled deck");
-                        System.out.println(handler.result().bodyAsString());
-                        future.complete(handler.result().bodyAsJsonObject());
+                        future.complete(handler.result().body());
                     } else {
                         // future.complete(handler.cause().getMessage());
                         System.out.println("Error in getting the shuffled deck");

@@ -6,7 +6,7 @@ public enum CardValue {
 
     public final Integer value;
 
-    private CardValue(Integer value) {
+    CardValue(Integer value) {
         this.value = value;
     }
 

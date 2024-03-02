@@ -12,6 +12,8 @@ public class CreateGameBody {
     private Integer numberOfPlayers;
     @JsonProperty(Constants.EXPECTED_SCORE)
     private Integer expectedScore;
+    @JsonProperty(Constants.GAME_MODE)
+    private String gameMode;
 
     public Integer getExpectedScore() {
         return expectedScore;

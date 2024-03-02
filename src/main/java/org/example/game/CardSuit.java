@@ -6,7 +6,7 @@ public enum CardSuit {
 
     public final Integer value;
 
-    private CardSuit(Integer value) {
+    CardSuit(Integer value) {
         this.value = value;
     }
 

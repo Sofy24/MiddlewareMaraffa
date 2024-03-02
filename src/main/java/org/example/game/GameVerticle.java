@@ -28,7 +28,6 @@ public class GameVerticle extends AbstractVerticle {
     private final int numberOfPlayers;
     private Pair<Integer, Integer> currentScore;
     private final int expectedScore;
-    private final IDeck deck = new Deck();
     private CardSuit trump = CardSuit.NONE;
     private Map<Integer, Trick> states = new ConcurrentHashMap<>();
     private final List<String> users = new ArrayList<>();
@@ -37,13 +36,16 @@ public class GameVerticle extends AbstractVerticle {
     private Trick currentTrick;
     private Team team1;
     private Team team2;
+    private Status status = Status.WAITING_PLAYERS;
+    private GameMode gameMode;
 
     public GameSchema getGameSchema() {
         return gameSchema;
     }
 
-    public GameVerticle(UUID id, String username, int numberOfPlayers, int expectedScore, AbstractStatisticManager statisticManager) {
+    public GameVerticle(UUID id, String username, int numberOfPlayers, int expectedScore, GameMode gameMode, AbstractStatisticManager statisticManager) {
         this.id = id;
+        this.gameMode = gameMode;
         this.expectedScore = expectedScore;
         this.currentScore = new Pair<>(0,0);
         this.currentState = new AtomicInteger(0);
@@ -54,8 +56,9 @@ public class GameVerticle extends AbstractVerticle {
         if(this.statisticManager != null) this.statisticManager.createRecord(this.gameSchema); //TODO andrebbero usati gli UUID ma vediamo se mongo di aiuta con la questione _id
     }
 
-    public GameVerticle(UUID id, String username, int numberOfPlayers, int expectedScore) {
+    public GameVerticle(UUID id, String username, int numberOfPlayers, int expectedScore, GameMode gameMode) {
         this.id = id;
+        this.gameMode = gameMode;
         this.expectedScore = expectedScore;
         this.currentScore = new Pair<>(0,0);
         this.currentState = new AtomicInteger(0);
@@ -74,6 +77,7 @@ public class GameVerticle extends AbstractVerticle {
     public boolean addUser(String username) {
         if (!this.users.contains(username)) {
             this.users.add(username);
+            this.status = canStart() ? Status.STARTING : Status.WAITING_PLAYERS;
             return true;
         }
         return false;
@@ -106,7 +110,7 @@ public class GameVerticle extends AbstractVerticle {
 
     /** @return true if all players have joined the game */
     public boolean canStart() {
-        return this.users.size() == this.numberOfPlayers; // && !this.trump.equals(CardSuit.NONE);
+        return this.users.size() == this.numberOfPlayers;
     }
 
     /** @param suit the leading suit of the round */
@@ -121,6 +125,7 @@ public class GameVerticle extends AbstractVerticle {
         if(this.users.size() == this.numberOfPlayers){
             this.team1 = new Team(IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 == 0).mapToObj(this.users::get).toList(), "A");
             this.team2 = new Team(IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 != 0).mapToObj(this.users::get).toList(), "B");
+            this.status = Status.PLAYING;
             return true;
         }
         return false;
@@ -167,6 +172,14 @@ public class GameVerticle extends AbstractVerticle {
 
     public CardSuit getTrump() {
         return trump;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public GameMode getGameMode() {
+        return gameMode;
     }
 
     /**@return the number of players who have already joined the game*/

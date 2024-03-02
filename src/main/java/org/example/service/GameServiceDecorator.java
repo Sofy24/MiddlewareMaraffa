@@ -11,16 +11,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import org.example.game.Card;
-import org.example.game.CardSuit;
-import org.example.game.CardValue;
-import org.example.game.GameVerticle;
+import org.example.game.*;
 import org.example.repository.AbstractStatisticManager;
 import org.example.service.schema.*;
 import org.example.utils.Constants;
 
-import static io.vertx.core.http.HttpHeaders.ACCEPT;
-import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
 import java.util.Map;
 import java.util.UUID;
@@ -50,7 +45,8 @@ public class GameServiceDecorator {
                                     "{\n" +
                                             "  \"" + Constants.NUMBER_OF_PLAYERS + "\": 4,\n" +
                                             "  \"" + Constants.USERNAME + "\": \"string\",\n" +
-                                            "  \"" + Constants.EXPECTED_SCORE + "\": 41\n" +
+                                            "  \"" + Constants.EXPECTED_SCORE + "\": 41,\n" +
+                                            "  \"" + Constants.GAME_MODE + "\": \"CLASSIC\"\n" +
                                             "}")
                     )
             ),
@@ -63,14 +59,19 @@ public class GameServiceDecorator {
                                             implementation = CreateGameBody.class)
                             )
                     ),
+                    @ApiResponse(responseCode = "417", description = "Invalid game mode."),
                     @ApiResponse(responseCode = "500", description = "Internal Server Error.")
             }
     )
     public void createGame(RoutingContext context) {
         Integer numberOfPlayers = context.body().asJsonObject().getInteger(Constants.NUMBER_OF_PLAYERS);
         String username = context.body().asJsonObject().getString(Constants.USERNAME);
+        String gameMode = context.body().asJsonObject().getString(Constants.GAME_MODE);
         Integer expectedScore = context.body().asJsonObject().getInteger(Constants.EXPECTED_SCORE);
-        JsonObject jsonGame = this.gameService.createGame(numberOfPlayers, username, expectedScore);
+        JsonObject jsonGame = this.gameService.createGame(numberOfPlayers, username, expectedScore, gameMode);
+        if (jsonGame.containsKey(Constants.INVALID)) {
+            context.response().setStatusCode(401).end("Invalid game mode");
+        }
         context.response().end(jsonGame.toBuffer());
     }
 
@@ -82,7 +83,7 @@ public class GameServiceDecorator {
                                         "}"))), responses = {
                                                         @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = JoinGameBody.class))),
                                                         @ApiResponse(responseCode = "404", description = "Game not found."),
-                                                        @ApiResponse(responseCode = "401", description = "Reached the limit of maximum players in the game."),
+                                                        @ApiResponse(responseCode = "417", description = "Reached the limit of maximum players in the game."),
                                                         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
                                         })
         public void joinGame(RoutingContext context) {
@@ -193,7 +194,7 @@ public class GameServiceDecorator {
                             )
                     ),
                     @ApiResponse(responseCode = "404", description = "Game or username not found."),
-                    @ApiResponse(responseCode = "401", description = "Invalid card."),
+                    @ApiResponse(responseCode = "417", description = "Invalid card."),
                     @ApiResponse(responseCode = "500", description = "Internal Server Error.")
             }
     )
@@ -241,7 +242,7 @@ public class GameServiceDecorator {
                             )
                     ),
                     @ApiResponse(responseCode = "404", description = "Game not found."),
-                    @ApiResponse(responseCode = "401", description = "Invalid suit."),
+                    @ApiResponse(responseCode = "417", description = "Invalid suit."),
                     @ApiResponse(responseCode = "500", description = "Internal Server Error.")
             }
     )
@@ -405,7 +406,7 @@ public class GameServiceDecorator {
                             )
                     ),
                     @ApiResponse(responseCode = "404", description = "Game not found."),
-                    @ApiResponse(responseCode = "401", description = "Invalid call."),
+                    @ApiResponse(responseCode = "417", description = "Invalid call."),
                     @ApiResponse(responseCode = "500", description = "Internal Server Error.")
             }
     )

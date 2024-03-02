@@ -27,12 +27,19 @@ public class GameService {
         this.statisticManager = statisticManager;
     }
 
-    public JsonObject createGame(Integer numberOfPlayers, String username, int expectedScore) {
+    public JsonObject createGame(Integer numberOfPlayers, String username, int expectedScore, String gameMode) {
         JsonObject jsonGame = new JsonObject();
         UUID newId = UUID.randomUUID();
         GameVerticle currentGame;
-        if (this.statisticManager != null ) currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore, this.statisticManager);
-        else currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore);
+        try {
+            if (this.statisticManager != null)
+                currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore, GameMode.valueOf(gameMode),
+                        this.statisticManager);
+            else
+                currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore, GameMode.valueOf(gameMode.toUpperCase()));
+        } catch (IllegalArgumentException e){
+            return jsonGame.put(Constants.INVALID, gameMode);
+        }
         this.games.put(newId, currentGame);
         vertx.deployVerticle(currentGame);
         jsonGame.put(Constants.GAME_ID, String.valueOf(newId));
@@ -100,7 +107,13 @@ public class GameService {
     public JsonObject chooseTrump(UUID gameID, String cardSuit) {
         JsonObject jsonTrump = new JsonObject();
         if(this.games.get(gameID) != null){
-            CardSuit trump = CardSuit.valueOf(cardSuit);
+            CardSuit trump;
+            try{
+                trump = CardSuit.valueOf(cardSuit);
+            }
+            catch(IllegalArgumentException e){
+                trump = CardSuit.NONE;
+            }
             this.games.get(gameID).chooseTrump(trump);
             jsonTrump.put(Constants.MESSAGE, trump + " setted as trump");
             if (trump.equals(CardSuit.NONE)) {
@@ -202,7 +215,11 @@ public class GameService {
 
     public JsonObject getJsonGames() {
         JsonObject jsonGames = new JsonObject();
-        this.games.forEach((g, v) -> jsonGames.put(String.valueOf(g), g));
+        if(!this.games.isEmpty()) {
+            this.games.forEach((g, v) -> jsonGames.put(g + "_" + v.getGameMode() + "_" + v.getStatus() + "_" + v.getNumberOfPlayersIn(), g));
+        } else {
+            jsonGames.put(Constants.NOT_FOUND, false);
+        }
         return jsonGames;
     }
 }

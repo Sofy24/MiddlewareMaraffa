@@ -40,11 +40,11 @@ public class MainVerticle extends AbstractVerticle implements GameApi {
     }
 
     @Override
-    public UUID createGame(String username, int numberOfPlayers, int expectedScore) {//TODO insert id as param
+    public UUID createGame(String username, int numberOfPlayers, int expectedScore, GameMode gameMode) {//TODO insert id as param
         // lastGameId++;
         // int newId = lastGameId;
         UUID newId = UUID.randomUUID();
-        GameVerticle currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore, this.statisticManager);
+        GameVerticle currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore, gameMode, this.statisticManager);
         this.games.put(newId, currentGame);
         vertx.deployVerticle(currentGame);
         return newId;

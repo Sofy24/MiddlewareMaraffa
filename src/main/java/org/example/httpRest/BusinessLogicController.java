@@ -56,10 +56,11 @@ public class BusinessLogicController {
             .putHeader("Accept",
                     "application/json") // (4)
             .as(BodyCodec.jsonObject())
-        .send(handler -> {
+            .send(handler -> {
+            System.out.println("Got any response ??");
             if(handler.succeeded()){
                 System.out.println("Got the shuffled deck");
-                System.out.println(handler.result().bodyAsJsonObject());
+                System.out.println(handler.result().body().getString( "joke"));
                 future.complete(handler.result().bodyAsJsonObject());
             }else{
                 // future.complete(handler.cause().getMessage());

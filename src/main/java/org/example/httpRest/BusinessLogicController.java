@@ -48,65 +48,65 @@ public class BusinessLogicController {
     public CompletableFuture<JsonObject> getShuffledDeck(final Integer numberOfPlayers) {
         CompletableFuture<JsonObject> future = new CompletableFuture<>();
         System.out.println("Getting the shuffled deck");
-        WebClient.create(vertx).get(443,
-                "icanhazdadjoke.com",
-                "/") // (2)
-        // webClient.get(PORT, LOCALHOST, "/games/startRound")
-            .ssl(true)
-            .putHeader("Accept",
-                    "application/json") // (4)
-            .as(BodyCodec.jsonObject())
-            .send(handler -> {
-            System.out.println("Got any response ??");
-            if(handler.succeeded()){
-                System.out.println("Got the shuffled deck");
-                System.out.println(handler.result().body().getString( "joke"));
-                future.complete(handler.result().bodyAsJsonObject());
-            }else{
-                // future.complete(handler.cause().getMessage());
-                System.out.println("Error in getting the shuffled deck");
-                System.out.println(handler.cause().getMessage());
-                future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
-            }
-        });
+        // WebClient.create(vertx).get(443,
+        // "icanhazdadjoke.com",
+        // "/") // (2)
+        WebClient.create(vertx).get(PORT, LOCALHOST, "/games/startRound")
+                // .ssl(true)
+                .putHeader("Accept",
+                        "application/json") // (4)
+                .as(BodyCodec.jsonObject())
+                .send(handler -> {
+                    System.out.println("Got any response ??");
+                    if (handler.succeeded()) {
+                        System.out.println("Got the shuffled deck");
+                        System.out.println(handler.result().bodyAsString());
+                        future.complete(handler.result().bodyAsJsonObject());
+                    } else {
+                        // future.complete(handler.cause().getMessage());
+                        System.out.println("Error in getting the shuffled deck");
+                        System.out.println(handler.cause().getMessage());
+                        future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
+                    }
+                });
         // .onFailure(
-        //     fail -> {
-        //         System.out.println("Error in getting the shuffled deck");
-        //         System.out.println(fail.getMessage());
-        //         future.completeExceptionally(fail);
-        //     }
+        // fail -> {
+        // System.out.println("Error in getting the shuffled deck");
+        // System.out.println(fail.getMessage());
+        // future.completeExceptionally(fail);
+        // }
         // )
         // .onSuccess(response -> {
-        //     System.out.println("Got the shuffled deck");
-        //     if (response.statusCode() == 200) {
-        //         JsonObject json = response.bodyAsJsonObject();
-        //         System.out.println(json);
-        //         future.complete(json);
-        //     } else {
-        //         System.out.println("Error in getting the shuffled deck");
-        //     }
+        // System.out.println("Got the shuffled deck");
+        // if (response.statusCode() == 200) {
+        // JsonObject json = response.bodyAsJsonObject();
+        // System.out.println(json);
+        // future.complete(json);
+        // } else {
+        // System.out.println("Error in getting the shuffled deck");
+        // }
         // });
         return future;
     }
 
     private void computeScore(RoutingContext routingContext, Trick trick, String trump) {
         // webClient.post(PORT, LOCALHOST, "/computeScore")
-        //         .sendJsonObject(new JsonObject().put("trick", trick).put("trump", trump),
-        //                 ar -> {
-        //                     if (ar.succeeded()) {
-        //                         HttpResponse<Buffer> response = ar.result();
-        //                         if (response.statusCode() == 201) {
-        //                             routingContext.response()
-        //                                     .setStatusCode(201)
-        //                                     .end(response.bodyAsString());
-        //                         } else {
-        //                             routingContext.response()
-        //                                     .setStatusCode(417)
-        //                                     .end("Computation of score failed");
-        //                         }
-        //                     } else {
-        //                         routingContext.fail(ar.cause());
-        //                     }
-        //                 });
+        // .sendJsonObject(new JsonObject().put("trick", trick).put("trump", trump),
+        // ar -> {
+        // if (ar.succeeded()) {
+        // HttpResponse<Buffer> response = ar.result();
+        // if (response.statusCode() == 201) {
+        // routingContext.response()
+        // .setStatusCode(201)
+        // .end(response.bodyAsString());
+        // } else {
+        // routingContext.response()
+        // .setStatusCode(417)
+        // .end("Computation of score failed");
+        // }
+        // } else {
+        // routingContext.fail(ar.cause());
+        // }
+        // });
     }
 }

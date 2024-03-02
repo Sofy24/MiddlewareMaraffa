@@ -157,6 +157,7 @@ public class GameServiceDecorator {
                 System.out.println("Checking deck");
                 this.businessLogicController.getShuffledDeck(4).whenComplete((result, err) -> {
                         System.out.println("Got sample response");
+                        System.out.println(result);
                         // if (err != null) {
                         //         context.response().setStatusCode(500)
                         //                         .end(err.getMessage());

@@ -106,7 +106,7 @@ public class GameService {
         System.out.println("playing card");
         if(this.games.get(gameID) != null && this.games.get(gameID).canStart()){
             this.games.get(gameID).addCard(card, username);
-            this.businessLogicController.computeScore(new TrickImpl(4, CardSuit.CLUBS), "Coins").whenComplete((result, err) -> {
+            this.businessLogicController.computeScore(this.games.get(gameID).getCurrentTrick(), this.games.get(gameID).getTrump().toString()).whenComplete((result, err) -> {
                 System.out.println("Got sample response");
                 System.out.println(result);
             });

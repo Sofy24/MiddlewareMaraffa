@@ -55,7 +55,7 @@ public class GameServiceDecorator {
                         Constants.GAME_TAG }, requestBody = @RequestBody(description = "insert username and the number of players", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = CreateGameBody.class, example = "{\n"
                                         +
                                         "  \"" + Constants.NUMBER_OF_PLAYERS + "\": 4,\n" +
-                                        "  \"" + Constants.USERNAME + "\": \"string\",\n" +
+                                        "  \"" + Constants.USERNAME + "\": \"sofi\",\n" +
                                         "  \"" + Constants.EXPECTED_SCORE + "\": 41,\n" +
                                         "  \"" + Constants.GAME_MODE + "\": \"CLASSIC\"\n" +
                                         "}"))), responses = {
@@ -79,7 +79,7 @@ public class GameServiceDecorator {
                         Constants.GAME_TAG }, requestBody = @RequestBody(description = "username and id of the game are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = JoinGameBody.class, example = "{\n"
                                         +
                                         "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
-                                        "  \"" + Constants.USERNAME + "\": \"string\"\n" +
+                                        "  \"" + Constants.USERNAME + "\": \"james\"\n" +
                                         "}"))), responses = {
                                                         @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = JoinGameBody.class))),
                                                         @ApiResponse(responseCode = "404", description = "Game not found."),
@@ -163,9 +163,9 @@ public class GameServiceDecorator {
                         Constants.ROUND_TAG }, requestBody = @RequestBody(description = "username, card and id of the game are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = PlayCardBody.class, example = "{\n"
                                         +
                                         "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
-                                        "  \"" + Constants.USERNAME + "\": \"string\",\n" +
-                                        "  \"" + Constants.CARD_VALUE + "\": 0,\n" +
-                                        "  \"" + Constants.CARD_SUIT + "\": \"string\"\n" +
+                                        "  \"" + Constants.USERNAME + "\": \"sofi\",\n" +
+                                        "  \"" + Constants.CARD_VALUE + "\": 7,\n" +
+                                        "  \"" + Constants.CARD_SUIT + "\": \"2\"\n" +
                                         "}"))), responses = {
                                                         @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = PlayCardBody.class))),
                                                         @ApiResponse(responseCode = "404", description = "Game or username not found."),
@@ -173,25 +173,35 @@ public class GameServiceDecorator {
                                                         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
                                         })
         public void playCard(RoutingContext context) {
+                JsonObject response= new JsonObject();
                 String uuidAsString = context.body().asJsonObject().getString(Constants.GAME_ID);
                 UUID gameID = UUID.fromString(uuidAsString);
                 String cardValue = context.body().asJsonObject().getString(Constants.CARD_VALUE);
                 String cardSuit = context.body().asJsonObject().getString(Constants.CARD_SUIT);
+                System.out.println("cardSuit = " + cardSuit);
+                System.out.println("cardValue = " + cardValue);
                 try{
-                        Card<CardValue, CardSuit> card = new Card<>(CardValue.valueOf(cardValue), CardSuit.valueOf(cardSuit));
+                        Card<CardValue, CardSuit> card = new Card<>(CardValue.getName(cardValue), CardSuit.getName(cardSuit));
+                        System.out.println("card = " + card);
                         String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
+                        System.out.println("username = " + username);
                         if (card.cardSuit().equals(CardSuit.NONE) || card.cardValue().equals(CardValue.NONE)) {
+                                System.out.println("401 = " + username);
                                 context.response().setStatusCode(401).end("Invalid " + card);
                         } else {
                                 if (this.gameService.playCard(gameID, username, card)) {
-                                        context.response().end();
-                                        // context.response().end(card + " played by " + username);
+                                        response.put(Constants.MESSAGE, card + " played by " + username);
+                                        context.response().end(response.toBuffer());
+                                        System.out.println("username = " + username);
                                 } else {
-                                        context.response().setStatusCode(404).end("Game " + gameID + " not found");
+                                        response.put(Constants.MESSAGE, "Game " + gameID + " not found");
+                                        context.response().setStatusCode(404).end(response.toBuffer());
+                                        System.out.println("404 = " + username);
                                 }
                         }
                 } catch (IllegalArgumentException e){
-                        context.response().setStatusCode(417).end("Card value " + cardValue + " or card suit "+ cardSuit + " invalid");
+                        response.put(Constants.MESSAGE, "Error playing " + cardValue + ", "+ cardSuit);
+                        context.response().setStatusCode(417).end(response.toBuffer());
                 }
 
         }

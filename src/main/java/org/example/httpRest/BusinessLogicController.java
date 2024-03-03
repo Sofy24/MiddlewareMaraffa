@@ -1,7 +1,11 @@
 package org.example.httpRest;
 
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
+import org.example.AppServer;
 import org.example.game.Trick;
 
 
@@ -22,6 +26,7 @@ public class BusinessLogicController {
     private static final int PORT = 3000;
     private static final String LOCALHOST = "127.0.0.1";
     private final Router router;
+    private static final Logger LOGGER = LoggerFactory.getLogger(AppServer.class);
     // private WebClient webClient;
 
     public BusinessLogicController(Vertx vertx) {
@@ -90,10 +95,16 @@ public class BusinessLogicController {
     }
 
     public CompletableFuture<JsonObject> computeScore(Trick trick, String trump) {
+        //System.out.println("trick.getCards().stream() = " + trick.getCards().stream());
+        trick.getCards().stream().mapToInt(Integer::parseInt).forEach(System.out::println);
+        int[] cards = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
+        System.out.println("cards = " + cards);
         JsonObject requestBody = new JsonObject()
-                .put("trick", new int[]{1, 2, 3, 4})
-                .put("trump", 2);
+                .put("trick", cards)
+                .put("trump", Integer.parseInt(trump));
+        System.out.println("requestBody = " + requestBody);
         CompletableFuture<JsonObject> future = new CompletableFuture<>();
+        LOGGER.info("Computing the score");
         System.out.println("Computing the score");
         WebClient.create(vertx).post(PORT, LOCALHOST, "/games/computeScore")
                 .putHeader("Accept", "application/json")
@@ -102,6 +113,8 @@ public class BusinessLogicController {
                     if (handler.succeeded()) {
                         future.complete(handler.result().body());
                     } else {
+                        LOGGER.info("Error in computing the score");
+                        LOGGER.error("Error in computing the score");
                         System.out.println("Error in computing the score");
                         System.out.println(handler.cause().getMessage());
                         future.complete(JsonObject.of().put("error", handler.cause().getMessage()));

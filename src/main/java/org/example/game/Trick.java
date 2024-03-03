@@ -2,6 +2,7 @@ package org.example.game;
 
 import org.example.utils.Pair;
 
+import java.util.List;
 import java.util.Map;
 
 public interface Trick {
@@ -14,9 +15,12 @@ public interface Trick {
      */
     boolean isCompleted();
 
-    /**@return the cards in the trick*/
+    /**@return the cards and the users in the trick*/
     // Map<String, Pair<Integer, String>> getCards();
-    Map<String, String> getCards();
+    Map<String, String> getCardsAndUsers();
+
+    /**@return the cards in the trick*/
+    List<String> getCards();
 
     /**@param call the call
      * @param username the user who makes the call

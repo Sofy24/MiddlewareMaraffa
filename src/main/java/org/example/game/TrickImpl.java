@@ -1,13 +1,11 @@
 package org.example.game;
 
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
-import org.example.utils.Pair;
 
 public class TrickImpl implements Trick{
     // private final Map<String, Pair<Integer, String>> cards = new HashMap<>();
@@ -43,14 +41,12 @@ public class TrickImpl implements Trick{
         this.call = call;
     }
 
-    public List<?> getUsersCards(){
-        //TODO restituisci la lista con le carte nell'ordine in cui sono state giocate
-        return  null;
+    public List<String> getCards(){
+        return  this.cards.keySet().stream().toList();
     }
 
     @Override
-    public Map<String, String> getCards() {
-    // public Map<String, Pair<Integer, String>> getCards() {
+    public Map<String, String> getCardsAndUsers() {
         return this.cards;
     }   
 

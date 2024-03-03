@@ -193,8 +193,8 @@ public class GameServiceDecorator {
                                         response.put(Constants.MESSAGE, card + " played by " + username);
                                         System.out.println("username = " + username);
                                         System.out.println(this.gameService.getGames());
-                                        if(this.gameService.getGames().get(gameID).isCompleted()){
-                                                this.businessLogicController.computeScore(this.games.get(gameID).getCurrentTrick(), this.games.get(gameID).getTrump().toString()).whenComplete((result, err) -> {
+                                        if(this.gameService.getGames().get(gameID).getLatestTrick().isCompleted()){
+                                                this.businessLogicController.computeScore(this.gameService.getGames().get(gameID).getLatestTrick(), this.games.get(gameID).getTrump().toString()).whenComplete((result, err) -> {
                                                         System.out.println("Got sample response");
                                                         System.out.println(result);
                                                         context.response().end(response.toBuffer());

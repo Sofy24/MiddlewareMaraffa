@@ -36,6 +36,7 @@ public class GameVerticle extends AbstractVerticle {
     private final GameSchema gameSchema;
     private AbstractStatisticManager statisticManager;
     private Trick currentTrick;
+    private List<Trick> tricks = new ArrayList<>();
     private Team team1;
     private Team team2;
     private Status status = Status.WAITING_PLAYERS;
@@ -45,24 +46,27 @@ public class GameVerticle extends AbstractVerticle {
         return gameSchema;
     }
 
-    public GameVerticle(UUID id, String username, int numberOfPlayers, int expectedScore, GameMode gameMode, AbstractStatisticManager statisticManager) {
+    public GameVerticle(UUID id, String username, int numberOfPlayers, int expectedScore, GameMode gameMode,
+            AbstractStatisticManager statisticManager) {
         this.id = id;
         this.gameMode = gameMode;
         this.expectedScore = expectedScore;
-        this.currentScore = new Pair<>(0,0);
+        this.currentScore = new Pair<>(0, 0);
         this.currentState = new AtomicInteger(0);
         this.numberOfPlayers = numberOfPlayers;
         users.add(username);
         this.gameSchema = new GameSchema(String.valueOf(id), CardSuit.NONE);
         this.statisticManager = statisticManager;
-        if(this.statisticManager != null) this.statisticManager.createRecord(this.gameSchema); //TODO andrebbero usati gli UUID ma vediamo se mongo di aiuta con la questione _id
+        if (this.statisticManager != null)
+            this.statisticManager.createRecord(this.gameSchema); // TODO andrebbero usati gli UUID ma vediamo se mongo
+                                                                 // di aiuta con la questione _id
     }
 
     public GameVerticle(UUID id, String username, int numberOfPlayers, int expectedScore, GameMode gameMode) {
         this.id = id;
         this.gameMode = gameMode;
         this.expectedScore = expectedScore;
-        this.currentScore = new Pair<>(0,0);
+        this.currentScore = new Pair<>(0, 0);
         this.currentState = new AtomicInteger(0);
         this.numberOfPlayers = numberOfPlayers;
         users.add(username);
@@ -95,14 +99,16 @@ public class GameVerticle extends AbstractVerticle {
     public boolean addCard(Card<CardValue, CardSuit> card, String username) {
         System.out.println("card = " + card);
         if (canStart()) {
-            if(this.currentTrick == null){
+            if (this.currentTrick == null) {
                 this.currentTrick = this.states.getOrDefault(this.currentState.get(),
-                    new TrickImpl(this.numberOfPlayers, this.trump));
-            } 
+                        new TrickImpl(this.numberOfPlayers, this.trump));
+                this.tricks.add(this.currentTrick);
+            }
             currentTrick.addCard(card, username);
             if (currentTrick.isCompleted()) {
                 this.gameSchema.addTrick(currentTrick);
-                if(this.statisticManager != null) this.statisticManager.updateRecordWithTrick(String.valueOf(id), currentTrick);
+                if (this.statisticManager != null)
+                    this.statisticManager.updateRecordWithTrick(String.valueOf(id), currentTrick);
                 this.states.put(this.currentState.incrementAndGet(), currentTrick);
                 currentTrick = this.trump == CardSuit.NONE ? null : new TrickImpl(this.numberOfPlayers, this.trump);
             }
@@ -120,14 +126,19 @@ public class GameVerticle extends AbstractVerticle {
     public void chooseTrump(CardSuit suit) {
         this.trump = suit;
         this.gameSchema.setTrump(suit);
-        if(this.statisticManager != null) this.statisticManager.updateSuit(this.gameSchema); //TODO serve davvero o soltanto roba che sembra utile ? 
+        if (this.statisticManager != null)
+            this.statisticManager.updateSuit(this.gameSchema); // TODO serve davvero o soltanto roba che sembra utile ?
     }
 
-    /**@return true if all the players are in*/
-    public boolean startGame(){
-        if(this.users.size() == this.numberOfPlayers){
-            this.team1 = new Team(IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 == 0).mapToObj(this.users::get).toList(), "A");
-            this.team2 = new Team(IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 != 0).mapToObj(this.users::get).toList(), "B");
+    /** @return true if all the players are in */
+    public boolean startGame() {
+        if (this.users.size() == this.numberOfPlayers) {
+            this.team1 = new Team(
+                    IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 == 0).mapToObj(this.users::get).toList(),
+                    "A");
+            this.team2 = new Team(
+                    IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 != 0).mapToObj(this.users::get).toList(),
+                    "B");
             this.status = Status.PLAYING;
             return true;
         }
@@ -139,15 +150,17 @@ public class GameVerticle extends AbstractVerticle {
         this.chooseTrump(CardSuit.NONE);
     }
 
-    /**@param call the call
+    /**
+     * @param call     the call
      * @param username the user who makes the call
-     * @return true if the call is made correctly */
-    public boolean makeCall(Call call, String username){
-        if (currentTrick == null){
+     * @return true if the call is made correctly
+     */
+    public boolean makeCall(Call call, String username) {
+        if (currentTrick == null) {
             this.currentTrick = this.states.getOrDefault(this.currentState.get(),
                     new TrickImpl(this.numberOfPlayers, this.trump));
         }
-        if (users.get(0).equals(username)){
+        if (users.get(0).equals(username)) {
             this.currentTrick.setCall(call, username);
         }
         return !this.currentTrick.getCall().equals(Call.NONE);
@@ -173,6 +186,11 @@ public class GameVerticle extends AbstractVerticle {
         return currentTrick;
     }
 
+    public Trick getLatestTrick() {
+        return  this.getCurrentState().get() == 0 ? 
+        this.tricks.get(this.getCurrentState().get()) : this.tricks.get(this.getCurrentState().get() - 1);
+    }
+
     public CardSuit getTrump() {
         return trump;
     }
@@ -181,8 +199,8 @@ public class GameVerticle extends AbstractVerticle {
         return status;
     }
 
-    /**@return true if the current trick is completed*/
-    public boolean isCompleted(){
+    /** @return true if the current trick is completed */
+    public boolean isCompleted() {
         return this.currentTrick.isCompleted();
     }
 
@@ -190,33 +208,33 @@ public class GameVerticle extends AbstractVerticle {
         return gameMode;
     }
 
-    /**@return the number of players who have already joined the game*/
-    public int getNumberOfPlayersIn(){
+    /** @return the number of players who have already joined the game */
+    public int getNumberOfPlayersIn() {
         return this.users.size();
     }
 
-    /**@return the number of players for this game*/
-    public int getMaxNumberOfPlayers(){
+    /** @return the number of players for this game */
+    public int getMaxNumberOfPlayers() {
         return this.numberOfPlayers;
     }
 
-    /**@return true if the round is ended*/
-    public boolean isRoundEnded(){
+    /** @return true if the round is ended */
+    public boolean isRoundEnded() {
         double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
         return this.currentState.get() == numberOfTricksInRound;
     }
 
-    /**@return true if the game is ended*/
-    public boolean isGameEnded(){
+    /** @return true if the game is ended */
+    public boolean isGameEnded() {
         return this.currentScore.getX() >= this.expectedScore || this.currentScore.getY() >= this.expectedScore;
     }
 
-    /**@return a json with id, status and game mode*/
-    public JsonObject toJson(){
+    /** @return a json with id, status and game mode */
+    public JsonObject toJson() {
         JsonObject json = new JsonObject();
         json.put("gameID", this.id.toString())
-            .put("status", this.status.toString())
-            .put("gameMode", this.gameMode.toString());
+                .put("status", this.status.toString())
+                .put("gameMode", this.gameMode.toString());
         return json;
     }
 }

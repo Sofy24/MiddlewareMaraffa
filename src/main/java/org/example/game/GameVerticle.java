@@ -28,7 +28,6 @@ public class GameVerticle extends AbstractVerticle {
     private final int numberOfPlayers;
     private Pair<Integer, Integer> currentScore;
     private final int expectedScore;
-    private final IDeck deck = new Deck();
     private CardSuit trump = CardSuit.NONE;
     private Map<Integer, Trick> states = new ConcurrentHashMap<>();
     private final List<String> users = new ArrayList<>();

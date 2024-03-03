@@ -2,8 +2,8 @@ package org.example.service.schema;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.example.utils.Constants;
-
 import java.util.Objects;
+
 
 public class JoinGameBody {
     @JsonProperty(Constants.GAME_ID)

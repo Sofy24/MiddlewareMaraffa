@@ -6,11 +6,17 @@ public enum CardValue {
 
     public final Integer value;
 
-    private CardValue(Integer value) {
+    CardValue(Integer value) {
         this.value = value;
     }
 
     public Integer getValue(){
         return value;
+    }
+
+    public static CardValue getName(String value) {
+        for(CardValue v : values())
+            if(v.getValue().equals(Integer.parseInt(value))) return v;
+        throw new IllegalArgumentException();
     }
 }

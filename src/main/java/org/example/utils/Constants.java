@@ -12,6 +12,9 @@ public class Constants {
     public static final String CALL = "call";
     public static final String ENDED = "isEnded";
     public static final String EXPECTED_SCORE = "expectedScore";
+    public static final String GAME = "games";
+    public static final String STATUS = "status";
+    public static final String GAME_MODE = "mode";
     //routes
     public static final String CREATE_GAME = "game/create";
     public static final String JOIN_GAME = "game/join";
@@ -48,12 +51,13 @@ public class Constants {
     //json attributes
     public static final String START_ATTR = "start";
     public static final String JOIN_ATTR = "join";
-    public static final String NOT_FOUND = "notFound";
+    public static final String NOT_FOUND = "not found";
     public static final String FULL = "full";
     public static final String MESSAGE = "message";
     public static final String ALREADY_JOINED = "alreadyJoined";
     public static final String ILLEGAL_TRUMP = "illegalTrump";
     public static final String TRUMP = "trump";
+    public static final String INVALID = "invalid";
     //game constants
     public static final int NUMBER_OF_CARDS = 40;
 

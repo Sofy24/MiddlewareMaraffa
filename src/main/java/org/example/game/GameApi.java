@@ -6,7 +6,7 @@ public interface GameApi {
     /** create a game and username is one of the players
      * @param username of the player who has created the game
      * @return the id of the Game (modeled with a Verticle)*/
-    UUID createGame(String username, int numberOfPlayers, int expectedScore);
+    UUID createGame(String username, int numberOfPlayers, int expectedScore, GameMode gameMode);
 
     /** the username join the specif game
      * @param username of the player who has created the game

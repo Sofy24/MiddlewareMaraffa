@@ -3,36 +3,49 @@ package org.example.service;
 
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.example.game.*;
+import org.example.httpRest.BusinessLogicController;
 import org.example.repository.AbstractStatisticManager;
 import org.example.utils.Constants;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 
 public class GameService {
     private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
-    private Vertx vertx;
+    private final Vertx vertx;
+    private final BusinessLogicController businessLogicController;
 
     private AbstractStatisticManager statisticManager;
 
     public GameService(Vertx vertx) {
         this.vertx = vertx;
+        this.businessLogicController = new BusinessLogicController(vertx);
     }
 
     public GameService(Vertx vertx, AbstractStatisticManager statisticManager) {
         this.vertx = vertx;
+        this.businessLogicController = new BusinessLogicController(vertx);
         this.statisticManager = statisticManager;
     }
 
-    public JsonObject createGame(Integer numberOfPlayers, String username, int expectedScore) {
+    public JsonObject createGame(Integer numberOfPlayers, String username, int expectedScore, String gameMode) {
         JsonObject jsonGame = new JsonObject();
         UUID newId = UUID.randomUUID();
         GameVerticle currentGame;
-        if (this.statisticManager != null ) currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore, this.statisticManager);
-        else currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore);
+        try {
+            if (this.statisticManager != null)
+                currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore, GameMode.valueOf(gameMode),
+                        this.statisticManager);
+            else
+                currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore, GameMode.valueOf(gameMode.toUpperCase()));
+        } catch (IllegalArgumentException e){
+            return jsonGame.put(Constants.INVALID, gameMode);
+        }
         this.games.put(newId, currentGame);
         vertx.deployVerticle(currentGame);
         jsonGame.put(Constants.GAME_ID, String.valueOf(newId));
@@ -90,8 +103,29 @@ public class GameService {
     }
 
     public boolean playCard(UUID gameID, String username, Card<CardValue, CardSuit> card){
+        System.out.println("playing card");
         if(this.games.get(gameID) != null && this.games.get(gameID).canStart()){
             this.games.get(gameID).addCard(card, username);
+            this.businessLogicController.computeScore(new TrickImpl(4, CardSuit.CLUBS), "Coins").whenComplete((result, err) -> {
+                System.out.println("Got sample response");
+                System.out.println(result);
+            });
+            if (this.games.get(gameID).isCompleted()){//this.games.get(gameID).getCurrentTrick()
+                System.out.println(" playing ");
+                /*this.businessLogicController.computeScore([1,2,3,4], 2).whenComplete((result, err) -> {
+                    System.out.println("Got sample response");
+                    System.out.println(result);
+                    if (result.containsKey("error")) {
+                        context.response().setStatusCode(500).end(result.toBuffer());
+                    } else {
+                        JsonArray deck = result.getJsonArray("deck");
+                        Integer firstPlayer = result.getInteger("firstPlayer");
+                        startResponse.put("deck", deck);
+                        startResponse.put("firstPlayer", firstPlayer);
+                        context.response().end(startResponse.toBuffer());
+                    }
+                });*/
+            }
             return true;
         }
         return false;
@@ -100,7 +134,13 @@ public class GameService {
     public JsonObject chooseTrump(UUID gameID, String cardSuit) {
         JsonObject jsonTrump = new JsonObject();
         if(this.games.get(gameID) != null){
-            CardSuit trump = CardSuit.valueOf(cardSuit);
+            CardSuit trump;
+            try{
+                trump = CardSuit.valueOf(cardSuit);
+            }
+            catch(IllegalArgumentException e){
+                trump = CardSuit.NONE;
+            }
             this.games.get(gameID).chooseTrump(trump);
             jsonTrump.put(Constants.MESSAGE, trump + " setted as trump");
             if (trump.equals(CardSuit.NONE)) {
@@ -200,9 +240,10 @@ public class GameService {
         return this.games;
     }
 
-    public JsonObject getJsonGames() {
-        JsonObject jsonGames = new JsonObject();
-        this.games.forEach((g, v) -> jsonGames.put(String.valueOf(g), g));
+    /**@return the json with all the games and their properties*/
+    public JsonArray getJsonGames() {
+        JsonArray jsonGames = new JsonArray();
+        this.games.values().stream().map(GameVerticle::toJson).forEach(jsonGames::add);
         return jsonGames;
     }
 }

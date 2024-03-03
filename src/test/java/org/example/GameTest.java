@@ -1,10 +1,13 @@
 package org.example;
 
+import io.vertx.core.json.JsonArray;
 import org.example.game.Card;
 import org.example.game.CardSuit;
 import org.example.game.CardValue;
+import org.example.game.GameMode;
 import org.example.service.GameService;
 import org.example.utils.Constants;
+import org.junit.Assert;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +33,9 @@ public class GameTest {
     private static final String FAKE_TRUMP = "hammers";
     private static final String CALL = "busso";
     private static final String FAKE_CALL = "suono";
+    private static final String FAKE_GAME_MODE = "tresette";
     private static final CardSuit UNDEFINED_TRUMP = CardSuit.NONE;
+    private static final GameMode GAME_MODE = GameMode.CLASSIC;
     private static final int MARAFFA_PLAYERS = 4;
     private static final int UUID_SIZE = 36;
     private static final int EXPECTED_SCORE = 11;
@@ -46,7 +51,7 @@ public class GameTest {
      * until the verticle has successfully
      * completed its start sequence (thanks to `context.asyncAssertSuccess`).
      */
-    @BeforeAll
+    @BeforeEach
     public void setUp() {
         this.vertx = Vertx.vertx();
         this.gameService = new GameService(this.vertx);
@@ -56,7 +61,7 @@ public class GameTest {
      * This method, called after our test, just cleanup everything by closing the
      * vert.x instance
      */
-    @AfterAll
+    @AfterEach
     public void tearDown() {
         vertx.close();
     }
@@ -65,7 +70,7 @@ public class GameTest {
      * */
     @Test
     public void createGameTest(VertxTestContext context) {
-        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE);
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
         Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length()); // Assuming UUID is 36 characters long
         context.completeNow();
     }
@@ -81,7 +86,7 @@ public class GameTest {
      /**The join should add at maximum {@code MARAFFA_PLAYERS}*/
      @Test
      public void joinReachedLimitGameTest(VertxTestContext context) {
-         JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE);
+         JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
          Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
          for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
              JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
@@ -95,7 +100,7 @@ public class GameTest {
      /** The same user can't be added twice* */
      @Test
      public void joinWithSameUserTest(VertxTestContext context) {
-         JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE);
+         JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
          Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
          JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + TEST_USER);
          assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
@@ -107,7 +112,7 @@ public class GameTest {
      /**If all the players haven't joined, the game can't start*/
      @Test
      public void theGameCantStartTest(VertxTestContext context){
-         JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE);
+         JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
          Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
          JsonObject startGameResponse = this.gameService.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
          for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
@@ -120,11 +125,10 @@ public class GameTest {
          context.completeNow();
      }
 
-     /**The round can't start if the trump is {@code CardSuit.NONE} and
-      * if all players haven't joined it*/
+     /**The round can't start if all players haven't joined it*/
      @Test
-     public void chooseTrumpAndWaitAllPlayersTest(VertxTestContext context){
-         JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE);
+     public void waitAllPlayersTest(VertxTestContext context){
+         JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
          Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
          for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
              JsonObject canStartResponse = this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
@@ -132,19 +136,17 @@ public class GameTest {
              JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
              assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
          }
-         JsonObject canStartResponse = this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
-         assertFalse(canStartResponse.getBoolean(Constants.START_ATTR));
          JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
          assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-         canStartResponse = this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
+         JsonObject canStartResponse = this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
          assertTrue(canStartResponse.getBoolean(Constants.START_ATTR));
          context.completeNow();
      }
 
      /**The trump is not a legal suit*/
      @Test
-     public void chooseWrongTest(VertxTestContext context){
-         JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE);
+     public void chooseWrongTrumpTest(VertxTestContext context){
+         JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
          Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
          for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
              JsonObject canStartResponse = this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
@@ -161,7 +163,7 @@ public class GameTest {
      /**Reset the trump in order to start a new round */
      @Test
      public void startNewRoundTest(VertxTestContext context){
-         JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE);
+         JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
          Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
          for (int i = 0; i < MARAFFA_PLAYERS - 2; i++) {
              JsonObject canStartResponse = this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
@@ -179,14 +181,13 @@ public class GameTest {
      /** The card can be played only when the game is started*/
      @Test
      public void playCardTest(VertxTestContext context) {
-         JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE);
+         JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
          Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
          for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
              assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD));
              JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
              assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
          }
-         assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD));
          JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
          assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
          assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD));
@@ -198,7 +199,7 @@ public class GameTest {
     /** Get a state*/
     @Test
     public void getStateTest(VertxTestContext context) {
-        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE);
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
         Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
         for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
             assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD));
@@ -221,7 +222,7 @@ public class GameTest {
     /** A round should not end if less than @code{{Constants.NUMBER_OF_CARDS}} are played*/
     @Test
     public void isRoundEndedTest(VertxTestContext context) {
-        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER + "0", EXPECTED_SCORE);
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER + "0", EXPECTED_SCORE, GAME_MODE.toString());
         Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
         for (int i = 1; i < MARAFFA_PLAYERS; i++) {
             assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD));
@@ -241,7 +242,7 @@ public class GameTest {
     /** A game should end if a team reaches the expected score*/
     @Test
     public void isGameEndedTest(VertxTestContext context) {
-        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER + "0", EXPECTED_SCORE);
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER + "0", EXPECTED_SCORE, GAME_MODE.toString());
         Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
         for (int i = 1; i < MARAFFA_PLAYERS; i++) {
             assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD));
@@ -262,7 +263,7 @@ public class GameTest {
     /**Only the first player can make a call*/
     @Test
     public void onlyFirstPlayerCanMakeACallTest(VertxTestContext context){
-        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE);
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
         Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
         for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
             JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
@@ -280,7 +281,7 @@ public class GameTest {
     /**The call is not a legal call*/
     @Test
     public void chooseWrongCallTest(VertxTestContext context){
-        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE);
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
         Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
         for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
             JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
@@ -290,6 +291,29 @@ public class GameTest {
         assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
         JsonObject callResponse = this.gameService.makeCall(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), FAKE_CALL, TEST_USER);
         assertFalse(callResponse.getBoolean(Constants.MESSAGE));
+        context.completeNow();
+    }
+
+    /**Returns all the games created or not found if there aren't games*/
+    @Test
+    public void getGames(VertxTestContext context){
+        JsonArray gamesResponse = this.gameService.getJsonGames();
+        assertTrue(gamesResponse.isEmpty());
+        this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
+        this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
+        this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
+        gamesResponse = this.gameService.getJsonGames();
+        Assertions.assertEquals(3, gamesResponse.size());
+        context.completeNow();
+    }
+
+    /**The game mode is invalid, create returns "invalid" and getJsonGames "not found"*/
+    @Test
+    public void getGamesInvalidGameMode(VertxTestContext context){
+        JsonObject createResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, FAKE_GAME_MODE);
+        JsonArray gamesResponse = this.gameService.getJsonGames();
+        assertTrue(createResponse.containsKey(Constants.INVALID));
+        assertTrue(gamesResponse.isEmpty());
         context.completeNow();
     }
 

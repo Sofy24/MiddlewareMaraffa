@@ -103,14 +103,11 @@ public class GameService {
     }
 
     public boolean playCard(UUID gameID, String username, Card<CardValue, CardSuit> card){
-        System.out.println("playing card");
-        //TODO SOFY CHECK
-        return this.games.get(gameID) != null && this.games.get(gameID).canStart() && this.games.get(gameID).addCard(card, username);
-        // if(this.games.get(gameID) != null && this.games.get(gameID).canStart()){
-        //     this.games.get(gameID).addCard(card, username);
-        //     return true;
-        // }
-        // return false;
+        if(this.games.get(gameID) != null && this.games.get(gameID).canStart()){
+             this.games.get(gameID).addCard(card, username);
+             return true;
+         }
+         return false;
     }
 
     public JsonObject chooseTrump(UUID gameID, String cardSuit) {

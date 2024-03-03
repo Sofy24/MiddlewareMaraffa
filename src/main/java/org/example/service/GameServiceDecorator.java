@@ -4,6 +4,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
+import org.example.AppServer;
 import org.example.game.Card;
 import org.example.game.CardSuit;
 import org.example.game.CardValue;
@@ -34,12 +37,12 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import org.junit.jupiter.params.aggregator.ArgumentAccessException;
 
 public class GameServiceDecorator {
         private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
         private final GameService gameService;
         private BusinessLogicController businessLogicController;
+        private static final Logger LOGGER = LoggerFactory.getLogger(AppServer.class);
 
         public GameServiceDecorator(Vertx vertx) {
                 this.gameService = new GameService(vertx);
@@ -173,30 +176,22 @@ public class GameServiceDecorator {
                                                         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
                                         })
         public void playCard(RoutingContext context) {
-                JsonObject response= new JsonObject();
+                JsonObject response = new JsonObject();
                 String uuidAsString = context.body().asJsonObject().getString(Constants.GAME_ID);
                 UUID gameID = UUID.fromString(uuidAsString);
                 String cardValue = context.body().asJsonObject().getString(Constants.CARD_VALUE);
                 String cardSuit = context.body().asJsonObject().getString(Constants.CARD_SUIT);
-                System.out.println("cardSuit = " + cardSuit);
-                System.out.println("cardValue = " + cardValue);
                 try{
                         Card<CardValue, CardSuit> card = new Card<>(CardValue.getName(cardValue), CardSuit.getName(cardSuit));
-                        System.out.println("card = " + card);
                         String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
-                        System.out.println("username = " + username);
                         if (card.cardSuit().equals(CardSuit.NONE) || card.cardValue().equals(CardValue.NONE)) {
-                                System.out.println("401 = " + username);
                                 context.response().setStatusCode(401).end("Invalid " + card);
                         } else {
                                 if (this.gameService.playCard(gameID, username, card)) {
-                                        response.put(Constants.MESSAGE, card + " played by " + username);
-                                        System.out.println("username = " + username);
-                                        System.out.println(this.gameService.getGames());
                                         if(this.gameService.getGames().get(gameID).getLatestTrick().isCompleted()){
-                                                this.businessLogicController.computeScore(this.gameService.getGames().get(gameID).getLatestTrick(), this.games.get(gameID).getTrump().toString()).whenComplete((result, err) -> {
-                                                        System.out.println("Got sample response");
-                                                        System.out.println(result);
+                                                this.businessLogicController.computeScore(this.gameService.getGames().get(gameID).getLatestTrick(), this.gameService.getGames().get(gameID).getTrump().getValue().toString()).whenComplete((result, err) -> {
+                                                        LOGGER.info("Got sample response");
+                                                        response.put("result", result);
                                                         context.response().end(response.toBuffer());
                                                 });
                                         }else{
@@ -206,7 +201,6 @@ public class GameServiceDecorator {
                                 } else {
                                         response.put(Constants.MESSAGE, "Game " + gameID + " not found");
                                         context.response().setStatusCode(404).end(response.toBuffer());
-                                        System.out.println("404 = " + username);
                                 }
                         }
                 } catch (IllegalArgumentException e){

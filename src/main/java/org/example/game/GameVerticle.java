@@ -97,7 +97,6 @@ public class GameVerticle extends AbstractVerticle {
      * @param card to be added to the trick
      */
     public boolean addCard(Card<CardValue, CardSuit> card, String username) {
-        System.out.println("card = " + card);
         if (canStart()) {
             if (this.currentTrick == null) {
                 this.currentTrick = this.states.getOrDefault(this.currentState.get(),

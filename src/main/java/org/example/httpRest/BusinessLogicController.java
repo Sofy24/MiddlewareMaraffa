@@ -1,25 +1,16 @@
 package org.example.httpRest;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import org.example.AppServer;
+import org.example.game.Card;
 import org.example.game.Trick;
-
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
-import io.vertx.rxjava.core.Future;
-import rx.Completable;
 
 public class BusinessLogicController {
     private Vertx vertx;
@@ -27,37 +18,15 @@ public class BusinessLogicController {
     private static final String LOCALHOST = "127.0.0.1";
     private final Router router;
     private static final Logger LOGGER = LoggerFactory.getLogger(AppServer.class);
-    // private WebClient webClient;
 
     public BusinessLogicController(Vertx vertx) {
         this.vertx = vertx;
         this.router = Router.router(vertx);
-        // this.webClient = WebClient.create(vertx);
-        // setup();
     }
 
-    /*
-     * private void setup(){
-     * router.post("/computeScore").handler(this::computeScore);
-     * vertx.createHttpServer()
-     * .requestHandler(router)
-     * .listen(8080, http -> {
-     * if (http.succeeded()) {
-     * //startFuture.complete();
-     * System.out.println("HTTP server started on port 8080");
-     * } else {
-     * //startFuture.fail(http.cause());
-     * System.out.println("erorr");
-     * }
-     * });
-     * }
-     */
     public CompletableFuture<JsonObject> getShuffledDeck(final Integer numberOfPlayers) {
         CompletableFuture<JsonObject> future = new CompletableFuture<>();
         System.out.println("Getting the shuffled deck");
-        // WebClient.create(vertx).get(443,
-        // "icanhazdadjoke.com",
-        // "/") // (2)
         WebClient.create(vertx).get(PORT, LOCALHOST, "/games/startRound")
                 // .ssl(true)
                 .putHeader("Accept",
@@ -68,7 +37,6 @@ public class BusinessLogicController {
                     if (handler.succeeded()) {
                         future.complete(handler.result().body());
                     } else {
-                        // future.complete(handler.cause().getMessage());
                         System.out.println("Error in getting the shuffled deck");
                         System.out.println(handler.cause().getMessage());
                         future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
@@ -94,20 +62,17 @@ public class BusinessLogicController {
         return future;
     }
 
+    /**perform a post request to business logic in order to compute the score, get the winning team and position
+     * @param trick the completed trick with which it computes the score
+     * @param trump used while computing the score
+     * @return a completable future of the json response*/
     public CompletableFuture<JsonObject> computeScore(Trick trick, String trump) {
-        System.out.println("Computing the score CACCA");
-        //System.out.println("trick.getCards().stream() = " + trick.getCards().stream());
-        // trick.getCards().stream().mapToInt(Integer::parseInt).forEach(System.out::println);
-        List<Integer> cards = trick.getCards().stream().map(el -> el.getCardValue()).toList();
-        // mapToInt(Integer::parseInt).toArray();
-        System.out.println("cards = " + cards);
+        int[] cards = trick.getCards().stream().mapToInt(Card::getCardValue).toArray();
         JsonObject requestBody = new JsonObject()
                 .put("trick", cards)
                 .put("trump", Integer.parseInt(trump));
-        System.out.println("requestBody = " + requestBody);
         CompletableFuture<JsonObject> future = new CompletableFuture<>();
         LOGGER.info("Computing the score");
-        System.out.println("Computing the score");
         WebClient.create(vertx).post(PORT, LOCALHOST, "/games/computeScore")
                 .putHeader("Accept", "application/json")
                 .as(BodyCodec.jsonObject())
@@ -117,8 +82,6 @@ public class BusinessLogicController {
                     } else {
                         LOGGER.info("Error in computing the score");
                         LOGGER.error("Error in computing the score");
-                        System.out.println("Error in computing the score");
-                        System.out.println(handler.cause().getMessage());
                         future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
                     }
                 });

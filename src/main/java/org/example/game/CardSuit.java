@@ -13,4 +13,10 @@ public enum CardSuit {
     public Integer getValue(){
         return value;
     }
+
+    public static CardSuit getName(String value) {
+        for(CardSuit v : values())
+            if(v.getValue().equals(Integer.parseInt(value))) return v;
+        throw new IllegalArgumentException();
+    }
 }

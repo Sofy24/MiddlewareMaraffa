@@ -3,27 +3,33 @@ package org.example.service;
 
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.example.game.*;
+import org.example.httpRest.BusinessLogicController;
 import org.example.repository.AbstractStatisticManager;
 import org.example.utils.Constants;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 
 public class GameService {
     private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
-    private Vertx vertx;
+    private final Vertx vertx;
+    private final BusinessLogicController businessLogicController;
 
     private AbstractStatisticManager statisticManager;
 
     public GameService(Vertx vertx) {
         this.vertx = vertx;
+        this.businessLogicController = new BusinessLogicController(vertx);
     }
 
     public GameService(Vertx vertx, AbstractStatisticManager statisticManager) {
         this.vertx = vertx;
+        this.businessLogicController = new BusinessLogicController(vertx);
         this.statisticManager = statisticManager;
     }
 
@@ -97,8 +103,29 @@ public class GameService {
     }
 
     public boolean playCard(UUID gameID, String username, Card<CardValue, CardSuit> card){
+        System.out.println("playing card");
         if(this.games.get(gameID) != null && this.games.get(gameID).canStart()){
             this.games.get(gameID).addCard(card, username);
+            this.businessLogicController.computeScore(new TrickImpl(4, CardSuit.CLUBS), "Coins").whenComplete((result, err) -> {
+                System.out.println("Got sample response");
+                System.out.println(result);
+            });
+            if (this.games.get(gameID).isCompleted()){//this.games.get(gameID).getCurrentTrick()
+                System.out.println(" playing ");
+                /*this.businessLogicController.computeScore([1,2,3,4], 2).whenComplete((result, err) -> {
+                    System.out.println("Got sample response");
+                    System.out.println(result);
+                    if (result.containsKey("error")) {
+                        context.response().setStatusCode(500).end(result.toBuffer());
+                    } else {
+                        JsonArray deck = result.getJsonArray("deck");
+                        Integer firstPlayer = result.getInteger("firstPlayer");
+                        startResponse.put("deck", deck);
+                        startResponse.put("firstPlayer", firstPlayer);
+                        context.response().end(startResponse.toBuffer());
+                    }
+                });*/
+            }
             return true;
         }
         return false;
@@ -213,13 +240,10 @@ public class GameService {
         return this.games;
     }
 
-    public JsonObject getJsonGames() {
-        JsonObject jsonGames = new JsonObject();
-        if(!this.games.isEmpty()) {
-            this.games.forEach((g, v) -> jsonGames.put(g + "_" + v.getGameMode() + "_" + v.getStatus() + "_" + v.getNumberOfPlayersIn(), g));
-        } else {
-            jsonGames.put(Constants.NOT_FOUND, false);
-        }
+    /**@return the json with all the games and their properties*/
+    public JsonArray getJsonGames() {
+        JsonArray jsonGames = new JsonArray();
+        this.games.values().stream().map(GameVerticle::toJson).forEach(jsonGames::add);
         return jsonGames;
     }
 }

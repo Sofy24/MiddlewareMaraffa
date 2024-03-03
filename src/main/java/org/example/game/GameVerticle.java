@@ -1,5 +1,6 @@
 package org.example.game;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 
@@ -9,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import io.vertx.core.json.JsonObject;
 import org.example.repository.AbstractStatisticManager;
 import org.example.utils.Constants;
 import org.example.utils.Pair;
@@ -178,6 +180,11 @@ public class GameVerticle extends AbstractVerticle {
         return status;
     }
 
+    /**@return true if the current trick is completed*/
+    public boolean isCompleted(){
+        return this.currentTrick.isCompleted();
+    }
+
     public GameMode getGameMode() {
         return gameMode;
     }
@@ -201,5 +208,14 @@ public class GameVerticle extends AbstractVerticle {
     /**@return true if the game is ended*/
     public boolean isGameEnded(){
         return this.currentScore.getX() >= this.expectedScore || this.currentScore.getY() >= this.expectedScore;
+    }
+
+    /**@return a json with id, status and game mode*/
+    public JsonObject toJson(){
+        JsonObject json = new JsonObject();
+        json.put("gameID", this.id.toString())
+            .put("status", this.status.toString())
+            .put("gameMode", this.gameMode.toString());
+        return json;
     }
 }

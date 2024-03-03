@@ -3,11 +3,7 @@ package generator;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -183,6 +179,7 @@ final class AnnotationMappers {
             type.equals(Character.class) ||
             type.equals(Byte.class) ||
             type.equals(Boolean.class) ||
+                type.equals(UUID.class) ||
             type.equals(String.class);
     }
 

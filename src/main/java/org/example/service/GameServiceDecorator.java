@@ -34,6 +34,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import org.junit.jupiter.params.aggregator.ArgumentAccessException;
 
 public class GameServiceDecorator {
         private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
@@ -176,18 +177,23 @@ public class GameServiceDecorator {
                 UUID gameID = UUID.fromString(uuidAsString);
                 String cardValue = context.body().asJsonObject().getString(Constants.CARD_VALUE);
                 String cardSuit = context.body().asJsonObject().getString(Constants.CARD_SUIT);
-                Card<CardValue, CardSuit> card = new Card<>(CardValue.valueOf(cardValue), CardSuit.valueOf(cardSuit));
-                String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
-                if (card.cardSuit().equals(CardSuit.NONE) || card.cardValue().equals(CardValue.NONE)) {
-                        context.response().setStatusCode(401).end("Invalid " + card);
-                } else {
-                        if (this.gameService.playCard(gameID, username, card)) {
-                                context.response().end();
-                                // context.response().end(card + " played by " + username);
+                try{
+                        Card<CardValue, CardSuit> card = new Card<>(CardValue.valueOf(cardValue), CardSuit.valueOf(cardSuit));
+                        String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
+                        if (card.cardSuit().equals(CardSuit.NONE) || card.cardValue().equals(CardValue.NONE)) {
+                                context.response().setStatusCode(401).end("Invalid " + card);
                         } else {
-                                context.response().setStatusCode(404).end("Game " + gameID + " not found");
+                                if (this.gameService.playCard(gameID, username, card)) {
+                                        context.response().end();
+                                        // context.response().end(card + " played by " + username);
+                                } else {
+                                        context.response().setStatusCode(404).end("Game " + gameID + " not found");
+                                }
                         }
+                } catch (IllegalArgumentException e){
+                        context.response().setStatusCode(417).end("Card value " + cardValue + " or card suit "+ cardSuit + " invalid");
                 }
+
         }
 
         @Operation(summary = "Choose the trump", method = Constants.CHOOSE_TRUMP_METHOD, operationId = Constants.CHOOSE_TRUMP, tags = {
@@ -351,11 +357,12 @@ public class GameServiceDecorator {
                                         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
                         })
         public void getGames(RoutingContext context) {
-                JsonObject jsonGetGames = this.gameService.getJsonGames();
-                if (jsonGetGames.fieldNames().size() > 0) {
-                        context.response().end(jsonGetGames.fieldNames().toString());
+                JsonArray jsonGetGames = this.gameService.getJsonGames();
+                if (!jsonGetGames.isEmpty()) {
+                        context.response().end(jsonGetGames.toBuffer());
                 } else {
-                        context.response().setStatusCode(404).end("Game not found");
+                        jsonGetGames.add(Constants.NOT_FOUND);
+                        context.response().setStatusCode(404).end(jsonGetGames.toBuffer());
                 }
         }
 

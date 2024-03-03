@@ -51,7 +51,7 @@ public class Constants {
     //json attributes
     public static final String START_ATTR = "start";
     public static final String JOIN_ATTR = "join";
-    public static final String NOT_FOUND = "notFound";
+    public static final String NOT_FOUND = "not found";
     public static final String FULL = "full";
     public static final String MESSAGE = "message";
     public static final String ALREADY_JOINED = "alreadyJoined";

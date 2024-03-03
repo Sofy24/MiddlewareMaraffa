@@ -16,11 +16,10 @@ public interface Trick {
     boolean isCompleted();
 
     /**@return the cards and the users in the trick*/
-    // Map<String, Pair<Integer, String>> getCards();
-    Map<String, String> getCardsAndUsers();
+    Map<Card, String> getCardsAndUsers();
 
     /**@return the cards in the trick*/
-    List<String> getCards();
+    List<Card> getCards();
 
     /**@param call the call
      * @param username the user who makes the call

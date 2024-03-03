@@ -1,13 +1,13 @@
 package org.example.httpRest;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import org.example.AppServer;
 import org.example.game.Trick;
-
 
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -95,9 +95,11 @@ public class BusinessLogicController {
     }
 
     public CompletableFuture<JsonObject> computeScore(Trick trick, String trump) {
+        System.out.println("Computing the score CACCA");
         //System.out.println("trick.getCards().stream() = " + trick.getCards().stream());
-        trick.getCards().stream().mapToInt(Integer::parseInt).forEach(System.out::println);
-        int[] cards = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
+        // trick.getCards().stream().mapToInt(Integer::parseInt).forEach(System.out::println);
+        List<Integer> cards = trick.getCards().stream().map(el -> el.getCardValue()).toList();
+        // mapToInt(Integer::parseInt).toArray();
         System.out.println("cards = " + cards);
         JsonObject requestBody = new JsonObject()
                 .put("trick", cards)

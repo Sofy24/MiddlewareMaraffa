@@ -104,31 +104,13 @@ public class GameService {
 
     public boolean playCard(UUID gameID, String username, Card<CardValue, CardSuit> card){
         System.out.println("playing card");
-        if(this.games.get(gameID) != null && this.games.get(gameID).canStart()){
-            this.games.get(gameID).addCard(card, username);
-            this.businessLogicController.computeScore(this.games.get(gameID).getCurrentTrick(), this.games.get(gameID).getTrump().toString()).whenComplete((result, err) -> {
-                System.out.println("Got sample response");
-                System.out.println(result);
-            });
-            if (this.games.get(gameID).isCompleted()){//this.games.get(gameID).getCurrentTrick()
-                System.out.println(" playing ");
-                /*this.businessLogicController.computeScore([1,2,3,4], 2).whenComplete((result, err) -> {
-                    System.out.println("Got sample response");
-                    System.out.println(result);
-                    if (result.containsKey("error")) {
-                        context.response().setStatusCode(500).end(result.toBuffer());
-                    } else {
-                        JsonArray deck = result.getJsonArray("deck");
-                        Integer firstPlayer = result.getInteger("firstPlayer");
-                        startResponse.put("deck", deck);
-                        startResponse.put("firstPlayer", firstPlayer);
-                        context.response().end(startResponse.toBuffer());
-                    }
-                });*/
-            }
-            return true;
-        }
-        return false;
+        //TODO SOFY CHECK
+        return this.games.get(gameID) != null && this.games.get(gameID).canStart() && this.games.get(gameID).addCard(card, username);
+        // if(this.games.get(gameID) != null && this.games.get(gameID).canStart()){
+        //     this.games.get(gameID).addCard(card, username);
+        //     return true;
+        // }
+        // return false;
     }
 
     public JsonObject chooseTrump(UUID gameID, String cardSuit) {

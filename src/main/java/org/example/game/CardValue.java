@@ -16,7 +16,7 @@ public enum CardValue {
 
     public static CardValue getName(String value) {
         for(CardValue v : values())
-            if(v.getValue().equals(Integer.parseInt(value))) return v;
+            if(v.toString().equals(value)) return v;
         System.out.println("Oh oh oh oh oh, value = " + value);
         throw new IllegalArgumentException();
     }

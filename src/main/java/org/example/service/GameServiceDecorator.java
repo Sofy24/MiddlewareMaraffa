@@ -191,8 +191,18 @@ public class GameServiceDecorator {
                         } else {
                                 if (this.gameService.playCard(gameID, username, card)) {
                                         response.put(Constants.MESSAGE, card + " played by " + username);
-                                        context.response().end(response.toBuffer());
                                         System.out.println("username = " + username);
+                                        System.out.println(this.gameService.getGames());
+                                        if(this.gameService.getGames().get(gameID).isCompleted()){
+                                                this.businessLogicController.computeScore(this.games.get(gameID).getCurrentTrick(), this.games.get(gameID).getTrump().toString()).whenComplete((result, err) -> {
+                                                        System.out.println("Got sample response");
+                                                        System.out.println(result);
+                                                        context.response().end(response.toBuffer());
+                                                });
+                                        }else{
+                                                context.response().end(response.toBuffer());
+
+                                        }
                                 } else {
                                         response.put(Constants.MESSAGE, "Game " + gameID + " not found");
                                         context.response().setStatusCode(404).end(response.toBuffer());

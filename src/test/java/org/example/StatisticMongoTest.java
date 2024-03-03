@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import org.example.game.Card;
 import org.example.game.CardSuit;
 import org.example.game.CardValue;
+import org.example.game.GameMode;
 import org.example.repository.AbstractStatisticManager;
 import org.example.repository.MongoStatisticManager;
 import org.example.service.GameService;
@@ -28,6 +29,7 @@ public class StatisticMongoTest {
     private final String usernameTest = "user";
     private static final int MARAFFA_PLAYERS = 4;
     private static final int EXPECTED_SCORE = 11;
+    private static final GameMode GAME_MODE = GameMode.CLASSIC;
     private Vertx vertx;
     private GameService gameService;
     private static final CardSuit UNDEFINED_TRUMP = CardSuit.NONE;
@@ -51,7 +53,7 @@ public class StatisticMongoTest {
 
     @Test
     public void prepareGame() {
-        String gameID = this.gameService.createGame(MARAFFA_PLAYERS, this.usernameTest, EXPECTED_SCORE)
+        String gameID = this.gameService.createGame(MARAFFA_PLAYERS, this.usernameTest, EXPECTED_SCORE, GAME_MODE.toString())
                 .getString(Constants.GAME_ID);
         var doc = this.mongoStatisticManager.getRecord(gameID);
         assertNotNull(doc);
@@ -59,7 +61,7 @@ public class StatisticMongoTest {
     
     @Test
     public void playCard(){
-        String gameID = this.gameService.createGame(MARAFFA_PLAYERS, this.usernameTest, EXPECTED_SCORE)
+        String gameID = this.gameService.createGame(MARAFFA_PLAYERS, this.usernameTest, EXPECTED_SCORE, GAME_MODE.toString())
                 .getString(Constants.GAME_ID);
             UUID gameId = UUID.fromString(gameID);
         for (int i = 2; i < MARAFFA_PLAYERS + 1 ; i++) {
@@ -74,12 +76,7 @@ public class StatisticMongoTest {
         this.gameService.playCard(gameId, this.usernameTest + "3", new Card<>(CardValue.THREE, CardSuit.CLUBS));
         this.gameService.playCard(gameId, this.usernameTest + "4", new Card<>(CardValue.FOUR, CardSuit.CLUBS));
         this.gameService.playCard(gameId, this.usernameTest + "3", new Card<>(CardValue.KING, CardSuit.CLUBS));
-        // main.getGames().get(this.gameId).chooseSuit(cardTest.cardSuit());
-        // assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.THREE, CardSuit.CLUBS), this.usernameTest + "1"));
-        // assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.TWO, CardSuit.CLUBS), this.usernameTest + "2"));
-        // assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.ONE, CardSuit.CLUBS), this.usernameTest + "3"));
-        // assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.FOUR, CardSuit.CLUBS), this.usernameTest + "4"));
-        // assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.FIVE, CardSuit.CLUBS), this.usernameTest + "1"));
+      
     }
    /* public MainVerticle preapareMainVert(){
         MainVerticle main = new MainVerticle(this.vertx, mongoStatisticManager);

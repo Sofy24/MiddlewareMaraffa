@@ -167,8 +167,8 @@ public class GameServiceDecorator {
                                         +
                                         "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
                                         "  \"" + Constants.USERNAME + "\": \"sofi\",\n" +
-                                        "  \"" + Constants.CARD_VALUE + "\": 7,\n" +
-                                        "  \"" + Constants.CARD_SUIT + "\": \"2\"\n" +
+                                        "  \"" + Constants.CARD_VALUE + "\": \"ONE\",\n" +
+                                        "  \"" + Constants.CARD_SUIT + "\": \"COINS\"\n" +
                                         "}"))), responses = {
                                                         @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = PlayCardBody.class))),
                                                         @ApiResponse(responseCode = "404", description = "Game or username not found."),
@@ -192,6 +192,7 @@ public class GameServiceDecorator {
                                                 this.businessLogicController.computeScore(this.gameService.getGames().get(gameID).getLatestTrick(), this.gameService.getGames().get(gameID).getTrump().getValue().toString()).whenComplete((result, err) -> {
                                                         LOGGER.info("Got sample response");
                                                         response.put("result", result);
+                                                        this.gameService.getGames().get(gameID).setScore(result.getInteger("score"), result.getBoolean("firstTeam"));//TODO i punti della businesslogic sono moltiplicati per 3
                                                         context.response().end(response.toBuffer());
                                                 });
                                         }else{
@@ -214,7 +215,7 @@ public class GameServiceDecorator {
                         Constants.ROUND_TAG }, requestBody = @RequestBody(description = "trump and id of the game are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = ChooseTrumpBody.class, example = "{\n"
                                         +
                                         "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
-                                        "  \"" + Constants.CARD_SUIT + "\": \"string\"\n" +
+                                        "  \"" + Constants.CARD_SUIT + "\": \"COINS\"\n" +
                                         "}"))), responses = {
                                                         @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = ChooseTrumpBody.class))),
                                                         @ApiResponse(responseCode = "404", description = "Game not found."),
@@ -323,9 +324,9 @@ public class GameServiceDecorator {
                 UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
                 JsonObject jsonEnd = this.gameService.isGameEnded(gameID);
                 if (!jsonEnd.containsKey(Constants.NOT_FOUND)) {
-                        context.response().end(jsonEnd.getString(Constants.MESSAGE));
+                        context.response().end(jsonEnd.toBuffer());
                 } else {
-                        context.response().setStatusCode(404).end(jsonEnd.getString(Constants.MESSAGE));
+                        context.response().setStatusCode(404).end(jsonEnd.toBuffer());
                 }
         }
 

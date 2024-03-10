@@ -129,10 +129,11 @@ public class GameService {
             }
             jsonTrump.put(Constants.TRUMP, true);
             return jsonTrump;
+        } else {
+            jsonTrump.put(Constants.TRUMP, false);
+            jsonTrump.put(Constants.NOT_FOUND, false);
+            return jsonTrump.put(Constants.MESSAGE, "Game "+ gameID +" not found");
         }
-        jsonTrump.put(Constants.TRUMP, false);
-        jsonTrump.put(Constants.NOT_FOUND, false);
-        return jsonTrump.put(Constants.MESSAGE, "Game "+ gameID +" not found");
     }
 
     public boolean startNewRound(UUID gameID) {
@@ -176,7 +177,7 @@ public class GameService {
         if(this.games.get(gameID) != null){
             Boolean isEnded = this.games.get(gameID).isGameEnded();
             jsonEnd.put(Constants.ENDED, isEnded);
-            jsonEnd.put(Constants.MESSAGE, isEnded);
+            //jsonEnd.put(Constants.MESSAGE, isEnded);
             return jsonEnd;
         }
         jsonEnd.put(Constants.ENDED, false);

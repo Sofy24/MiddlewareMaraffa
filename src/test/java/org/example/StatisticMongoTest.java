@@ -78,7 +78,7 @@ public class StatisticMongoTest {
         this.gameService.playCard(gameId, this.usernameTest + "3", new Card<>(CardValue.KING, CardSuit.CLUBS));
       
     }
-   /* public MainVerticle preapareMainVert(){
+   /*public MainVerticle preapareMainVert(){
         MainVerticle main = new MainVerticle(this.vertx, mongoStatisticManager);
         this.gameId = main.createGame(this.usernameTest, numberOfPlayersTest);
         for (int i = 0; i < numberOfPlayersTest - 1; i++) {

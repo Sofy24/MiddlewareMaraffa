@@ -185,23 +185,28 @@ public class GameServiceDecorator {
                                 context.response().setStatusCode(401).end("Invalid " + card);
                         } else {
                                 if (this.gameService.playCard(gameID, username, card)) {
-                                        Trick latestTrick = this.gameService.getGames().get(gameID).getLatestTrick();
-                                        if(latestTrick.isCompleted()){
-                                                this.gameService.getGames().get(gameID).incrementCurrentState();
-                                                this.businessLogicController.computeScore(latestTrick, this.gameService.getGames().get(gameID).getTrump().getValue().toString()).whenComplete((result, err) -> {
-                                                        LOGGER.info("Got sample response");
-                                                        response.put("result", result);
-                                                        this.gameService.getGames().get(gameID).setScore(result.getInteger("score"), result.getBoolean("firstTeam"));//TODO i punti della businesslogic sono moltiplicati per 3
+                                        if (!this.gameService.getGames().get(gameID).isUserIn(username)){
+                                                context.response().setStatusCode(401).end("Invalid user " + username);
+                                        } else {
+                                                Trick latestTrick = this.gameService.getGames().get(gameID).getLatestTrick();
+                                                if(latestTrick.isCompleted()){
+                                                        this.gameService.getGames().get(gameID).incrementCurrentState();
+                                                        this.businessLogicController.computeScore(latestTrick, this.gameService.getGames().get(gameID).getTrump().getValue().toString()).whenComplete((result, err) -> {
+                                                                LOGGER.info("Got sample response");
+                                                                response.put("result", result);
+                                                                this.gameService.getGames().get(gameID).setScore(result.getInteger("score"), result.getBoolean("firstTeam"));//TODO i punti della businesslogic sono moltiplicati per 3
+                                                                context.response().end(response.toBuffer());
+                                                        });
+                                                }else{
                                                         context.response().end(response.toBuffer());
-                                                });
-                                        }else{
-                                                context.response().end(response.toBuffer());
 
+                                                }
                                         }
                                 } else {
-                                        response.put(Constants.MESSAGE, "Game " + gameID + " not found");
-                                        context.response().setStatusCode(404).end(response.toBuffer());
-                                }
+                                                response.put(Constants.MESSAGE, "Game " + gameID + " not found");
+                                                context.response().setStatusCode(404).end(response.toBuffer());
+                                        }
+
                         }
                 } catch (IllegalArgumentException e){
                         response.put(Constants.MESSAGE, "Error playing " + cardValue + ", "+ cardSuit);

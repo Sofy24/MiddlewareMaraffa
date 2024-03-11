@@ -237,6 +237,9 @@ public class GameVerticle extends AbstractVerticle {
     /** @return true if the round is ended */
     public boolean isRoundEnded() {
         double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
+        System.out.println("numberOfTricksInRound = " + numberOfTricksInRound);
+        System.out.println("currentState = " + currentState);
+        System.out.println("tricks = " + tricks);
         return this.currentState.get() == numberOfTricksInRound;
     }
 

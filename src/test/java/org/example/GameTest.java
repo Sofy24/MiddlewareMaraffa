@@ -234,6 +234,9 @@ public class GameTest {
         assertFalse(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
         for (int i = 0; i < Constants.NUMBER_OF_CARDS; i++) {
             assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + (i % MARAFFA_PLAYERS), TEST_CARDS.get(i % MARAFFA_PLAYERS)));
+            if(this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getLatestTrick().isCompleted()){
+                this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).incrementCurrentState();
+            }
         }
         assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
         context.completeNow();

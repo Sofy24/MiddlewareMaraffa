@@ -7,10 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import org.example.AppServer;
-import org.example.game.Card;
-import org.example.game.CardSuit;
-import org.example.game.CardValue;
-import org.example.game.GameVerticle;
+import org.example.game.*;
 import org.example.httpRest.BusinessLogicController;
 import org.example.repository.AbstractStatisticManager;
 import org.example.service.schema.CanStartResponse;
@@ -188,8 +185,10 @@ public class GameServiceDecorator {
                                 context.response().setStatusCode(401).end("Invalid " + card);
                         } else {
                                 if (this.gameService.playCard(gameID, username, card)) {
-                                        if(this.gameService.getGames().get(gameID).getLatestTrick().isCompleted()){
-                                                this.businessLogicController.computeScore(this.gameService.getGames().get(gameID).getLatestTrick(), this.gameService.getGames().get(gameID).getTrump().getValue().toString()).whenComplete((result, err) -> {
+                                        Trick latestTrick = this.gameService.getGames().get(gameID).getLatestTrick();
+                                        if(latestTrick.isCompleted()){
+                                                this.gameService.getGames().get(gameID).incrementCurrentState();
+                                                this.businessLogicController.computeScore(latestTrick, this.gameService.getGames().get(gameID).getTrump().getValue().toString()).whenComplete((result, err) -> {
                                                         LOGGER.info("Got sample response");
                                                         response.put("result", result);
                                                         this.gameService.getGames().get(gameID).setScore(result.getInteger("score"), result.getBoolean("firstTeam"));//TODO i punti della businesslogic sono moltiplicati per 3

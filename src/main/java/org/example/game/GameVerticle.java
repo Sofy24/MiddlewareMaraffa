@@ -105,7 +105,6 @@ public class GameVerticle extends AbstractVerticle {
             }
             this.currentTrick.addCard(card, username);
             if (this.currentTrick.isCompleted()) {
-                System.out.println("trick completed");
                 this.gameSchema.addTrick(currentTrick);
                 if (this.statisticManager != null)
                     this.statisticManager.updateRecordWithTrick(String.valueOf(id), currentTrick);
@@ -188,21 +187,14 @@ public class GameVerticle extends AbstractVerticle {
     }
 
     public Trick getLatestTrick() {
-        System.out.println("this.getCurrentState().get() = " + this.getCurrentState().get());
-        System.out.println("tricks = " + tricks.toString());
         return this.tricks.get(this.getCurrentState().get());
-        /*return this.getCurrentState().get() == 0 ?
-        this.tricks.get(this.getCurrentState().get()) : this.tricks.get(this.getCurrentState().get() - 1);*/
     }
 
     /** update the score of the teams
      * @param score of the team who won the trick
      * @param isTeamA true if team A won the trick*/
     public void setScore(int score, boolean isTeamA){
-        System.out.println("isTeamA = " + isTeamA);
         this.currentScore = isTeamA ?  new Pair<>(this.currentScore.getX() + (score / 3), this.currentScore.getY()) : new Pair<>(this.currentScore.getX(), this.currentScore.getY() + (score / 3));
-        System.out.println("currentScore SETTED= " + currentScore);
-        this.currentState.incrementAndGet();
     }
 
     public CardSuit getTrump() {
@@ -220,6 +212,10 @@ public class GameVerticle extends AbstractVerticle {
 
     public GameMode getGameMode() {
         return gameMode;
+    }
+
+    public void incrementCurrentState(){
+        this.currentState.incrementAndGet();
     }
 
     /** @return the number of players who have already joined the game */
@@ -240,9 +236,6 @@ public class GameVerticle extends AbstractVerticle {
 
     /** @return true if the game is ended */
     public boolean isGameEnded() {
-        System.out.println("expectedScore = " + expectedScore);
-        System.out.println("currentScoreY = " + currentScore.getY());
-        System.out.println("currentScoreX = " + currentScore.getX());
         return this.currentScore.getX() >= this.expectedScore || this.currentScore.getY() >= this.expectedScore;
     }
 

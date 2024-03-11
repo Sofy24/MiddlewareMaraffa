@@ -214,8 +214,14 @@ public class GameVerticle extends AbstractVerticle {
         return gameMode;
     }
 
+    /**increment the current state*/
     public void incrementCurrentState(){
         this.currentState.incrementAndGet();
+    }
+
+    /**@return true if the user is in the game*/
+    public boolean isUserIn(String user){
+        return this.users.contains(user);
     }
 
     /** @return the number of players who have already joined the game */

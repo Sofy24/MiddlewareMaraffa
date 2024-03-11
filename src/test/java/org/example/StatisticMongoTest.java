@@ -1,31 +1,84 @@
 package org.example;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import org.example.game.Card;
 import org.example.game.CardSuit;
 import org.example.game.CardValue;
+import org.example.game.GameMode;
 import org.example.repository.AbstractStatisticManager;
 import org.example.repository.MongoStatisticManager;
-import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
+import org.example.service.GameService;
+import org.example.utils.Constants;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.junit5.VertxExtension;
+import java.util.UUID;
 
+@TestInstance(Lifecycle.PER_CLASS)
+@ExtendWith(VertxExtension.class)
 public class StatisticMongoTest {
-    private final Vertx vertx = Vertx.vertx();
-    private final String usernameTest = "user1";
-    private final int numberOfPlayersTest = 4;
-
-    private final CardSuit undefinedSuit = CardSuit.NONE;
-    private final Card<CardValue, CardSuit> cardTest = new Card<>(CardValue.THREE, CardSuit.CLUBS);
+    private final String usernameTest = "user";
+    private static final int MARAFFA_PLAYERS = 4;
+    private static final int EXPECTED_SCORE = 11;
+    private static final GameMode GAME_MODE = GameMode.CLASSIC;
+    private Vertx vertx;
+    private GameService gameService;
+    private static final CardSuit UNDEFINED_TRUMP = CardSuit.NONE;
+    private final Card<CardSuit, CardValue> cardTest = new Card<>(CardValue.THREE, CardSuit.CLUBS);
     private final MongoStatisticManager mongoStatisticManager = new MongoStatisticManager(); //TODO andrebbe fatto contro il db {nome}_test
 
-    private int gameId;
+    @BeforeAll
+    public void setUp() {
+        this.vertx = Vertx.vertx();
+        this.gameService = new GameService(this.vertx, this.mongoStatisticManager);
+    }
 
-    public MainVerticle preapareMainVert(){
+    /**
+     * This method, called after our test, just cleanup everything by closing the
+     * vert.x instance
+     */
+    @AfterAll
+    public void tearDown() {
+        vertx.close();
+    }
+
+    @Test
+    public void prepareGame() {
+        String gameID = this.gameService.createGame(MARAFFA_PLAYERS, this.usernameTest, EXPECTED_SCORE, GAME_MODE.toString())
+                .getString(Constants.GAME_ID);
+        var doc = this.mongoStatisticManager.getRecord(gameID);
+        assertNotNull(doc);
+    }
+    
+    @Test
+    public void playCard(){
+        String gameID = this.gameService.createGame(MARAFFA_PLAYERS, this.usernameTest, EXPECTED_SCORE, GAME_MODE.toString())
+                .getString(Constants.GAME_ID);
+            UUID gameId = UUID.fromString(gameID);
+        for (int i = 2; i < MARAFFA_PLAYERS + 1 ; i++) {
+            System.out.println(
+                this.gameService.joinGame(gameId, this.usernameTest + i)
+            );
+        }
+        
+        this.gameService.chooseTrump(gameId, cardTest.cardSuit().toString());
+        this.gameService.playCard(gameId, this.usernameTest, new Card<>(CardValue.ONE, CardSuit.CLUBS));
+        this.gameService.playCard(gameId, this.usernameTest + "2", new Card<>(CardValue.TWO, CardSuit.CLUBS));
+        this.gameService.playCard(gameId, this.usernameTest + "3", new Card<>(CardValue.THREE, CardSuit.CLUBS));
+        this.gameService.playCard(gameId, this.usernameTest + "4", new Card<>(CardValue.FOUR, CardSuit.CLUBS));
+        this.gameService.playCard(gameId, this.usernameTest + "3", new Card<>(CardValue.KING, CardSuit.CLUBS));
+      
+    }
+   /*public MainVerticle preapareMainVert(){
         MainVerticle main = new MainVerticle(this.vertx, mongoStatisticManager);
         this.gameId = main.createGame(this.usernameTest, numberOfPlayersTest);
         for (int i = 0; i < numberOfPlayersTest - 1; i++) {
@@ -66,5 +119,5 @@ public class StatisticMongoTest {
         assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.HORSE, CardSuit.CLUBS), this.usernameTest + "4"));
         assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.KING, CardSuit.CLUBS), this.usernameTest + "3"));
         assertTrue(main.getGames().get(this.gameId).addCard(new Card<>(CardValue.KING, CardSuit.COINS), this.usernameTest + "1"));
-    }
+    }*/
 }

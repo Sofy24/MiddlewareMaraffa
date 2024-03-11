@@ -1,0 +1,5 @@
+package org.example.game;
+
+public enum Status {
+    PLAYING, WAITING_PLAYERS, STARTING;
+}

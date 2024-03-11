@@ -1,10 +1,12 @@
 package org.example.game;
 
+import java.util.UUID;
+
 public interface GameApi {
     /** create a game and username is one of the players
      * @param username of the player who has created the game
      * @return the id of the Game (modeled with a Verticle)*/
-    int createGame(String username, int numberOfPlayers);
+    UUID createGame(String username, int numberOfPlayers, int expectedScore, GameMode gameMode);
 
     /** the username join the specif game
      * @param username of the player who has created the game
@@ -23,7 +25,7 @@ public interface GameApi {
      * @param idGame the game to check
      * @return true if all players have joined the game
      * */
-    boolean CanStart(int idGame);
+    boolean canStart(int idGame);
 
     /**@param idGame the specific game
      * @param suit the suit choosen by the first player */

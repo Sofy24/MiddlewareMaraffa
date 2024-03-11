@@ -7,17 +7,9 @@ import static com.mongodb.client.model.Updates.set;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
-import org.bson.BsonReader;
-import org.bson.BsonWriter;
-import org.bson.codecs.Codec;
-import org.bson.codecs.DecoderContext;
-import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
-import org.example.game.Card;
-import org.example.game.CardSuit;
-import org.example.game.CardValue;
 import org.example.game.GameSchema;
 import org.example.game.Trick;
 
@@ -40,7 +32,7 @@ public class MongoStatisticManager extends AbstractStatisticManager {
             CodecRegistry pojoCodecRegistry = fromRegistries(getDefaultCodecRegistry(), fromProviders(pojoCodecProvider));
 
             MongoClient mongoClient = MongoClients.create(uri);
-            this.database = mongoClient.getDatabase("MaraffaStatisticsDB").withCodecRegistry(pojoCodecRegistry);
+            this.database = mongoClient.getDatabase("MaraffaStatisticsDB-test").withCodecRegistry(pojoCodecRegistry);
         } catch (Exception e){
             System.out.println("Error in MongoStatisticManager constructor: " + e.getMessage());
         }
@@ -64,6 +56,6 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 
 
     public void updateSuit(GameSchema gameSchema) {
-        this.database.getCollection("MaraffaStatistics", GameSchema.class).updateOne(eq("gameID", gameSchema.getGameID()), set("leadingSuit", gameSchema.getLeadingSuit()) , new UpdateOptions().upsert(true));
+        this.database.getCollection("MaraffaStatistics", GameSchema.class).updateOne(eq("gameID", gameSchema.getGameID()), set("leadingSuit", gameSchema.getTrump()) , new UpdateOptions().upsert(true));
     }
 }

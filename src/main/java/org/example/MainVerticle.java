@@ -4,16 +4,12 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import org.example.game.*;
 import org.example.repository.AbstractStatisticManager;
-import org.example.repository.MongoStatisticManager;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MainVerticle extends AbstractVerticle implements GameApi {
-    private Map<Integer, GameVerticle> games = new ConcurrentHashMap<>();
+    private Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
     private final Vertx vertx;
     private int lastGameId;
     private AbstractStatisticManager statisticManager;
@@ -44,11 +40,11 @@ public class MainVerticle extends AbstractVerticle implements GameApi {
     }
 
     @Override
-    public int createGame(String username, int numberOfPlayers) {//TODO insert id as param
+    public UUID createGame(String username, int numberOfPlayers, int expectedScore, GameMode gameMode) {//TODO insert id as param
         // lastGameId++;
         // int newId = lastGameId;
-        int newId = new Random().nextInt(1000);
-        GameVerticle currentGame = new GameVerticle(newId, username, numberOfPlayers, this.statisticManager);
+        UUID newId = UUID.randomUUID();
+        GameVerticle currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore, gameMode, this.statisticManager);
         this.games.put(newId, currentGame);
         vertx.deployVerticle(currentGame);
         return newId;
@@ -66,13 +62,13 @@ public class MainVerticle extends AbstractVerticle implements GameApi {
     }
 
     @Override
-    public boolean CanStart(int idGame) {
+    public boolean canStart(int idGame) {
         return this.games.get(idGame).canStart();
     }
 
     @Override
     public void chooseSuit(int idGame, CardSuit suit) {
-        this.games.get(idGame).chooseSuit(suit);
+        this.games.get(idGame).chooseTrump(suit);
     }
 
     @Override
@@ -81,7 +77,7 @@ public class MainVerticle extends AbstractVerticle implements GameApi {
     }
 
 
-    public Map<Integer, GameVerticle> getGames() {
+    public Map<UUID, GameVerticle> getGames() {
         return games;
     }
 

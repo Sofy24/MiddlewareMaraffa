@@ -1,20 +1,24 @@
 package org.example.game;
 
 /**
- * A class modelling the concept of "card"
+ * A record modelling the concept of "card"
  */
-public record Card<X, Y>(X cardValue, Y cardSuit) {
+public record Card<X, Y> (CardValue cardValue, CardSuit cardSuit) {
     
     @Override
     public String toString() {
         return "Card [" + cardValue + ", " + cardSuit + "]";
     }
 
-    public X cardValue() {
+    public CardValue cardValue() {
         return cardValue;
     }
 
-    public Y cardSuit() {
+    public CardSuit cardSuit() {
         return cardSuit;
+    }
+
+    public Integer getCardValue() {
+        return cardSuit.value  * 10 + cardValue.value;
     }
 }

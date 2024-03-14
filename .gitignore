@@ -8,10 +8,7 @@
 *.ctxt
 
 .idea/*
-
-Middleware/.gradle/*
-Middleware/.idea/*
-Middleware/build/*
+.vscode
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
@@ -29,8 +26,8 @@ Middleware/build/*
 hs_err_pid*
 replay_pid*
 
-*.bin
-bin/*
+**/bin/**.class
+**/webroot/**
 
 
 .gradle

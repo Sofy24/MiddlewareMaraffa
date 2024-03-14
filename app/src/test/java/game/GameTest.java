@@ -1,13 +1,8 @@
-package org.example;
+package game;
 
 import io.vertx.core.json.JsonArray;
-import org.example.game.Card;
-import org.example.game.CardSuit;
-import org.example.game.CardValue;
-import org.example.game.GameMode;
-import org.example.service.GameService;
-import org.example.utils.Constants;
-import org.junit.Assert;
+import game.service.GameService;
+import game.utils.Constants;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +12,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

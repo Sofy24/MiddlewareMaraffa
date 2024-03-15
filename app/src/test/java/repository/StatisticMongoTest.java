@@ -57,24 +57,24 @@ public class StatisticMongoTest {
         var doc = this.mongoStatisticManager.getRecord(gameID);
         assertNotNull(doc);
     }
-    
+
     @Test
-    public void playCard(){
+    public void playCard() {
         String gameID = this.gameService.createGame(MARAFFA_PLAYERS, this.usernameTest, EXPECTED_SCORE, GAME_MODE.toString())
                 .getString(Constants.GAME_ID);
-            UUID gameId = UUID.fromString(gameID);
-        for (int i = 2; i < MARAFFA_PLAYERS + 1 ; i++) {
+        UUID gameId = UUID.fromString(gameID);
+        for (int i = 2; i < MARAFFA_PLAYERS + 1; i++) {
             System.out.println(
-                this.gameService.joinGame(gameId, this.usernameTest + i)
+                    this.gameService.joinGame(gameId, this.usernameTest + i)
             );
         }
-        
+
         this.gameService.chooseTrump(gameId, cardTest.cardSuit().toString());
         this.gameService.playCard(gameId, this.usernameTest, new Card<>(CardValue.ONE, CardSuit.CLUBS));
         this.gameService.playCard(gameId, this.usernameTest + "2", new Card<>(CardValue.TWO, CardSuit.CLUBS));
         this.gameService.playCard(gameId, this.usernameTest + "3", new Card<>(CardValue.THREE, CardSuit.CLUBS));
         this.gameService.playCard(gameId, this.usernameTest + "4", new Card<>(CardValue.FOUR, CardSuit.CLUBS));
         this.gameService.playCard(gameId, this.usernameTest + "3", new Card<>(CardValue.KING, CardSuit.CLUBS));
-      
+
     }
 }

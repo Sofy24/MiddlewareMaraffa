@@ -3,10 +3,13 @@ package game;
 import java.util.ArrayList;
 import java.util.List;
 
-/**TODO/Define the mongodb schema of the game*/
+/**
+ * TODO/Define the mongodb schema of the game
+ */
 public class GameSchema {
     private String gameID;
     private CardSuit trump;
+
     public void setTrump(CardSuit trump) {
         this.trump = trump;
     }
@@ -14,6 +17,7 @@ public class GameSchema {
     public CardSuit getTrump() {
         return trump;
     }
+
     private List<Trick> tricks;
 
     public String getGameID() {
@@ -23,6 +27,7 @@ public class GameSchema {
     public List<Trick> getTricks() {
         return tricks;
     }
+
     public GameSchema() {
     }
 
@@ -32,12 +37,13 @@ public class GameSchema {
         this.tricks = new ArrayList<>();
     }
 
-    public void addTrick(Trick trick){
+    public void addTrick(Trick trick) {
         this.tricks.add(trick);
     }
+
     @Override
     public String toString() {
         return "GameSchema [gameID=" + gameID + ", tricks=" + tricks + "]";
     }
-   
+
 }

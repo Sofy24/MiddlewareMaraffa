@@ -22,7 +22,6 @@ import game.GameSchema;
 import game.Trick;
 
 
-
 //TODO ma un bel singleton?
 public class MongoStatisticManager extends AbstractStatisticManager {
     private MongoDatabase database;
@@ -31,14 +30,14 @@ public class MongoStatisticManager extends AbstractStatisticManager {
     public MongoStatisticManager() {
         String uri = "mongodb://your_mongo_user:your_mongo_password@127.0.0.1:27012";
         try {
-            
+
             CodecProvider pojoCodecProvider = PojoCodecProvider.builder().automatic(true).build();
             CodecRegistry pojoCodecRegistry = fromRegistries(getDefaultCodecRegistry(), fromProviders(pojoCodecProvider));
             // CodecRegistry pojoCodecRegistry = fromRegistries(getDefaultCodecRegistry(), fromProviders(pojoCodecProvider));
 
             MongoClient mongoClient = MongoClients.create(uri);
             this.database = mongoClient.getDatabase("MaraffaStatisticsDB-test").withCodecRegistry(pojoCodecRegistry);
-        } catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Error in MongoStatisticManager constructor: " + e.getMessage());
         }
     }
@@ -50,7 +49,7 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 
     @Override
     public void updateRecordWithTrick(String recordID, Trick trick) {
-        var res = this.database.getCollection("MaraffaStatistics", GameSchema.class).updateOne(eq("gameID", recordID), push("tricks", trick) , new UpdateOptions().upsert(true));
+        var res = this.database.getCollection("MaraffaStatistics", GameSchema.class).updateOne(eq("gameID", recordID), push("tricks", trick), new UpdateOptions().upsert(true));
         System.out.println("Update result: " + res);
     }
 
@@ -61,6 +60,6 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 
 
     public void updateSuit(GameSchema gameSchema) {
-        this.database.getCollection("MaraffaStatistics", GameSchema.class).updateOne(eq("gameID", gameSchema.getGameID()), set("leadingSuit", gameSchema.getTrump()) , new UpdateOptions().upsert(true));
+        this.database.getCollection("MaraffaStatistics", GameSchema.class).updateOne(eq("gameID", gameSchema.getGameID()), set("leadingSuit", gameSchema.getTrump()), new UpdateOptions().upsert(true));
     }
 }

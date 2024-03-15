@@ -39,7 +39,7 @@ final class AnnotationMappers {
         operation.deprecated(annotation.deprecated());
         operation.setTags(Arrays.asList(annotation.tags()));
 
-        if(annotation.requestBody().content().length !=0) {
+        if (annotation.requestBody().content().length != 0) {
             io.swagger.v3.oas.models.parameters.RequestBody rb = new io.swagger.v3.oas.models.parameters.RequestBody();
 
             Map<String, Object> map = new HashMap<String, Object>();
@@ -54,8 +54,8 @@ final class AnnotationMappers {
             Object example = new Object();
 
             try {
-                    example = pojoMapper.readValue(annotation.requestBody().content()[0].schema().example(),
-                    annotation.requestBody().content()[0].schema().implementation());
+                example = pojoMapper.readValue(annotation.requestBody().content()[0].schema().example(),
+                        annotation.requestBody().content()[0].schema().implementation());
 
             } catch (IOException e) {
                 log.error("The example could not be mapped for operation" + operation.getDescription());
@@ -64,8 +64,8 @@ final class AnnotationMappers {
             fields = FieldUtils.getFieldsListWithAnnotation(annotation.requestBody().content()[0].schema().implementation(), Required.class).toArray(new Field[0]);
             List<String> requiredParameters = new ArrayList<String>();
 
-            for(Field requiredField : fields) {
-              requiredParameters.add(requiredField.getName());
+            for (Field requiredField : fields) {
+                requiredParameters.add(requiredField.getName());
             }
 
             Schema model = new Schema();
@@ -77,7 +77,7 @@ final class AnnotationMappers {
             model.setExample(example);
 
             Content cont = new Content()
-                .addMediaType("application/json", new MediaType().schema(model));
+                    .addMediaType("application/json", new MediaType().schema(model));
 
             rb.setContent(cont);
 
@@ -89,27 +89,27 @@ final class AnnotationMappers {
 
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.putAll(
-            Arrays.stream(annotation.responses()).map(response -> {
-                ApiResponse apiResponse = new ApiResponse();
-                apiResponse.description(response.description());
-                if (response.content().length > 0) {
-                    Arrays.stream(response.content()).forEach(content -> {
-                        Content c = getContent(content);
-                        apiResponse.content(c);
+                Arrays.stream(annotation.responses()).map(response -> {
+                    ApiResponse apiResponse = new ApiResponse();
+                    apiResponse.description(response.description());
+                    if (response.content().length > 0) {
+                        Arrays.stream(response.content()).forEach(content -> {
+                            Content c = getContent(content);
+                            apiResponse.content(c);
+                        });
+                    }
+                    Arrays.stream(response.headers()).forEach(header -> {
+                        Header h = new Header();
+                        h.description(header.description());
+                        h.deprecated(header.deprecated());
+                        //h.allowEmptyValue(header.allowEmptyValue());
+                        //Optional<Schema> schemaFromAnnotation = AnnotationsUtils.getSchemaFromAnnotation(header.schema());
+                        //schemaFromAnnotation.ifPresent(h::schema);
+                        h.required(header.required());
+                        apiResponse.addHeaderObject(header.name(), h);
                     });
-                }
-                Arrays.stream(response.headers()).forEach(header -> {
-                    Header h = new Header();
-                    h.description(header.description());
-                    h.deprecated(header.deprecated());
-                    //h.allowEmptyValue(header.allowEmptyValue());
-                    //Optional<Schema> schemaFromAnnotation = AnnotationsUtils.getSchemaFromAnnotation(header.schema());
-                    //schemaFromAnnotation.ifPresent(h::schema);
-                    h.required(header.required());
-                    apiResponse.addHeaderObject(header.name(), h);
-                });
-                return new ImmutablePair<>(response.responseCode(), apiResponse);
-            }).collect(Collectors.toMap(x -> x.left, x -> x.right)));
+                    return new ImmutablePair<>(response.responseCode(), apiResponse);
+                }).collect(Collectors.toMap(x -> x.left, x -> x.right)));
         operation.responses(apiResponses);
         Arrays.stream(annotation.parameters()).forEach(parameter -> {
             Parameter p = findAlreadyProcessedParamFromVertxRoute(parameter.name(), operation.getParameters());
@@ -158,7 +158,7 @@ final class AnnotationMappers {
             HashMap<String, Object> subMap = new HashMap<String, Object>();
             subMap.put("type", "array");
 
-            if(isPrimitiveOrWrapper(componentType)){
+            if (isPrimitiveOrWrapper(componentType)) {
                 HashMap<String, Object> arrayMap = new HashMap<String, Object>();
                 arrayMap.put("type", componentType.getSimpleName() + "[]");
                 subMap.put("type", arrayMap);
@@ -170,17 +170,17 @@ final class AnnotationMappers {
         }
     }
 
-    private  static Boolean isPrimitiveOrWrapper(Type type){
+    private static Boolean isPrimitiveOrWrapper(Type type) {
         return type.equals(Double.class) ||
-            type.equals(Float.class) ||
-            type.equals(Long.class) ||
-            type.equals(Integer.class) ||
-            type.equals(Short.class) ||
-            type.equals(Character.class) ||
-            type.equals(Byte.class) ||
-            type.equals(Boolean.class) ||
+                type.equals(Float.class) ||
+                type.equals(Long.class) ||
+                type.equals(Integer.class) ||
+                type.equals(Short.class) ||
+                type.equals(Character.class) ||
+                type.equals(Byte.class) ||
+                type.equals(Boolean.class) ||
                 type.equals(UUID.class) ||
-            type.equals(String.class);
+                type.equals(String.class);
     }
 
     private static Object clean(final String in) {
@@ -193,7 +193,7 @@ final class AnnotationMappers {
         Field[] fields = content.schema().implementation().getDeclaredFields();
 
         for (Field field : fields) {
-                     System.out.println("Field: " + field.getName() + " " + field.getType().getSimpleName() + " type " + field.getType() + " Ctype " + field.getType().getComponentType());
+            System.out.println("Field: " + field.getName() + " " + field.getType().getSimpleName() + " type " + field.getType() + " Ctype " + field.getType().getComponentType());
 
             mapParameters(field, map);
         }
@@ -204,7 +204,7 @@ final class AnnotationMappers {
 
         try {
             example = pojoMapper.readValue(content.schema().example(),
-                Object.class);
+                    Object.class);
         } catch (IOException e) {
             log.error("The example could not be mapped");
         }
@@ -216,7 +216,7 @@ final class AnnotationMappers {
         model.setExample(example);
 
         Content cont = new Content()
-            .addMediaType("application/json", new MediaType().schema(model));
+                .addMediaType("application/json", new MediaType().schema(model));
 
         return cont;
     }

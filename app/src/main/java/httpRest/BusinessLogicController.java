@@ -1,6 +1,7 @@
 package httpRest;
 
 import java.util.concurrent.CompletableFuture;
+
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import server.AppServer;
@@ -62,10 +63,13 @@ public class BusinessLogicController {
         return future;
     }
 
-    /**perform a post request to business logic in order to compute the score, get the winning team and position
+    /**
+     * perform a post request to business logic in order to compute the score, get the winning team and position
+     *
      * @param trick the completed trick with which it computes the score
      * @param trump used while computing the score
-     * @return a completable future of the json response*/
+     * @return a completable future of the json response
+     */
     public CompletableFuture<JsonObject> computeScore(Trick trick, String trump) {
         int[] cards = trick.getCards().stream().mapToInt(card -> Integer.parseInt(card)).toArray();
         JsonObject requestBody = new JsonObject()

@@ -54,3 +54,6 @@ jobs:
     steps:
       - name: Verify that there were no failures
         run: ${{ !contains(join(needs.*.result, ','), 'failure') }}
+
+# run test only on repository 
+# ./gradlew test --tests repository.StatisticMongoTest

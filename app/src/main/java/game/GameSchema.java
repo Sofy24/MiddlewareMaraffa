@@ -6,13 +6,13 @@ import java.util.List;
 /**TODO/Define the mongodb schema of the game*/
 public class GameSchema {
     private String gameID;
-    private CardSuit trump;
-    public void setTrump(CardSuit trump) {
-        this.trump = trump;
+    private CardSuit leadingSuit;
+    public void setTrump(CardSuit leadingSuit) {
+        this.leadingSuit = leadingSuit;
     }
 
     public CardSuit getTrump() {
-        return trump;
+        return leadingSuit;
     }
     private List<Trick> tricks;
 
@@ -26,9 +26,9 @@ public class GameSchema {
     public GameSchema() {
     }
 
-    public GameSchema(String identifier, CardSuit trump) {
+    public GameSchema(String identifier, CardSuit leadingSuit) {
         this.gameID = identifier;
-        this.trump = trump;
+        this.leadingSuit = leadingSuit;
         this.tricks = new ArrayList<>();
     }
 

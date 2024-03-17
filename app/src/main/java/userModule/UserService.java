@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 
 import game.GameVerticle;
+import game.Team;
 import game.Trick;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -33,8 +34,33 @@ public class UserService {
             System.out.println(" \t\t\t\t\t Points: " + jj.getString("points"));
             // LOGGER.debug(gv.toString());
             // System.out.println(gv.toString());
+            this.endGameHandler(jj);
             message.reply("pong!");
         });
+    }
+
+    private CompletableFuture<Boolean> endGameHandler(JsonObject requestBody) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+        //TODO devi creare una chiamata per modificare le stats altrimenti e' davvero scomodo lavorare
+        // Team t1 = (Team) requestBody.getValue("team1", Team.class);
+        // Team t2 = (Team) requestBody.getValue("team2", Team.class);
+        // WebClient.create(vertx)
+        //     .request(HttpMethod.GET, PORT, LOCALHOST, "/user")
+        //         .putHeader("Accept", "application/json")
+        //         .addQueryParam("fields", "nickname,gamesPlayed,gamesWon")
+        //         .addQueryParam("s", "{\"nickname\" : \"matte\"}")
+        //         .as(BodyCodec.jsonObject())
+        //         .send(handler -> {
+        //             if (handler.succeeded()) {
+        //                 System.out.println(handler.result().body().toString());
+        //                 // future.complete(handler.result().body());
+        //             } else {
+        //                 System.out.println(handler.cause().getMessage());
+        //                 // future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
+        //             }
+        //         });
+        // if(t1.score() > t2.score()) t1.players()
+        return future;
     }
 
     public CompletableFuture<JsonObject> askService(JsonObject requestBody, HttpMethod method, String requestURI) {

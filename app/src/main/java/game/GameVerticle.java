@@ -28,7 +28,7 @@ public class GameVerticle extends AbstractVerticle {
     private final UUID id;
     private final AtomicInteger currentState;
     private final int numberOfPlayers;
-    private Pair<Integer, Integer> currentScore;
+    // private Pair<Integer, Integer> currentScore;
     private final int expectedScore;
     private CardSuit trump = CardSuit.NONE;
     private Map<Integer, Trick> states = new ConcurrentHashMap<>();
@@ -51,7 +51,7 @@ public class GameVerticle extends AbstractVerticle {
         this.id = id;
         this.gameMode = gameMode;
         this.expectedScore = expectedScore;
-        this.currentScore = new Pair<>(0, 0);
+        // this.currentScore = new Pair<>(0, 0);
         this.currentState = new AtomicInteger(0);
         this.numberOfPlayers = numberOfPlayers;
         users.add(username);
@@ -66,21 +66,12 @@ public class GameVerticle extends AbstractVerticle {
         this.id = id;
         this.gameMode = gameMode;
         this.expectedScore = expectedScore;
-        this.currentScore = new Pair<>(0, 0);
+        // this.currentScore = new Pair<>(0, 0);
         this.currentState = new AtomicInteger(0);
         this.numberOfPlayers = numberOfPlayers;
         users.add(username);
         this.gameSchema = new GameSchema(String.valueOf(id), CardSuit.NONE);
     }
-
-    public List<String> getUsers() {
-        return users;
-    }
-
-    public Pair<Integer, Integer> getCurrentScore() {
-        return currentScore;
-    }
-
 
     /** It starts the verticle */
     @Override
@@ -146,10 +137,10 @@ public class GameVerticle extends AbstractVerticle {
         if (this.canStart()) {
             this.team1 = new Team(
                     IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 == 0).mapToObj(this.users::get).toList(),
-                    "A", this.currentScore.getX());
+                    "A", 0);
             this.team2 = new Team(
                     IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 != 0).mapToObj(this.users::get).toList(),
-                    "B", this.currentScore.getX());
+                    "B", 0);
             this.status = Status.PLAYING;
             return true;
         }
@@ -258,9 +249,10 @@ public class GameVerticle extends AbstractVerticle {
 
     /** @return true if the game is ended */
     public boolean isGameEnded() {
-        return this.currentScore.getX() >= this.expectedScore || this.currentScore.getY() >= this.expectedScore;
+        return this.team1.score() >= this.expectedScore || this.team2.score() >= this.expectedScore;
     }
 
+    //TODO e se facessimo una sottoclasse apposta ???
     /** @return a json with id, status and game mode */
     public JsonObject toJson() {
         JsonObject json = new JsonObject();
@@ -269,8 +261,7 @@ public class GameVerticle extends AbstractVerticle {
                 .put("gameMode", this.gameMode.toString())
                 .put("numberOfPlayers", this.numberOfPlayers)
                 .put("team1", this.team1)
-                .put("team2", this.team2)
-                .put("points", this.currentScore);
+                .put("team2", this.team2);
         return json;
     }
 }

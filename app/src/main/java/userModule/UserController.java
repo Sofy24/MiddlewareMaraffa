@@ -4,19 +4,21 @@ package userModule;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import userModule.schema.UserSchema;
 
 // @Api(tags = "login", description = "APIs for user management")
 @Api(tags = "User Operations", description = "APIs for user management")
 public class UserController {
-    private final Vertx vertx;
     private final UserService userService;
     public UserController(Vertx vertx) {
-        this.vertx = vertx;
         this.userService = new UserService(vertx);
     }
 
@@ -28,11 +30,25 @@ public class UserController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     public void loginRoute(RoutingContext context) {
-        //TODO: Implement login logic
+        userService.askService(context.body().asJsonObject(), HttpMethod.GET, "/login").whenComplete((response, error) -> {
+            if (error != null) {
+                context.response().setStatusCode(500).end(error.getMessage());
+            } else {
+                context.response().setStatusCode(201).end(response.encode());
+            }
+        });
     }
 
+    //TODO non funziona lo schema d'esempio !
     @Operation(summary = "Register operation", description = "Create a new user account",  method = "POST", operationId = "register", tags = {
-                        "User Operations"}, requestBody = @RequestBody(description = "User's details"), responses = {
+                        "User Operations"}, 
+                        
+                        requestBody = @RequestBody(description = "User's details", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = UserSchema.class, example = "{\n"
+                                        +
+                                        "  \"" + "nickname" + "\": user,\n" +
+                                        "  \"" + "password" + "\": \"password\",\n" +
+                                        "  \"" + "email" + "\": mmm@gmail.com,\n" +
+                                        "}"))), responses = {
         @ApiResponse(responseCode = "201", description = "User registered successfully"),
         @ApiResponse(responseCode = "400", description = "Bad Request"),
         @ApiResponse(responseCode = "500", description = "Internal Server Error")

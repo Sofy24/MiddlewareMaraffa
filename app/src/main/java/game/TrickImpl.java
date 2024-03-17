@@ -9,6 +9,7 @@ import org.bson.codecs.pojo.annotations.BsonIgnore;
 
 public class TrickImpl implements Trick{
     // private final Map<String, Pair<Integer, String>> cards = new HashMap<>();
+    @BsonIgnore
     private final Map<String, String> cards = new LinkedHashMap<>(); // linked to keep the order of the cards
     private final AtomicInteger currentUser;
 
@@ -41,6 +42,7 @@ public class TrickImpl implements Trick{
         this.call = call;
     }
 
+    @BsonIgnore
     public List<String> getCards(){
         return  this.cards.keySet().stream().toList();
     }

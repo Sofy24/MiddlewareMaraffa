@@ -12,6 +12,9 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.ErrorHandler;
 import io.vertx.ext.web.handler.StaticHandler;
+import userModule.UserController;
+import userModule.UserService;
+
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import com.google.common.collect.ImmutableSet;
@@ -33,9 +36,9 @@ public class RouterConfig {
     private final int port;
     private final Controller controller;
 
-    public RouterConfig(final int port, final GameServiceDecorator entityService) {
+    public RouterConfig(final int port, final GameServiceDecorator entityService, final UserController userService) {
         this.port = port;
-        this.controller = new Controller(entityService);
+        this.controller = new Controller(entityService, userService);
     }
 
     private void mapParameters(Field field, Map<String, Object> map) {

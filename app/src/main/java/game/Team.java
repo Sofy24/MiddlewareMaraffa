@@ -2,10 +2,11 @@ package game;
 
 import java.util.List;
 
+
 /**
  * A record modelling the concept of "team"
  */
-public record Team(List<String> players, String nameOfTeam) {
+public record Team(List<String> players, String nameOfTeam, Integer score) {
 
     @Override
     public List<String> players() {
@@ -15,6 +16,11 @@ public record Team(List<String> players, String nameOfTeam) {
     @Override
     public String nameOfTeam() {
         return nameOfTeam;
+    }
+
+    @Override
+    public Integer score() {
+        return score;
     }
 
     @Override

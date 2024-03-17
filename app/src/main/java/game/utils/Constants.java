@@ -46,8 +46,8 @@ public class Constants {
     public static final String GAMES_METHOD = "GET";
 
     //tags
-    public static final String GAME_TAG = "Game";
-    public static final String ROUND_TAG = "Game";
+    public static final String GAME_TAG = "Game.Miscellaneous";
+    public static final String ROUND_TAG = "Game.Round";
     //json attributes
     public static final String START_ATTR = "start";
     public static final String JOIN_ATTR = "join";

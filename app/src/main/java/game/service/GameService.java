@@ -6,7 +6,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import game.*;
-import httpRest.BusinessLogicController;
+import BLManagment.BusinessLogicController;
 import repository.AbstractStatisticManager;
 import game.utils.Constants;
 import java.util.Map;

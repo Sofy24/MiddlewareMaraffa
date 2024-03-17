@@ -3,16 +3,17 @@ package httpRest;
 import java.util.ArrayList;
 import java.util.List;
 import io.vertx.core.http.HttpMethod;
-
+import userModule.UserController;
 import game.service.GameServiceDecorator;
 import game.utils.Constants;
 
 public class Controller implements IController {
     private final GameServiceDecorator entityService;
     private final List<IRouteResponse> routes = new ArrayList<>();
-
-    public Controller(GameServiceDecorator entityService) {
+    private final UserController userController;
+    public Controller(GameServiceDecorator entityService, UserController userController ) {
         this.entityService = entityService;
+        this.userController = userController;
         this.addRoutes();
     }
 
@@ -33,6 +34,11 @@ public class Controller implements IController {
         routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CARDS_ON_HAND, entityService::cardsOnHand));
         routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CARDS_ON_TABLE, entityService::cardsOnTable));
 //TODO delete game
+        //user management
+        routes.add(new RouteResponse(HttpMethod.POST, "/login", userController::loginRoute));
+        routes.add(new RouteResponse(HttpMethod.POST, "/register", userController::registerRoute));
+        routes.add(new RouteResponse(HttpMethod.POST, "/logout", userController::logoutRoute));
+
     }
 
     public List<IRouteResponse> getRoutes() {

@@ -73,6 +73,15 @@ public class GameVerticle extends AbstractVerticle {
         this.gameSchema = new GameSchema(String.valueOf(id), CardSuit.NONE);
     }
 
+    public List<String> getUsers() {
+        return users;
+    }
+
+    public Pair<Integer, Integer> getCurrentScore() {
+        return currentScore;
+    }
+
+
     /** It starts the verticle */
     @Override
     public void start(Promise<Void> startPromise) {
@@ -105,6 +114,8 @@ public class GameVerticle extends AbstractVerticle {
             }
             this.currentTrick.addCard(card, username);
             if (this.currentTrick.isCompleted()) {
+            //TODO temporary here
+            this.vertx.eventBus().send("user-component", this.toJson().toString());
                 this.gameSchema.addTrick(currentTrick);
                 if (this.statisticManager != null)
                     this.statisticManager.updateRecordWithTrick(String.valueOf(id), currentTrick);
@@ -132,13 +143,13 @@ public class GameVerticle extends AbstractVerticle {
 
     /** @return true if all the players are in */
     public boolean startGame() {
-        if (this.users.size() == this.numberOfPlayers) {
+        if (this.canStart()) {
             this.team1 = new Team(
                     IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 == 0).mapToObj(this.users::get).toList(),
-                    "A");
+                    "A", this.currentScore.getX());
             this.team2 = new Team(
                     IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 != 0).mapToObj(this.users::get).toList(),
-                    "B");
+                    "B", this.currentScore.getX());
             this.status = Status.PLAYING;
             return true;
         }
@@ -194,7 +205,9 @@ public class GameVerticle extends AbstractVerticle {
      * @param score of the team who won the trick
      * @param isTeamA true if team A won the trick*/
     public void setScore(int score, boolean isTeamA){
-        this.currentScore = isTeamA ?  new Pair<>(this.currentScore.getX() + (score / 3), this.currentScore.getY()) : new Pair<>(this.currentScore.getX(), this.currentScore.getY() + (score / 3));
+        if(isTeamA) this.team1 = new Team(this.team1.players(), this.team1.nameOfTeam(), this.team1.score() + (score / 3));
+        else this.team2 = new Team(this.team2.players(), this.team2.nameOfTeam(), this.team2.score() + (score/3) );
+        // this.currentScore = isTeamA ?  new Pair<>(this.currentScore.getX() + (score / 3), this.currentScore.getY()) : new Pair<>(this.currentScore.getX(), this.currentScore.getY() + (score / 3));
     }
 
     public CardSuit getTrump() {
@@ -253,7 +266,11 @@ public class GameVerticle extends AbstractVerticle {
         JsonObject json = new JsonObject();
         json.put("gameID", this.id.toString())
                 .put("status", this.status.toString())
-                .put("gameMode", this.gameMode.toString());
+                .put("gameMode", this.gameMode.toString())
+                .put("numberOfPlayers", this.numberOfPlayers)
+                .put("team1", this.team1)
+                .put("team2", this.team2)
+                .put("points", this.currentScore);
         return json;
     }
 }

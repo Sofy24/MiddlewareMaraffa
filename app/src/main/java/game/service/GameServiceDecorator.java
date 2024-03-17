@@ -8,7 +8,7 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import server.AppServer;
 import game.*;
-import httpRest.BusinessLogicController;
+import BLManagment.BusinessLogicController;
 import repository.AbstractStatisticManager;
 import game.service.schema.CanStartResponse;
 import game.service.schema.ChooseTrumpBody;
@@ -113,11 +113,10 @@ public class GameServiceDecorator {
                 String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
                 UUID gameID = UUID.fromString(uuidAsString);
                 JsonObject startResponse = this.gameService.startGame(gameID);
-                String message = startResponse.getString(Constants.MESSAGE);
                 if (!startResponse.containsKey(Constants.NOT_FOUND)) {
-                        context.response().end(message);
+                        context.response().end(startResponse.toBuffer());
                 }
-                context.response().setStatusCode(404).end(message);
+                context.response().setStatusCode(404).end(startResponse.toBuffer());
         }
 
         @Operation(summary = "Check if a round can start", method = Constants.CAN_START_METHOD, operationId = Constants.CAN_START, // !

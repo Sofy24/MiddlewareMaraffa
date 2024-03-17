@@ -1,4 +1,4 @@
-package httpRest;
+package BLManagment;
 
 import java.util.concurrent.CompletableFuture;
 import io.vertx.core.impl.logging.Logger;
@@ -16,12 +16,10 @@ public class BusinessLogicController {
     private Vertx vertx;
     private static final int PORT = 3000;
     private static final String LOCALHOST = "127.0.0.1";
-    private final Router router;
-    private static final Logger LOGGER = LoggerFactory.getLogger(AppServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BusinessLogicController.class);
 
     public BusinessLogicController(Vertx vertx) {
         this.vertx = vertx;
-        this.router = Router.router(vertx);
     }
 
     public CompletableFuture<JsonObject> getShuffledDeck(final Integer numberOfPlayers) {

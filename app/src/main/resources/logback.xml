@@ -1,5 +1,9 @@
 <configuration>
 
+
+    <!--TODO CONSIDER ADDING 
+    INFO org.mongodb.driver.connection  -->
+
     <!-- for production please use /var/log/xyz directory instead of /tmp/log/xyz -->
     <!-- <property name="LOG_FILE" value="/tmp/log/woshiadai/server.log"/>
     <property name="REQUEST_LOG_FILE" value="/tmp/log/woshiadai/request.log"/> -->
@@ -61,7 +65,7 @@
         <appender-ref ref="SERVER_LOG_ASYNC"/>
     </logger>
 
-    <logger level="DEBUG" name="org.example" additivity="false">
+    <logger level="DEBUG" name="userModule" additivity="false">
         <appender-ref ref="DEBUG_LOG_ASYNC"/>
     </logger>
 

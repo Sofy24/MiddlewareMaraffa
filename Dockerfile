@@ -9,7 +9,7 @@ RUN mkdir /app
 
 COPY --from=build /home/gradle/src/app/build/libs/ /app/
 
-#ENTRYPOINT ["java","-jar","/app/app.jar"]
+ENTRYPOINT ["java","-jar","/app/Middleware.jar"]
 # Use an official OpenJDK runtime as a parent image
 # FROM openjdk:11
 

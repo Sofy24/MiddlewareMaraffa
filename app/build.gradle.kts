@@ -15,6 +15,8 @@ plugins {
     id("com.adarshr.test-logger") version "4.0.0"
 }
 
+
+
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
@@ -80,6 +82,12 @@ java {
 application {
     // Define the main class for the application.
     mainClass = "server.Main"
+}
+
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = "server.Main"
+    }
 }
 
 

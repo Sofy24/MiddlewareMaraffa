@@ -74,8 +74,9 @@ public class UserService {
                 .putHeader("Content-type", "application/json")
                 .as(BodyCodec.jsonObject())
                 .sendJson(updates, handler -> {
-                    if (handler.succeeded()) {
+                    if (handler.succeeded() && handler.result().statusCode() == 200){ 
                         // System.out.println(handler.result().body().toString());
+
                         future.complete(true);
                         // future.complete(handler.result().body());
                     } else {
@@ -103,5 +104,17 @@ public class UserService {
         return future;
     } 
 
-
+    public void registerUser(String nickname, String password, String email) {
+        JsonObject requestBody = new JsonObject()
+            .put("nickname", nickname)
+            .put("password", password)
+            .put("email", email);
+        this.askService(requestBody, HttpMethod.POST, "/user").whenComplete((response, error) -> {
+            if (error != null) {
+                LOGGER.error(error.getMessage());
+            } else {
+                LOGGER.info(response.encode());
+            }
+        });
+    }
 }

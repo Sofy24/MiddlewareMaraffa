@@ -44,6 +44,19 @@ public class UserTestIntegration {
         vertx.close();
     }
 
+
+    @Timeout(value = 10, unit = TimeUnit.SECONDS)
+    @Test
+    public void testRegisterEvent(VertxTestContext context){
+        JsonObject requestBody = new JsonObject()
+            .put("nickname", "user1")
+            .put("password", "password");
+        this.userService (requestBody).whenComplete((res, err) -> {
+            if(res) context.completeNow();
+            //Otherwise timeout will be triggered to fail the test
+        });
+    }
+
     @Timeout(value = 10, unit = TimeUnit.SECONDS)
     @Test
     public void testAfterGameHandler(VertxTestContext context){

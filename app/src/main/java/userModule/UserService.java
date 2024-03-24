@@ -12,6 +12,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
@@ -26,40 +27,63 @@ public class UserService {
         this.vertx = vertx;
         this.vertx.eventBus().consumer("user-component", message -> {
             LOGGER.info("Received message: " + message.body());
-            Gson gson = new Gson();
             //! Esiste un metodo toJson in cui metti solo alcune chiavi, vale la pena usarlo !
             JsonObject jj = new JsonObject(message.body().toString());
             // GameVerticle gv = gson.fromJson(message.body().toString() , GameVerticle.class);
             // System.out.println("users: " + gv.getUsers());
-            System.out.println(" \t\t\t\t\t Points: " + jj.getString("points"));
+            // System.out.println(" \t\t\t\t\t Points: " + jj.getString("points"));
             // LOGGER.debug(gv.toString());
             // System.out.println(gv.toString());
-            this.endGameHandler(jj);
+            this.endGameHandler(new JsonObject(message.body().toString()));
             message.reply("pong!");
         });
     }
 
-    private CompletableFuture<Boolean> endGameHandler(JsonObject requestBody) {
+    public CompletableFuture<Boolean> endGameHandler(JsonObject requestBody) {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
         //TODO devi creare una chiamata per modificare le stats altrimenti e' davvero scomodo lavorare
-        // Team t1 = (Team) requestBody.getValue("team1", Team.class);
-        // Team t2 = (Team) requestBody.getValue("team2", Team.class);
+        Team t1 = (Team) requestBody.getValue("team1", Team.class);
+        Team t2 = (Team) requestBody.getValue("team2", Team.class);
+        JsonArray updates = new JsonArray();
+        t1.players().forEach(team1Player -> {
+            updates.add(new JsonObject().put("nickname", team1Player).put("win", t1.score() > t2.score()).put("cricca", 0)); //TODO la criccaaaaa 
+        });
+        t2.players().forEach(team2Player -> {
+            updates.add(new JsonObject().put("nickname", team2Player).put("win", t2.score() > t1.score()).put("cricca", 0)); //TODO la criccaaaaa 
+        });
+
         // WebClient.create(vertx)
-        //     .request(HttpMethod.GET, PORT, LOCALHOST, "/user")
+        //     .request(HttpMethod.GET, PORT, LOCALHOST, "/user/user1")
         //         .putHeader("Accept", "application/json")
-        //         .addQueryParam("fields", "nickname,gamesPlayed,gamesWon")
-        //         .addQueryParam("s", "{\"nickname\" : \"matte\"}")
+        //         .putHeader("Content-type", "application/json")
         //         .as(BodyCodec.jsonObject())
         //         .send(handler -> {
         //             if (handler.succeeded()) {
-        //                 System.out.println(handler.result().body().toString());
-        //                 // future.complete(handler.result().body());
+        //                 System.out.println(handler.result().toString());
+        //                 System.out.println(handler.result().body());
+        //                 future.complete(true);
         //             } else {
         //                 System.out.println(handler.cause().getMessage());
-        //                 // future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
+        //                 future.complete(false);
         //             }
-        //         });
-        // if(t1.score() > t2.score()) t1.players()
+        //         }); //TODO test after login and register
+
+        WebClient.create(vertx)
+            .request(HttpMethod.POST, PORT, LOCALHOST, "/statistic/bulk")
+                .putHeader("Accept", "application/json")
+                .putHeader("Content-type", "application/json")
+                .as(BodyCodec.jsonObject())
+                .sendJson(updates, handler -> {
+                    if (handler.succeeded()) {
+                        // System.out.println(handler.result().body().toString());
+                        future.complete(true);
+                        // future.complete(handler.result().body());
+                    } else {
+                        System.out.println(handler.cause().getMessage());
+                        future.complete(false);
+                        // future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
+                    }
+                }); //TODO test after login and register
         return future;
     }
 

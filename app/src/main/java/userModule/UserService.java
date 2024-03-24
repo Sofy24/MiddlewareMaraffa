@@ -1,6 +1,7 @@
 package userModule;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
@@ -104,17 +105,49 @@ public class UserService {
         return future;
     } 
 
-    public void registerUser(String nickname, String password, String email) {
+    public CompletableFuture<JsonObject> askServiceWithFuture(JsonObject requestBody, HttpMethod method, String requestURI, CompletableFuture<JsonObject> future) {
+        WebClient.create(vertx)
+            .request(method, PORT, LOCALHOST, requestURI)
+                .putHeader("Accept", "application/json")
+                .as(BodyCodec.jsonObject())
+                .sendJsonObject(requestBody, handler -> {
+                    if (handler.succeeded()) {
+                        future.complete(handler.result().body());
+                    } else {
+                        future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
+                    }
+                });
+        return future;
+    } 
+
+    public CompletableFuture<JsonObject> registerUser(String nickname, String password, String email) throws InterruptedException, ExecutionException {
         JsonObject requestBody = new JsonObject()
             .put("nickname", nickname)
             .put("password", password)
             .put("email", email);
-        this.askService(requestBody, HttpMethod.POST, "/user").whenComplete((response, error) -> {
-            if (error != null) {
-                LOGGER.error(error.getMessage());
-            } else {
-                LOGGER.info(response.encode());
-            }
-        });
+        CompletableFuture<JsonObject> future = new CompletableFuture<>();
+        WebClient.create(vertx)
+            .request(HttpMethod.GET, PORT, LOCALHOST, "/user/" + nickname)
+                .putHeader("Accept", "application/json")
+                .as(BodyCodec.jsonObject())
+                .send(handler -> {
+                    if (handler.succeeded()) {
+                        if(handler.result().body() == null) this.askServiceWithFuture(requestBody, HttpMethod.POST, "/user", future);
+                        else if(handler.result().body().getString("nickname").equals(nickname)) throw new RuntimeException("User already exists");
+                    }
+                });
+        return future;
+                // if(res){
+                //     return this.askService(requestBody, HttpMethod.POST, "/user");
+                // }else {
+                //     throw new RuntimeException("User already exists");
+                // }
+        // .whenComplete((response, error) -> {
+        //     if (error != null) {
+        //         LOGGER.error(error.getMessage());
+        //     } else {
+        //         LOGGER.info(response.encode());
+        //     }
+        // });
     }
 }

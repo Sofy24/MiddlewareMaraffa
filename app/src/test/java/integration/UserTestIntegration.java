@@ -1,9 +1,11 @@
 package integration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterAll;
@@ -48,13 +50,17 @@ public class UserTestIntegration {
     @Timeout(value = 10, unit = TimeUnit.SECONDS)
     @Test
     public void testRegisterEvent(VertxTestContext context){
-        JsonObject requestBody = new JsonObject()
-            .put("nickname", "user1")
-            .put("password", "password");
-        this.userService (requestBody).whenComplete((res, err) -> {
-            if(res) context.completeNow();
-            //Otherwise timeout will be triggered to fail the test
-        });
+        try {
+            this.userService.registerUser("user1", "password", "email@gmail.com").whenComplete((res, err) -> {
+                assertEquals(res.getString("nickname"), "user1");;
+                context.completeNow();
+                //Otherwise timeout will be triggered to fail the test
+            });
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
     @Timeout(value = 10, unit = TimeUnit.SECONDS)

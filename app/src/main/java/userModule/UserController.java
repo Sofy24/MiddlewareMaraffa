@@ -32,7 +32,7 @@ public class UserController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     public void loginRoute(RoutingContext context) {
-        userService.askService(context.body().asJsonObject(), HttpMethod.GET, "/login").whenComplete((response, error) -> {
+        userService.loginUser(context.body().asJsonObject().getString("nickname"), context.body().asJsonObject().getString("password")).whenComplete((response, error) -> {
             if (error != null) {
                 context.response().setStatusCode(500).end(error.getMessage());
             } else {

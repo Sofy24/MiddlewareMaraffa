@@ -28,7 +28,6 @@ import userModule.UserService;
 @ExtendWith(VertxExtension.class)
 public class UserTestIntegration {
 
-    //TODO  login and register 
     private Vertx vertx;
     private UserService userService;
 
@@ -48,7 +47,7 @@ public class UserTestIntegration {
     }
 
 
-    @Timeout(value = 10, unit = TimeUnit.MINUTES)
+    @Timeout(value = 10, unit = TimeUnit.SECONDS)
     @Test
     public void testRegisterEvent(VertxTestContext context){
             this.userService.registerUser("user1", "password", "email@gmail.com").whenComplete((res, err) -> {
@@ -74,16 +73,46 @@ public class UserTestIntegration {
             }
     }
 
+    @Timeout(value = 10, unit = TimeUnit.MINUTES)
+    @Test
+    public void testLoginEvent(VertxTestContext context){
+            this.userService.loginUser("user1", "password").whenComplete((res, err) -> {
+                System.out.println(res);
+                if(err == null) context.completeNow();
+                //Otherwise timeout will be triggered to fail the test
+            });
+    }
+
+    @Timeout(value = 10, unit = TimeUnit.MINUTES)
+    @Test
+    public void testLoginThrowsEvent(VertxTestContext context){
+            try {
+            this.userService.loginUser("user1", "pass").whenComplete((res, err) -> {
+                System.out.println(res);
+                if(err == null) context.completeNow();
+                //Otherwise timeout will be triggered to fail the test
+            }).join();
+            } catch (RuntimeException e) {
+                context.completeNow();
+            }
+    }
+
     @Timeout(value = 10, unit = TimeUnit.SECONDS)
     @Test
     public void testAfterGameHandler(VertxTestContext context){
+        this.userService.registerUser("user2", "pwd", "mail").join();
+        this.userService.registerUser("user3", "pwd", "mail").join();
+        this.userService.registerUser("user4", "pwd", "mail").join();
         Team team1 = new Team(List.of("user1", "user2"), "teamA", 8);
         Team team2 = new Team(List.of("user3", "user4"), "teamB", 3);
+        /** testing only the necessary part of the after round body */
         JsonObject requestBody = new JsonObject()
             .put("team1", team1)
             .put("team2", team2);
-        /** testing only the necessary part of the after round body */
-        this.userService.endGameHandler(requestBody).whenComplete((res, err) -> {
+        /** new JsonObject(requestBody.toString()) seems bad and a repetition but the json needs to be pushend 
+         * onto the messagebus so the conversion to string is necessary and the method works with it
+         */
+        this.userService.endGameHandler(new JsonObject(requestBody.toString())).whenComplete((res, err) -> {
             if(res) context.completeNow();
             //Otherwise timeout will be triggered to fail the test
         });

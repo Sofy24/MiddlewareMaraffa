@@ -1,14 +1,13 @@
 package userModule;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 
-import game.GameVerticle;
 import game.Team;
-import game.Trick;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.impl.logging.Logger;
@@ -28,13 +27,6 @@ public class UserService {
         this.vertx = vertx;
         this.vertx.eventBus().consumer("user-component", message -> {
             LOGGER.info("Received message: " + message.body());
-            //! Esiste un metodo toJson in cui metti solo alcune chiavi, vale la pena usarlo !
-            JsonObject jj = new JsonObject(message.body().toString());
-            // GameVerticle gv = gson.fromJson(message.body().toString() , GameVerticle.class);
-            // System.out.println("users: " + gv.getUsers());
-            // System.out.println(" \t\t\t\t\t Points: " + jj.getString("points"));
-            // LOGGER.debug(gv.toString());
-            // System.out.println(gv.toString());
             this.endGameHandler(new JsonObject(message.body().toString()));
             message.reply("pong!");
         });
@@ -47,8 +39,6 @@ public class UserService {
         Team t2 = (Team) gg.fromJson(requestBody.getValue("team2").toString(), Team.class);
 
 
-        // Team t1 = (Team) requestBody.getValue("team1", Team.class);
-        // Team t2 = (Team) requestBody.getValue("team2", Team.class);
         JsonArray updates = new JsonArray();
         t1.players().forEach(team1Player -> {
             updates.add(new JsonObject().put("nickname", team1Player).put("win", t1.score() > t2.score()).put("cricca", 0)); //TODO la criccaaaaa 
@@ -56,22 +46,6 @@ public class UserService {
         t2.players().forEach(team2Player -> {
             updates.add(new JsonObject().put("nickname", team2Player).put("win", t2.score() > t1.score()).put("cricca", 0)); //TODO la criccaaaaa 
         });
-
-        // WebClient.create(vertx)
-        //     .request(HttpMethod.GET, PORT, LOCALHOST, "/user/user1")
-        //         .putHeader("Accept", "application/json")
-        //         .putHeader("Content-type", "application/json")
-        //         .as(BodyCodec.jsonObject())
-        //         .send(handler -> {
-        //             if (handler.succeeded()) {
-        //                 System.out.println(handler.result().toString());
-        //                 System.out.println(handler.result().body());
-        //                 future.complete(true);
-        //             } else {
-        //                 System.out.println(handler.cause().getMessage());
-        //                 future.complete(false);
-        //             }
-        //         }); //TODO test after login and register
 
         WebClient.create(vertx)
             .request(HttpMethod.POST, PORT, LOCALHOST, "/statistic/bulk")
@@ -81,7 +55,6 @@ public class UserService {
                 .sendJson(updates, handler -> {
                     if (handler.succeeded() && handler.result().statusCode() == 200){ 
                         // System.out.println(handler.result().body().toString());
-
                         future.complete(true);
                         // future.complete(handler.result().body());
                     } else {
@@ -89,7 +62,7 @@ public class UserService {
                         future.complete(false);
                         // future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
                     }
-                }); //TODO test after login and register
+                });
         return future;
     }
 
@@ -141,17 +114,42 @@ public class UserService {
                     }
                 });
         return future;
-                // if(res){
-                //     return this.askService(requestBody, HttpMethod.POST, "/user");
-                // }else {
-                //     throw new RuntimeException("User already exists");
-                // }
-        // .whenComplete((response, error) -> {
-        //     if (error != null) {
-        //         LOGGER.error(error.getMessage());
-        //     } else {
-        //         LOGGER.info(response.encode());
-        //     }
-        // });
     }
+
+    public CompletableFuture<JsonObject> loginUser(String nickname, String password) {
+        JsonObject requestBody = new JsonObject()
+            .put("nickname", nickname)
+            .put("password", password);
+        CompletableFuture<JsonObject> future = new CompletableFuture<>();
+        WebClient.create(vertx)
+            .request(HttpMethod.POST, PORT, LOCALHOST, "/login")
+                .putHeader("Content-type", "application/json")
+                .putHeader("Accept", "application/json")
+                .as(BodyCodec.jsonObject())
+                .sendJsonObject(requestBody, handler -> {
+                    if (handler.succeeded()) {
+                        if(handler.result().statusCode()  == 200) future.complete(JsonObject.of().put("token", encryptThisString(nickname)));
+                        else future.completeExceptionally(new RuntimeException(handler.result().body().getString("message"))); //TODO neeeds refactor non mi piace per niente
+                    }
+                });
+        return future;
+    }
+
+    private static String encryptThisString(String input) 
+    { 
+        try { 
+            MessageDigest md = MessageDigest.getInstance("SHA-512"); 
+            byte[] messageDigest = md.digest(input.getBytes()); 
+            BigInteger no = new BigInteger(1, messageDigest); 
+            String hashtext = no.toString(16); 
+            while (hashtext.length() < 32) { 
+                hashtext = "0" + hashtext; 
+            } 
+            return hashtext; 
+        } 
+  
+        catch (NoSuchAlgorithmException e) { 
+            throw new RuntimeException(e); 
+        } 
+    } 
 }

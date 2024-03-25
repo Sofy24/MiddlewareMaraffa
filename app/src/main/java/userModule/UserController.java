@@ -1,6 +1,8 @@
 package userModule;
 
 
+import java.util.concurrent.ExecutionException;
+
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -58,13 +60,19 @@ public class UserController {
         jj.put("nickname", "user");
         jj.put("password", "pwd");
         jj.put("email", "mmm@gmail.com,");
-        userService.askService(jj, HttpMethod.POST, "/user").whenComplete((response, error) -> {
-            if (error != null) {
-                context.response().setStatusCode(500).end(error.getMessage());
-            } else {
-                context.response().setStatusCode(201).end(response.encode());
-            }
-        });
+
+        // userService.askService(jj, HttpMethod.POST, "/user").whenComplete((response, error) -> {
+                userService.registerUser(
+                    context.body().asJsonObject().getString("nickname"),
+                    context.body().asJsonObject().getString("password"),
+                    context.body().asJsonObject().getString("email")
+                ).whenComplete((response, error) -> {
+                    if (error != null) {
+                        context.response().setStatusCode(500).end(new JsonObject().put("message", error.getMessage()).toBuffer());
+                    } else {
+                        context.response().setStatusCode(201).end(response.encode());
+                }
+            });
     }
 
     @Operation(summary = "Logout operation", description = "Invalidate user session",  method = "POST", operationId = "logout", tags = {

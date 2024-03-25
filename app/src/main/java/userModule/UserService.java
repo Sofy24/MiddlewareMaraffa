@@ -42,9 +42,13 @@ public class UserService {
 
     public CompletableFuture<Boolean> endGameHandler(JsonObject requestBody) {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
-        //TODO devi creare una chiamata per modificare le stats altrimenti e' davvero scomodo lavorare
-        Team t1 = (Team) requestBody.getValue("team1", Team.class);
-        Team t2 = (Team) requestBody.getValue("team2", Team.class);
+        Gson gg = new Gson();
+        Team t1 = (Team) gg.fromJson(requestBody.getValue("team1").toString(), Team.class);
+        Team t2 = (Team) gg.fromJson(requestBody.getValue("team2").toString(), Team.class);
+
+
+        // Team t1 = (Team) requestBody.getValue("team1", Team.class);
+        // Team t2 = (Team) requestBody.getValue("team2", Team.class);
         JsonArray updates = new JsonArray();
         t1.players().forEach(team1Player -> {
             updates.add(new JsonObject().put("nickname", team1Player).put("win", t1.score() > t2.score()).put("cricca", 0)); //TODO la criccaaaaa 
@@ -120,7 +124,7 @@ public class UserService {
         return future;
     } 
 
-    public CompletableFuture<JsonObject> registerUser(String nickname, String password, String email) throws InterruptedException, ExecutionException {
+    public CompletableFuture<JsonObject> registerUser(String nickname, String password, String email) {
         JsonObject requestBody = new JsonObject()
             .put("nickname", nickname)
             .put("password", password)
@@ -132,8 +136,8 @@ public class UserService {
                 .as(BodyCodec.jsonObject())
                 .send(handler -> {
                     if (handler.succeeded()) {
-                        if(handler.result().body() == null) this.askServiceWithFuture(requestBody, HttpMethod.POST, "/user", future);
-                        else if(handler.result().body().getString("nickname").equals(nickname)) throw new RuntimeException("User already exists");
+                        if(handler.result().statusCode()  == 404) this.askServiceWithFuture(requestBody, HttpMethod.POST, "/user", future);
+                        else if(handler.result().body().getString("nickname").equals(nickname)) future.completeExceptionally(new RuntimeException("User already exists"));
                     }
                 });
         return future;

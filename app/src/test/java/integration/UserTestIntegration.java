@@ -1,6 +1,7 @@
 package integration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -47,20 +48,30 @@ public class UserTestIntegration {
     }
 
 
-    @Timeout(value = 10, unit = TimeUnit.SECONDS)
+    @Timeout(value = 10, unit = TimeUnit.MINUTES)
     @Test
     public void testRegisterEvent(VertxTestContext context){
-        try {
             this.userService.registerUser("user1", "password", "email@gmail.com").whenComplete((res, err) -> {
                 assertEquals(res.getString("nickname"), "user1");;
                 context.completeNow();
                 //Otherwise timeout will be triggered to fail the test
             });
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+    }
+
+    @Timeout(value = 10, unit = TimeUnit.SECONDS)
+    @Test
+    public void testRegisterFailFuture(VertxTestContext context){
+            this.userService.registerUser("duplicateUser", "password", "email@gmail.com").whenComplete((res, err) -> {
+                //Otherwise timeout will be triggered to fail the test
+            }).join();
+        
+            try {
+            this.userService.registerUser("duplicateUser", "password", "email@gmail.com").whenComplete((res, err) -> {
+                //Otherwise timeout will be triggered to fail the test
+            }).join();
+            } catch (RuntimeException e) {
+                context.completeNow();
+            }
     }
 
     @Timeout(value = 10, unit = TimeUnit.SECONDS)

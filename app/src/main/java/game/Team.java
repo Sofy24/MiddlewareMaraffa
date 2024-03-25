@@ -28,6 +28,7 @@ public record Team(List<String> players, String nameOfTeam, Integer score) {
         return "Team{" +
                 "players=" + players +
                 ", nameOfTeam='" + nameOfTeam + '\'' +
+                ", score='" + score+ '\'' +
                 '}';
     }
 }

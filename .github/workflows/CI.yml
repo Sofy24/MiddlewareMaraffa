@@ -57,7 +57,7 @@ jobs:
   deploy:
     #if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     runs-on: ubuntu-22.04
-    #needs: test
+    needs: build
     permissions: write-all
     strategy:
       fail-fast: false

@@ -51,6 +51,14 @@ jobs:
         with:
           name: Package
           path: build/*
+      - name: Deploy MongoDB contaier
+        uses: supercharge/mongodb-github-action@1.10.0
+        with:
+          mongodb-version: 6.0
+          mongodb-replica-set: mongodb_container
+          mongodb-username: ${{ secrets.MONGO_USER }}
+          mongodb-password: ${{ secrets.MONGO_PASSWORD }}
+          mongodb-port: 27012
       - name: Test
         run: gradle test
 

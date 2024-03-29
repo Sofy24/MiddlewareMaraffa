@@ -51,14 +51,21 @@ jobs:
         with:
           name: Package
           path: build/*
-      - name: Deploy MongoDB contaier
-        uses: supercharge/mongodb-github-action@1.10.0
+      - name: Set project name 
+        run: echo "REPOSITORY_NAME=middleware-maraffa" >> $GITHUB_ENV 
+      - name: Run Docker container
+        uses: pl-strflt/docker-container-action@v1
         with:
-          mongodb-version: 6.0
-          mongodb-replica-set: mongodb_container
-          mongodb-username: ${{ secrets.MONGO_USER }}
-          mongodb-password: ${{ secrets.MONGO_PASSWORD }}
-          mongodb-port: 27012
+          repository: ${{github.repository_owner}}/${{ env.REPOSITORY_NAME }}
+          ref: main
+      # - name: Deploy MongoDB contaier
+      #   uses: ipdxco/docker-container-action@v1.1.8
+      #   with:
+      #     mongodb-version: 6.0
+      #     mongodb-replica-set: mongodb_container
+      #     mongodb-username: ${{ secrets.MONGO_USER }}
+      #     mongodb-password: ${{ secrets.MONGO_PASSWORD }}
+      #     mongodb-port: 27012
       - name: Test
         run: gradle test
 
@@ -76,7 +83,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Set project name 
-      run: echo "REPOSITORY_NAME=middleware-maraffa" >> $GITHUB_ENV # unused at the moment
+      run: echo "REPOSITORY_NAME=middleware-maraffa" >> $GITHUB_ENV 
     - name: Set build version
       run: echo "BUILD_VERSION=1.0.0" >> $GITHUB_ENV
     - name: lowercase github.repository

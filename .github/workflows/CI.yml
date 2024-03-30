@@ -51,13 +51,13 @@ jobs:
         with:
           name: Package
           path: build/*
-      - name: Set project name 
-        run: echo "REPOSITORY_NAME=middleware-maraffa" >> $GITHUB_ENV 
-      - name: Run Docker container
-        uses: pl-strflt/docker-container-action@v1
+      - name: Start MongoDB
+        uses: MongoCamp/mongodb-github-action@1.0.0
         with:
-          repository: ${{github.repository_owner}}/${{ env.REPOSITORY_NAME }}
-          ref: main
+          mongodb-version: 5.0.9
+          mongodb-username: ${{ secrets.MONGO_USER }}
+          mongodb-pwd: ${{ secrets.MONGO_PASSWORD }}
+      - run: curl http://localhost:27017
       # - name: Deploy MongoDB contaier
       #   uses: ipdxco/docker-container-action@v1.1.8
       #   with:

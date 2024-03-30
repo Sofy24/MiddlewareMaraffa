@@ -68,7 +68,7 @@ jobs:
           mongodb-version: 5.0.9
           mongodb-username: ${{ secrets.MONGO_USER }}
           mongodb-pwd: ${{ secrets.MONGO_PASSWORD }}
-      - run: curl http://localhost:27012
+      # - run: curl http://localhost:27012
       # - name: Deploy MongoDB contaier
       #   uses: ipdxco/docker-container-action@v1.1.8
       #   with:

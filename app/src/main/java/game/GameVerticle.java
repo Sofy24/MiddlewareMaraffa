@@ -105,8 +105,8 @@ public class GameVerticle extends AbstractVerticle {
             }
             this.currentTrick.addCard(card, username);
             if (this.currentTrick.isCompleted()) {
-            //TODO temporary here
-            this.vertx.eventBus().send("user-component", this.toJson().toString());
+                // TODO temporary here
+                this.vertx.eventBus().send("user-component", this.toJson().toString());
                 this.gameSchema.addTrick(currentTrick);
                 if (this.statisticManager != null)
                     this.statisticManager.updateRecordWithTrick(String.valueOf(id), currentTrick);
@@ -192,13 +192,20 @@ public class GameVerticle extends AbstractVerticle {
         return this.tricks.get(this.getCurrentState().get());
     }
 
-    /** update the score of the teams
-     * @param score of the team who won the trick
-     * @param isTeamA true if team A won the trick*/
-    public void setScore(int score, boolean isTeamA){
-        if(isTeamA) this.team1 = new Team(this.team1.players(), this.team1.nameOfTeam(), this.team1.score() + (score / 3));
-        else this.team2 = new Team(this.team2.players(), this.team2.nameOfTeam(), this.team2.score() + (score/3) );
-        // this.currentScore = isTeamA ?  new Pair<>(this.currentScore.getX() + (score / 3), this.currentScore.getY()) : new Pair<>(this.currentScore.getX(), this.currentScore.getY() + (score / 3));
+    /**
+     * update the score of the teams
+     * 
+     * @param score   of the team who won the trick
+     * @param isTeamA true if team A won the trick
+     */
+    public void setScore(int score, boolean isTeamA) {
+        if (isTeamA)
+            this.team1 = new Team(this.team1.players(), this.team1.nameOfTeam(), this.team1.score() + (score / 3));
+        else
+            this.team2 = new Team(this.team2.players(), this.team2.nameOfTeam(), this.team2.score() + (score / 3));
+        // this.currentScore = isTeamA ? new Pair<>(this.currentScore.getX() + (score /
+        // 3), this.currentScore.getY()) : new Pair<>(this.currentScore.getX(),
+        // this.currentScore.getY() + (score / 3));
     }
 
     public CardSuit getTrump() {
@@ -218,13 +225,13 @@ public class GameVerticle extends AbstractVerticle {
         return gameMode;
     }
 
-    /**increment the current state*/
-    public void incrementCurrentState(){
+    /** increment the current state */
+    public void incrementCurrentState() {
         this.currentState.incrementAndGet();
     }
 
-    /**@return true if the user is in the game*/
-    public boolean isUserIn(String user){
+    /** @return true if the user is in the game */
+    public boolean isUserIn(String user) {
         return this.users.contains(user);
     }
 
@@ -252,7 +259,7 @@ public class GameVerticle extends AbstractVerticle {
         return this.team1.score() >= this.expectedScore || this.team2.score() >= this.expectedScore;
     }
 
-    //TODO e se facessimo una sottoclasse apposta ???
+    // TODO e se facessimo una sottoclasse apposta ???
     /** @return a json with id, status and game mode */
     public JsonObject toJson() {
         JsonObject json = new JsonObject();

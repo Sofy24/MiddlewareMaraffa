@@ -115,8 +115,7 @@ public class GameServiceDecorator {
                 JsonObject startResponse = this.gameService.startGame(gameID);
                 if (!startResponse.containsKey(Constants.NOT_FOUND)) {
                         context.response().end(startResponse.toBuffer());
-                }
-                context.response().setStatusCode(404).end(startResponse.toBuffer());
+                }else context.response().setStatusCode(404).end(startResponse.toBuffer());
         }
 
         @Operation(summary = "Check if a round can start", method = Constants.CAN_START_METHOD, operationId = Constants.CAN_START, // !

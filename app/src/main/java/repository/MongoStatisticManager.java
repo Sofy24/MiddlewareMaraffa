@@ -7,9 +7,7 @@ import static com.mongodb.client.model.Updates.set;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
-import org.bson.codecs.MapCodec;
 import org.bson.codecs.configuration.CodecProvider;
-import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 
@@ -28,7 +26,7 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 
     //TODO andranno passati a costruttore tanti parametri quanti sono i parametri di connessione
     public MongoStatisticManager() {
-        String uri = "mongodb://your_mongo_user:your_mongo_password@127.0.0.1:27012";
+        String uri = "mongodb://your_mongo_user:your_mongo_password@127.0.0.1:27012/?authSource=admin";
         try {
 
             CodecProvider pojoCodecProvider = PojoCodecProvider.builder().automatic(true).build();

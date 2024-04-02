@@ -94,14 +94,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Restore Gradle cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            *.gradle/*
-            */gradle/wrapper/gradle-wrapper.properties
-          key: gradle-cache
-          restore-keys: gradle-cache
+      # - name: Restore Gradle cache
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: |
+      #       *.gradle/*
+      #       */gradle/wrapper/gradle-wrapper.properties
+      #     key: gradle-cache
+      #     restore-keys: gradle-cache
           # key: ${{ runner.os }}-gradle- #${{ steps.cache.outputs.hash }}
           # restore-keys: |
           #   ${{ runner.os }}-gradle-
@@ -112,6 +112,21 @@ jobs:
       #     distribution: 'temurin'
       #     java-version: '17'
       #     cache: gradle
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: "gradle"
+          cache-dependency-path: | # optional
+            *.gradle*
+            **/gradle-wrapper.properties
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.1
+          add-job-summary-as-pr-comment: on-failure
+      - name: cacca
+        run: ls 
       - name: Test
         run: gradle test
 

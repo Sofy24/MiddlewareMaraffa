@@ -105,8 +105,6 @@ public class GameVerticle extends AbstractVerticle {
             }
             this.currentTrick.addCard(card, username);
             if (this.currentTrick.isCompleted()) {
-                // TODO temporary here
-                this.vertx.eventBus().send("user-component", this.toJson().toString());
                 this.gameSchema.addTrick(currentTrick);
                 if (this.statisticManager != null)
                     this.statisticManager.updateRecordWithTrick(String.valueOf(id), currentTrick);
@@ -248,10 +246,11 @@ public class GameVerticle extends AbstractVerticle {
     /** @return true if the round is ended */
     public boolean isRoundEnded() {
         double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
-        System.out.println("numberOfTricksInRound = " + numberOfTricksInRound);
-        System.out.println("currentState = " + currentState);
-        System.out.println("tricks = " + tricks);
-        return this.currentState.get() == numberOfTricksInRound;
+        if(this.currentState.get() == numberOfTricksInRound){
+            this.vertx.eventBus().send("user-component", this.toJson().toString());
+            return true;
+        }
+        return false;
     }
 
     /** @return true if the game is ended */

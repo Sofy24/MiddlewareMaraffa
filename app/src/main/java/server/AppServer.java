@@ -1,6 +1,7 @@
 package server;
 
 
+import chatModule.ChatController;
 import game.service.GameServiceDecorator;
 import httpRest.RouterConfig;
 import io.vertx.core.AbstractVerticle;
@@ -25,7 +26,7 @@ public class AppServer extends AbstractVerticle {
 
   @Override
   public void start() throws Exception {
-    RouterConfig routerConfig = new RouterConfig(PORT, new GameServiceDecorator(vertx, mongoStatisticManager), new UserController(vertx));
+    RouterConfig routerConfig = new RouterConfig(PORT, new GameServiceDecorator(vertx, mongoStatisticManager), new UserController(vertx), new ChatController(vertx));
     server = vertx.createHttpServer(createOptions());
     server.requestHandler(routerConfig.configurationRouter(vertx));
     server.listen(res -> {

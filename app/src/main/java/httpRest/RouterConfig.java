@@ -20,6 +20,8 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
 
+import chatModule.ChatController;
+
 import java.lang.reflect.Type;
 
 import generator.OpenApiRoutePublisher;
@@ -36,9 +38,9 @@ public class RouterConfig {
     private final int port;
     private final Controller controller;
 
-    public RouterConfig(final int port, final GameServiceDecorator entityService, final UserController userService) {
+    public RouterConfig(final int port, final GameServiceDecorator entityService, final UserController userController, final ChatController chatController) {
         this.port = port;
-        this.controller = new Controller(entityService, userService);
+        this.controller = new Controller(entityService, userController, chatController);
     }
 
     private void mapParameters(Field field, Map<String, Object> map) {

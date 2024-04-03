@@ -2,6 +2,8 @@ package httpRest;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import chatModule.ChatController;
 import io.vertx.core.http.HttpMethod;
 import userModule.UserController;
 import game.service.GameServiceDecorator;
@@ -11,9 +13,11 @@ public class Controller implements IController {
     private final GameServiceDecorator entityService;
     private final List<IRouteResponse> routes = new ArrayList<>();
     private final UserController userController;
-    public Controller(GameServiceDecorator entityService, UserController userController ) {
+    private final ChatController chatController;
+    public Controller(GameServiceDecorator entityService, UserController userController, ChatController chatController) {
         this.entityService = entityService;
         this.userController = userController;
+        this.chatController = chatController;
         this.addRoutes();
     }
 
@@ -38,7 +42,8 @@ public class Controller implements IController {
         routes.add(new RouteResponse(HttpMethod.POST, "/login", userController::loginRoute));
         routes.add(new RouteResponse(HttpMethod.POST, "/register", userController::registerRoute));
         routes.add(new RouteResponse(HttpMethod.POST, "/logout", userController::logoutRoute));
-
+        //chat management
+        routes.add(new RouteResponse(HttpMethod.POST, "/chat", chatController::messageReceived));
     }
 
     public List<IRouteResponse> getRoutes() {

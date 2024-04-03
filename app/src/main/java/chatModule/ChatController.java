@@ -24,6 +24,7 @@ public class ChatController {
     public void messageReceived(RoutingContext context) {
         String msg = context.body().asJsonObject().getString("message");
         service.messageReceived(msg);
+        context.response().setStatusCode(201).end(); //TODO temp
     }
 
 }

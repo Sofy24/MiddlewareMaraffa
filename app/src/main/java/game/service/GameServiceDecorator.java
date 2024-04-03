@@ -39,7 +39,7 @@ public class GameServiceDecorator {
         private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
         private final GameService gameService;
         private BusinessLogicController businessLogicController;
-        private static final Logger LOGGER = LoggerFactory.getLogger(AppServer.class);
+        private static final Logger LOGGER = LoggerFactory.getLogger(GameServiceDecorator.class);
 
         public GameServiceDecorator(Vertx vertx) {
                 this.gameService = new GameService(vertx);

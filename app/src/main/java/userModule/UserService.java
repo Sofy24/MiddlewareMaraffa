@@ -52,7 +52,7 @@ public class UserService {
 			// criccaaaaa
 		});
 
-		WebClient.create(vertx).request(HttpMethod.POST, PORT, LOCALHOST, "/statistic/bulk")
+		WebClient.create(this.vertx).request(HttpMethod.POST, PORT, LOCALHOST, "/statistic/bulk")
 				.putHeader("Accept", "application/json").putHeader("Content-type", "application/json")
 				.as(BodyCodec.jsonObject()).sendJson(updates, handler -> {
 					if (handler.succeeded() && handler.result().statusCode() == 200) {
@@ -71,7 +71,7 @@ public class UserService {
 	public CompletableFuture<JsonObject> askService(final JsonObject requestBody, final HttpMethod method,
 			final String requestURI) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-		WebClient.create(vertx).request(method, PORT, LOCALHOST, requestURI).putHeader("Accept", "application/json")
+		WebClient.create(this.vertx).request(method, PORT, LOCALHOST, requestURI).putHeader("Accept", "application/json")
 				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
 						future.complete(handler.result().body());
@@ -84,7 +84,7 @@ public class UserService {
 
 	public CompletableFuture<JsonObject> askServiceWithFuture(final JsonObject requestBody, final HttpMethod method,
 			final String requestURI, final CompletableFuture<JsonObject> future) {
-		WebClient.create(vertx).request(method, PORT, LOCALHOST, requestURI).putHeader("Accept", "application/json")
+		WebClient.create(this.vertx).request(method, PORT, LOCALHOST, requestURI).putHeader("Accept", "application/json")
 				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
 						future.complete(handler.result().body());
@@ -100,13 +100,14 @@ public class UserService {
 		final JsonObject requestBody = new JsonObject().put("nickname", nickname).put("password", password).put("email",
 				email);
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-		WebClient.create(vertx).request(HttpMethod.GET, PORT, LOCALHOST, "/user/" + nickname)
+		WebClient.create(this.vertx).request(HttpMethod.GET, PORT, LOCALHOST, "/user/" + nickname)
 				.putHeader("Accept", "application/json").as(BodyCodec.jsonObject()).send(handler -> {
 					if (handler.succeeded()) {
 						if (handler.result().statusCode() == 404)
 							this.askServiceWithFuture(requestBody, HttpMethod.POST, "/user", future);
 						else if (handler.result().body().getString("nickname").equals(nickname))
-							future.completeExceptionally(new RuntimeException("User already exists"));
+							future.complete(new JsonObject().put("error", "User already exists"));
+							// future.completeExceptionally(new RuntimeException("User already exists"));
 					}
 				});
 		return future;
@@ -115,15 +116,16 @@ public class UserService {
 	public CompletableFuture<JsonObject> loginUser(final String nickname, final String password) {
 		final JsonObject requestBody = new JsonObject().put("nickname", nickname).put("password", password);
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-		WebClient.create(vertx).request(HttpMethod.POST, PORT, LOCALHOST, "/login")
+		WebClient.create(this.vertx).request(HttpMethod.POST, PORT, LOCALHOST, "/login")
 				.putHeader("Content-type", "application/json").putHeader("Accept", "application/json")
 				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
 						if (handler.result().statusCode() == 200)
 							future.complete(JsonObject.of().put("token", encryptThisString(nickname)));
 						else
-							future.completeExceptionally(
-									new RuntimeException(handler.result().body().getString("message"))); // TODO neeeds
+							future.complete(new JsonObject().put("error",handler.result().body().getString("message")));
+							// future.completeExceptionally(
+							// 		new RuntimeException(handler.result().body().getString("message"))); // TODO neeeds
 						// refactor
 						// non mi
 						// piace per

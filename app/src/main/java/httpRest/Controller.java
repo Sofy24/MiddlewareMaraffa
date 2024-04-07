@@ -25,30 +25,35 @@ public class Controller implements IController {
 
 	/** Add all Maraffa's routes */
 	private void addRoutes() {
-		routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.CREATE_GAME, entityService::createGame));
-		routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.JOIN_GAME, entityService::joinGame));
-		routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.PLAY_CARD, entityService::playCard));
-		routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CAN_START, entityService::canStart));
-		routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.START_GAME, entityService::startGame));
-		routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.CHOOSE_TRUMP, entityService::chooseTrump));
-		routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.START_NEW_ROUND, entityService::startNewRound));
-		routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.STATE, entityService::getState));
-		routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.END_ROUND, entityService::isRoundEnded));
-		routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.END_GAME, entityService::isGameEnded));
-		routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.MAKE_CALL, entityService::makeCall));
-		routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GAMES, entityService::getGames));
-		routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CARDS_ON_HAND, entityService::cardsOnHand));
-		routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CARDS_ON_TABLE, entityService::cardsOnTable));
+		this.routes
+				.add(new RouteResponse(HttpMethod.POST, "/" + Constants.CREATE_GAME, this.entityService::createGame));
+		this.routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.JOIN_GAME, this.entityService::joinGame));
+		this.routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.PLAY_CARD, this.entityService::playCard));
+		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CAN_START, this.entityService::canStart));
+		this.routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.START_GAME, this.entityService::startGame));
+		this.routes
+				.add(new RouteResponse(HttpMethod.POST, "/" + Constants.CHOOSE_TRUMP, this.entityService::chooseTrump));
+		this.routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.START_NEW_ROUND,
+				this.entityService::startNewRound));
+		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.STATE, this.entityService::getState));
+		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.END_ROUND, this.entityService::isRoundEnded));
+		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.END_GAME, this.entityService::isGameEnded));
+		this.routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.MAKE_CALL, this.entityService::makeCall));
+		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GAMES, this.entityService::getGames));
+		this.routes
+				.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CARDS_ON_HAND, this.entityService::cardsOnHand));
+		this.routes.add(
+				new RouteResponse(HttpMethod.GET, "/" + Constants.CARDS_ON_TABLE, this.entityService::cardsOnTable));
 		// TODO delete game
 		// user management
-		routes.add(new RouteResponse(HttpMethod.POST, "/login", userController::loginRoute));
-		routes.add(new RouteResponse(HttpMethod.POST, "/register", userController::registerRoute));
-		routes.add(new RouteResponse(HttpMethod.POST, "/logout", userController::logoutRoute));
+		this.routes.add(new RouteResponse(HttpMethod.POST, "/login", this.userController::loginRoute));
+		this.routes.add(new RouteResponse(HttpMethod.POST, "/register", this.userController::registerRoute));
+		this.routes.add(new RouteResponse(HttpMethod.POST, "/logout", this.userController::logoutRoute));
 		// chat management
-		routes.add(new RouteResponse(HttpMethod.POST, "/chat", chatController::messageReceived));
+		this.routes.add(new RouteResponse(HttpMethod.POST, "/chat", this.chatController::messageReceived));
 	}
 
 	public List<IRouteResponse> getRoutes() {
-		return routes;
+		return this.routes;
 	}
 }

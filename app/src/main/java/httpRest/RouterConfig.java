@@ -49,14 +49,14 @@ public class RouterConfig {
 		final Class<?> type = field.getType();
 		final Class<?> componentType = field.getType().getComponentType();
 
-		if (isPrimitiveOrWrapper(type)) {
+		if (this.isPrimitiveOrWrapper(type)) {
 			final Schema primitiveSchema = new Schema();
 			primitiveSchema.type(field.getType().getSimpleName());
 			map.put(field.getName(), primitiveSchema);
 		} else {
 			final HashMap<String, Object> subMap = new HashMap<String, Object>();
 
-			if (isPrimitiveOrWrapper(componentType)) {
+			if (this.isPrimitiveOrWrapper(componentType)) {
 				final HashMap<String, Object> arrayMap = new HashMap<String, Object>();
 				arrayMap.put("type", componentType.getSimpleName() + "[]");
 				subMap.put("type", arrayMap);
@@ -101,13 +101,13 @@ public class RouterConfig {
 		});
 		router.route().failureHandler(ErrorHandler.create(vertx, true));
 
-		for (final IRouteResponse route : controller.getRoutes()) {
+		for (final IRouteResponse route : this.controller.getRoutes()) {
 			router.route(route.getMethod(), route.getRoute()).handler(route.getHandler());
 		}
 
 		final OpenAPI openAPIDoc = OpenApiRoutePublisher.publishOpenApiSpec(router, "spec",
 				"Vertx Swagger Auto Generation",
-				"1.0.0", "http://localhost:" + port + "/");
+				"1.0.0", "http://localhost:" + this.port + "/");
 
 		/*
 		 * Tagging section. This is where we can group end point operations; The tag
@@ -121,7 +121,7 @@ public class RouterConfig {
 
 		// Generate the SCHEMA section of Swagger, using the definitions in the Model
 		// folder
-		final ImmutableSet<ClassPath.ClassInfo> modelClasses = getClassesInPackage("org.example.service");
+		final ImmutableSet<ClassPath.ClassInfo> modelClasses = this.getClassesInPackage("org.example.service");
 
 		Map<String, Object> map = new HashMap<String, Object>();
 
@@ -138,7 +138,7 @@ public class RouterConfig {
 
 			for (final Field field : fields) {
 				if (field.getType() != null && field.getType().getComponentType() != null)
-					mapParameters(field, map);
+					this.mapParameters(field, map);
 			}
 
 			openAPIDoc.schema(modelClass.getSimpleName(), new Schema().title(modelClass.getSimpleName()).type("object")

@@ -24,11 +24,11 @@ public class AppServer extends AbstractVerticle {
 
 	@Override
 	public void start() throws Exception {
-		final RouterConfig routerConfig = new RouterConfig(PORT, new GameServiceDecorator(vertx, mongoStatisticManager),
-				new UserController(vertx), new ChatController(vertx));
-		server = vertx.createHttpServer(createOptions());
-		server.requestHandler(routerConfig.configurationRouter(vertx));
-		server.listen(res -> {
+		final RouterConfig routerConfig = new RouterConfig(PORT, new GameServiceDecorator(this.vertx, this.mongoStatisticManager),
+				new UserController(this.vertx), new ChatController(this.vertx));
+		this.server = this.vertx.createHttpServer(this.createOptions());
+		this.server.requestHandler(routerConfig.configurationRouter(this.vertx));
+		this.server.listen(res -> {
 			{
 				if (res.succeeded()) {
 					LOGGER.info("Server is now listening!");

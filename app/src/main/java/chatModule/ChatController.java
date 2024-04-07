@@ -14,7 +14,7 @@ public class ChatController {
 	}
 
 	@Operation(summary = "MSG rec operation", description = "Authenticate user and generate token", method = "POST", operationId = "chat", tags = {
-			"Chat Operations"}
+			"Chat Operations" }
 	// requestBody = @RequestBody(description = "User's credentials"), responses =
 	// {
 	// @ApiResponse(responseCode = "200", description = "Login successful"),
@@ -24,7 +24,7 @@ public class ChatController {
 	)
 	public void messageReceived(final RoutingContext context) {
 		final String msg = context.body().asJsonObject().getString("message");
-		service.messageReceived(msg);
+		this.service.messageReceived(msg);
 		context.response().setStatusCode(201).end(); // TODO temp
 	}
 }

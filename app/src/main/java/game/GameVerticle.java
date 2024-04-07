@@ -22,7 +22,7 @@ import repository.AbstractStatisticManager;
  * saves each state with the related trick users = it keeps track of all the
  * users added to the game
  */
-public class GameVerticle extends AbstractVerticle {
+public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private final UUID id;
 	private final AtomicInteger currentState;
 	private final int numberOfPlayers;
@@ -41,7 +41,7 @@ public class GameVerticle extends AbstractVerticle {
 	private final GameMode gameMode;
 
 	public GameSchema getGameSchema() {
-		return gameSchema;
+		return this.gameSchema;
 	}
 
 	public GameVerticle(final UUID id, final String username, final int numberOfPlayers, final int expectedScore,
@@ -53,7 +53,7 @@ public class GameVerticle extends AbstractVerticle {
 		// this.currentScore = new Pair<>(0, 0);
 		this.currentState = new AtomicInteger(0);
 		this.numberOfPlayers = numberOfPlayers;
-		users.add(username);
+		this.users.add(username);
 		this.gameSchema = new GameSchema(String.valueOf(id), CardSuit.NONE);
 		this.statisticManager = statisticManager;
 		if (this.statisticManager != null)
@@ -69,7 +69,7 @@ public class GameVerticle extends AbstractVerticle {
 		// this.currentScore = new Pair<>(0, 0);
 		this.currentState = new AtomicInteger(0);
 		this.numberOfPlayers = numberOfPlayers;
-		users.add(username);
+		this.users.add(username);
 		this.gameSchema = new GameSchema(String.valueOf(id), CardSuit.NONE);
 	}
 
@@ -85,7 +85,7 @@ public class GameVerticle extends AbstractVerticle {
 	public boolean addUser(final String username) {
 		if (!this.users.contains(username)) {
 			this.users.add(username);
-			this.status = canStart() ? Status.STARTING : Status.WAITING_PLAYERS;
+			this.status = this.canStart() ? Status.STARTING : Status.WAITING_PLAYERS;
 			return true;
 		}
 		return false;
@@ -99,7 +99,7 @@ public class GameVerticle extends AbstractVerticle {
 	 *             to be added to the trick
 	 */
 	public boolean addCard(final Card<CardValue, CardSuit> card, final String username) {
-		if (canStart()) {
+		if (this.canStart()) {
 			if (this.currentTrick == null) {
 				this.currentTrick = this.states.getOrDefault(this.currentState.get(),
 						new TrickImpl(this.numberOfPlayers, this.trump));
@@ -107,10 +107,10 @@ public class GameVerticle extends AbstractVerticle {
 			}
 			this.currentTrick.addCard(card, username);
 			if (this.currentTrick.isCompleted()) {
-				this.gameSchema.addTrick(currentTrick);
+				this.gameSchema.addTrick(this.currentTrick);
 				if (this.statisticManager != null)
-					this.statisticManager.updateRecordWithTrick(String.valueOf(id), currentTrick);
-				this.states.put(this.currentState.get(), currentTrick);
+					this.statisticManager.updateRecordWithTrick(String.valueOf(this.id), this.currentTrick);
+				this.states.put(this.currentState.get(), this.currentTrick);
 				this.currentTrick = new TrickImpl(this.numberOfPlayers, this.trump);
 				this.tricks.add(this.currentTrick);
 			}
@@ -167,22 +167,22 @@ public class GameVerticle extends AbstractVerticle {
 	 * @return true if the call is made correctly
 	 */
 	public boolean makeCall(final Call call, final String username) {
-		if (currentTrick == null) {
+		if (this.currentTrick == null) {
 			this.currentTrick = this.states.getOrDefault(this.currentState.get(),
 					new TrickImpl(this.numberOfPlayers, this.trump));
 		}
-		if (users.get(0).equals(username)) {
+		if (this.users.get(0).equals(username)) {
 			this.currentTrick.setCall(call, username);
 		}
-		return !this.currentTrick.getCall().equals(Call.NONE);
+		return !Call.NONE.equals(this.currentTrick.getCall());
 	}
 
 	public UUID getId() {
-		return id;
+		return this.id;
 	}
 
 	public Map<Integer, Trick> getStates() {
-		return states;
+		return this.states;
 	}
 
 	private void setStates(final Map<Integer, Trick> states) {
@@ -190,11 +190,11 @@ public class GameVerticle extends AbstractVerticle {
 	}
 
 	public AtomicInteger getCurrentState() {
-		return currentState;
+		return this.currentState;
 	}
 
 	public Trick getCurrentTrick() {
-		return currentTrick;
+		return this.currentTrick;
 	}
 
 	public Trick getLatestTrick() {
@@ -220,11 +220,11 @@ public class GameVerticle extends AbstractVerticle {
 	}
 
 	public CardSuit getTrump() {
-		return trump;
+		return this.trump;
 	}
 
 	public Status getStatus() {
-		return status;
+		return this.status;
 	}
 
 	/**
@@ -235,7 +235,7 @@ public class GameVerticle extends AbstractVerticle {
 	}
 
 	public GameMode getGameMode() {
-		return gameMode;
+		return this.gameMode;
 	}
 
 	/** increment the current state */
@@ -293,5 +293,38 @@ public class GameVerticle extends AbstractVerticle {
 				.put("gameMode", this.gameMode.toString()).put("numberOfPlayers", this.numberOfPlayers)
 				.put("team1", this.team1).put("team2", this.team2);
 		return json;
+	}
+
+	@Override
+	public void onCreateGame() {
+		this.vertx.eventBus().send("chat-component:onCreateGame", this.toJson().toString());
+	}
+
+	@Override
+	public void onJoinGame(final String username) {
+		this.vertx.eventBus().send("chat-component:onJoinGame", new JsonObject().put("username", username).toString());
+	}
+
+	@Override
+	public void onStartGame() {
+		throw new UnsupportedOperationException("Unimplemented method 'onStartGame'");
+	}
+
+	@Override
+	public void onPlayCard() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'onPlayCard'");
+	}
+
+	@Override
+	public void onMessage() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'onMessage'");
+	}
+
+	@Override
+	public void onEndRound() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'onEndRound'");
 	}
 }

@@ -1,5 +1,5 @@
 package game;
 
 public enum GameMode {
-    CLASSIC, ELEVEN2ZERO;
+	CLASSIC, ELEVEN2ZERO;
 }

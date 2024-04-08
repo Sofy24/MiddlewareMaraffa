@@ -36,37 +36,39 @@ public class GameService {
 		this.statisticManager = statisticManager;
 	}
 
-	public JsonObject createGame(final Integer numberOfPlayers, final String username, final int expectedScore,
+	public JsonObject createGame(final Integer numberOfPlayers, final User user,  final int expectedScore,
 			final String gameMode) {
 		final JsonObject jsonGame = new JsonObject();
 		final UUID newId = UUID.randomUUID();
 		GameVerticle currentGame;
 		try {
-			if (this.statisticManager != null)
-				currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore,
+			// if (this.statisticManager != null)
+				currentGame = new GameVerticle(newId, user, numberOfPlayers, expectedScore,
 						GameMode.valueOf(gameMode), this.statisticManager);
-			else
-				currentGame = new GameVerticle(newId, username, numberOfPlayers, expectedScore,
-						GameMode.valueOf(gameMode.toUpperCase()));
+				//TODO migliore gestione qui perche e' terribile ma per testare OK
+			// else
+				// currentGame = new GameVerticle(newId, user, numberOfPlayers, expectedScore,
+						// GameMode.valueOf(gameMode.toUpperCase()));
 		} catch (final IllegalArgumentException e) {
 			return jsonGame.put(Constants.INVALID, gameMode);
 		}
 		this.games.put(newId, currentGame);
-		vertx.deployVerticle(currentGame);
+		this.vertx.deployVerticle(currentGame);
+		currentGame.onCreateGame();
 		jsonGame.put(Constants.GAME_ID, String.valueOf(newId));
 		return jsonGame;
 	}
 
-	public JsonObject joinGame(final UUID gameID, final String username) {
+	public JsonObject joinGame(final UUID gameID, final User user){
 		final JsonObject jsonJoin = new JsonObject();
 		if (this.games.get(gameID) != null) {
 			if (this.games.get(gameID).getNumberOfPlayersIn() < this.games.get(gameID).getMaxNumberOfPlayers()) {
-				if (this.games.get(gameID).addUser(username)) {
+				if (this.games.get(gameID).addUser(user)) {
 					jsonJoin.put(Constants.JOIN_ATTR, true);
-					return jsonJoin.put(Constants.MESSAGE, "Game " + gameID + " joined by " + username);
+					return jsonJoin.put(Constants.MESSAGE, "Game " + gameID + " joined by " + user.username());
 				} else {
 					jsonJoin.put(Constants.ALREADY_JOINED, true);
-					return jsonJoin.put(Constants.MESSAGE, "Game " + gameID + " already joined by " + username);
+					return jsonJoin.put(Constants.MESSAGE, "Game " + gameID + " already joined by " + user.username());
 				}
 			}
 			jsonJoin.put(Constants.FULL, true);
@@ -126,7 +128,7 @@ public class GameService {
 			}
 			this.games.get(gameID).chooseTrump(trump);
 			jsonTrump.put(Constants.MESSAGE, trump + " setted as trump");
-			if (trump.equals(CardSuit.NONE)) {
+			if (CardSuit.NONE.equals(trump)) {
 				jsonTrump.put(Constants.TRUMP, false);
 				jsonTrump.put(Constants.ILLEGAL_TRUMP, true);
 				return jsonTrump;

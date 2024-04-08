@@ -1,8 +1,8 @@
 package game.service.schema;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import game.utils.Constants;
-import java.util.Objects;
 
 public class CreateGameBody {
 	@JsonProperty(Constants.USERNAME)
@@ -17,8 +17,19 @@ public class CreateGameBody {
 	@JsonProperty(Constants.GAME_MODE)
 	private String gameMode;
 
+	@JsonProperty(Constants.GUIID)
+	private String GUIID;
+
+	public String getGUIID() {
+		return this.GUIID;
+	}
+
+	public void setGUIID(final String gUIID) {
+		this.GUIID = gUIID;
+	}
+
 	public Integer getExpectedScore() {
-		return expectedScore;
+		return this.expectedScore;
 	}
 
 	public void setExpectedScore(final Integer expectedScore) {
@@ -26,7 +37,7 @@ public class CreateGameBody {
 	}
 
 	public String getUsername() {
-		return username;
+		return this.username;
 	}
 
 	public void setUsername(final String username) {
@@ -34,7 +45,7 @@ public class CreateGameBody {
 	}
 
 	public Integer getNumberOfPlayers() {
-		return numberOfPlayers;
+		return this.numberOfPlayers;
 	}
 
 	public void setNumberOfPlayers(final Integer numberOfPlayers) {
@@ -42,17 +53,53 @@ public class CreateGameBody {
 	}
 
 	@Override
-	public boolean equals(final Object o) {
-		if (this == o)
-			return true;
-		if (!(o instanceof CreateGameBody))
-			return false;
-		final CreateGameBody that = (CreateGameBody) o;
-		return Objects.equals(username, that.username) && Objects.equals(numberOfPlayers, that.numberOfPlayers);
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((this.username == null) ? 0 : this.username.hashCode());
+		result = prime * result + ((this.numberOfPlayers == null) ? 0 : this.numberOfPlayers.hashCode());
+		result = prime * result + ((this.expectedScore == null) ? 0 : this.expectedScore.hashCode());
+		result = prime * result + ((this.gameMode == null) ? 0 : this.gameMode.hashCode());
+		result = prime * result + ((this.GUIID == null) ? 0 : this.GUIID.hashCode());
+		return result;
 	}
 
 	@Override
-	public int hashCode() {
-		return Objects.hash(username, numberOfPlayers);
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		final CreateGameBody other = (CreateGameBody) obj;
+		if (this.username == null) {
+			if (other.username != null)
+				return false;
+		} else if (!this.username.equals(other.username))
+			return false;
+		if (this.numberOfPlayers == null) {
+			if (other.numberOfPlayers != null)
+				return false;
+		} else if (!this.numberOfPlayers.equals(other.numberOfPlayers))
+			return false;
+		if (this.expectedScore == null) {
+			if (other.expectedScore != null)
+				return false;
+		} else if (!this.expectedScore.equals(other.expectedScore))
+			return false;
+		if (this.gameMode == null) {
+			if (other.gameMode != null)
+				return false;
+		} else if (!this.gameMode.equals(other.gameMode))
+			return false;
+		if (this.GUIID == null) {
+			if (other.GUIID != null)
+				return false;
+		} else if (!this.GUIID.equals(other.GUIID))
+			return false;
+		return true;
 	}
+	
+
 }

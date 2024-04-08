@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
+import game.service.User;
 import game.utils.Constants;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -30,7 +31,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private final int expectedScore;
 	private CardSuit trump = CardSuit.NONE;
 	private Map<Integer, Trick> states = new ConcurrentHashMap<>();
-	private final List<String> users = new ArrayList<>();
+	private final List<User> users = new ArrayList<>();
 	private final GameSchema gameSchema;
 	private AbstractStatisticManager statisticManager;
 	private Trick currentTrick;
@@ -44,7 +45,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.gameSchema;
 	}
 
-	public GameVerticle(final UUID id, final String username, final int numberOfPlayers, final int expectedScore,
+	public GameVerticle(final UUID id, final User user, final int numberOfPlayers, final int expectedScore,
 			final GameMode gameMode,
 			final AbstractStatisticManager statisticManager) {
 		this.id = id;
@@ -53,7 +54,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		// this.currentScore = new Pair<>(0, 0);
 		this.currentState = new AtomicInteger(0);
 		this.numberOfPlayers = numberOfPlayers;
-		this.users.add(username);
+		this.users.add(user);
 		this.gameSchema = new GameSchema(String.valueOf(id), CardSuit.NONE);
 		this.statisticManager = statisticManager;
 		if (this.statisticManager != null)
@@ -61,7 +62,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		// di aiuta con la questione _id
 	}
 
-	public GameVerticle(final UUID id, final String username, final int numberOfPlayers, final int expectedScore,
+	public GameVerticle(final UUID id, final User user, final int numberOfPlayers, final int expectedScore,
 			final GameMode gameMode) {
 		this.id = id;
 		this.gameMode = gameMode;
@@ -69,7 +70,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		// this.currentScore = new Pair<>(0, 0);
 		this.currentState = new AtomicInteger(0);
 		this.numberOfPlayers = numberOfPlayers;
-		this.users.add(username);
+		this.users.add(user);
 		this.gameSchema = new GameSchema(String.valueOf(id), CardSuit.NONE);
 	}
 
@@ -82,9 +83,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	/**
 	 * @return true if the user is added
 	 */
-	public boolean addUser(final String username) {
-		if (!this.users.contains(username)) {
-			this.users.add(username);
+	public boolean addUser(final User user) {
+		if (!this.users.contains(user.username())) {
+			this.users.add(user);
 			this.status = this.canStart() ? Status.STARTING : Status.WAITING_PLAYERS;
 			return true;
 		}
@@ -143,10 +144,12 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public boolean startGame() {
 		if (this.canStart()) {
 			this.team1 = new Team(
-					IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 == 0).mapToObj(this.users::get).toList(),
+					IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 == 0).mapToObj(this.users::get)
+							.map(User::username).toList(),
 					"A", 0);
 			this.team2 = new Team(
-					IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 != 0).mapToObj(this.users::get).toList(),
+					IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 != 0).mapToObj(this.users::get)
+							.map(User::username).toList(),
 					"B", 0);
 			this.status = Status.PLAYING;
 			return true;
@@ -297,12 +300,14 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	@Override
 	public void onCreateGame() {
-		this.vertx.eventBus().send("chat-component:onCreateGame", this.toJson().toString());
+		this.getVertx().eventBus().send("chat-component:onCreateGame", this.toJson().toString());
 	}
 
 	@Override
-	public void onJoinGame(final String username) {
-		this.vertx.eventBus().send("chat-component:onJoinGame", new JsonObject().put("username", username).toString());
+	public void onJoinGame(final User user) {
+		this.getVertx().eventBus().send("chat-component:onJoinGame",
+				new JsonObject().put("gameID", this.id.toString()).put("username", user.username())
+						.put("clientID", user.clientID()).toString());
 	}
 
 	@Override

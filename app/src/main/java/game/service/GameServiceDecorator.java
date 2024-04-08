@@ -57,16 +57,21 @@ public class GameServiceDecorator {
 			Constants.GAME_TAG }, requestBody = @RequestBody(description = "insert username and the number of players", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = CreateGameBody.class, example = "{\n"
 					+ "  \"" + Constants.NUMBER_OF_PLAYERS + "\": 4,\n" + "  \"" + Constants.USERNAME
 					+ "\": \"sofi\",\n" + "  \"" + Constants.EXPECTED_SCORE + "\": 41,\n" + "  \"" + Constants.GAME_MODE
-					+ "\": \"CLASSIC\"\n" + "}"))), responses = {
+					+ "\": \"CLASSIC\",\n"
+					//TODO check perche scompare tutto
+					+ " \"" + Constants.GUIID + "\": \"c1bdcf34-e0f2-409c-aced-e00d4be32b00\"\n" +
+					"}"))), responses = {
 							@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game-creation", implementation = CreateGameBody.class))),
 							@ApiResponse(responseCode = "417", description = "Invalid game mode."),
 							@ApiResponse(responseCode = "500", description = "Internal Server Error.") })
 	public void createGame(final RoutingContext context) {
+        final String guiIdAsString = context.body().asJsonObject().getString(Constants.GUIID);
+        final UUID guiId = UUID.fromString(guiIdAsString);
 		final Integer numberOfPlayers = context.body().asJsonObject().getInteger(Constants.NUMBER_OF_PLAYERS);
 		final String username = context.body().asJsonObject().getString(Constants.USERNAME);
 		final String gameMode = context.body().asJsonObject().getString(Constants.GAME_MODE);
 		final Integer expectedScore = context.body().asJsonObject().getInteger(Constants.EXPECTED_SCORE);
-		final JsonObject jsonGame = this.gameService.createGame(numberOfPlayers, username, expectedScore, gameMode);
+		final JsonObject jsonGame = this.gameService.createGame(numberOfPlayers, new User(username, guiId), expectedScore, gameMode);
 		if (jsonGame.containsKey(Constants.INVALID)) {
 			context.response().setStatusCode(401).end("Invalid game mode");
 		}
@@ -75,6 +80,8 @@ public class GameServiceDecorator {
 
 	@Operation(summary = "Join a specific game", method = Constants.JOIN_GAME_METHOD, operationId = Constants.JOIN_GAME, tags = {
 			Constants.GAME_TAG }, requestBody = @RequestBody(description = "username and id of the game are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = JoinGameBody.class, example = "{\n"
+					// TODO check qui c'e'il doppio campo, sara' per le maiuscole ?
+					+ "  \"" + Constants.GUIID + "\": \"c1bdcf34-e0f2-409c-aced-e00d4be32b00\",\n"
 					+ "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" + "  \""
 					+ Constants.USERNAME + "\": \"james\"\n" + "}"))), responses = {
 							@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = JoinGameBody.class))),
@@ -83,9 +90,11 @@ public class GameServiceDecorator {
 							@ApiResponse(responseCode = "500", description = "Internal Server Error.") })
 	public void joinGame(final RoutingContext context) {
 		final String uuidAsString = context.body().asJsonObject().getString(Constants.GAME_ID);
+		final String guiIdAsString = context.body().asJsonObject().getString(Constants.GUIID);
 		final UUID gameID = UUID.fromString(uuidAsString);
+		final UUID guiId = UUID.fromString(guiIdAsString);
 		final String username = context.body().asJsonObject().getString(Constants.USERNAME);
-		final JsonObject joinResponse = this.gameService.joinGame(gameID, username);
+		final JsonObject joinResponse = this.gameService.joinGame(gameID, new User(username, guiId));
 		if (joinResponse.containsKey(Constants.NOT_FOUND)) {
 			context.response().setStatusCode(404).end(joinResponse.getString(Constants.MESSAGE));
 		} else if (joinResponse.containsKey(Constants.FULL)) {
@@ -166,7 +175,7 @@ public class GameServiceDecorator {
 		try {
 			final Card<CardValue, CardSuit> card = new Card<>(CardValue.getName(cardValue), CardSuit.getName(cardSuit));
 			final String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
-			if (card.cardSuit().equals(CardSuit.NONE) || card.cardValue().equals(CardValue.NONE)) {
+			if (CardSuit.NONE.equals(card.cardSuit()) || CardValue.NONE.equals(card.cardValue())) {
 				context.response().setStatusCode(401).end("Invalid " + card);
 			} else {
 				if (this.gameService.playCard(gameID, username, card)) {
@@ -409,6 +418,6 @@ public class GameServiceDecorator {
 	}
 
 	public Map<UUID, GameVerticle> getGames() {
-		return games;
+		return this.games;
 	}
 }

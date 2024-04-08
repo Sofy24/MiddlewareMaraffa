@@ -43,7 +43,7 @@ public class ChatService {
 	private CompletableFuture<JsonObject> joinGameHandler(final String gameID, final User user) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		this.askServiceWithFuture(new JsonObject().put("callback", FE_HOST + "/manageMessage/" + user.clientID()),
-				HttpMethod.POST, LOCALHOST + "joinChat/:gameID/" + user.username(), future)
+				HttpMethod.POST, "joinChat/" + gameID + "/" + user.username(), future)
 				.whenComplete((result, error) -> {
 					if (result.containsKey("error")) {
 						LOGGER.error("Error in joining game : " + result.getString("error"));

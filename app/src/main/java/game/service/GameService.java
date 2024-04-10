@@ -54,7 +54,7 @@ public class GameService {
 		}
 		this.games.put(newId, currentGame);
 		this.vertx.deployVerticle(currentGame);
-		currentGame.onCreateGame();
+		currentGame.onCreateGame(user);
 		jsonGame.put(Constants.GAME_ID, String.valueOf(newId));
 		return jsonGame;
 	}

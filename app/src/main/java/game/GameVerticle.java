@@ -299,15 +299,23 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	@Override
-	public void onCreateGame() {
-		this.getVertx().eventBus().send("chat-component:onCreateGame", this.toJson().toString());
+	public void onCreateGame(final User user) {
+		if (this.getVertx() != null) {
+			this.getVertx().eventBus().request("chat-component:onCreateGame", this.toJson().toString(), reply -> {
+				if (reply.succeeded()) {
+					System.out.println("created the chat so add the creator");
+					this.onJoinGame(user);
+				}
+			});
+		}
 	}
 
 	@Override
 	public void onJoinGame(final User user) {
-		this.getVertx().eventBus().send("chat-component:onJoinGame",
-				new JsonObject().put("gameID", this.id.toString()).put("username", user.username())
-						.put("clientID", user.clientID()).toString());
+		if (this.getVertx() != null)
+			this.getVertx().eventBus().send("chat-component:onJoinGame",
+					new JsonObject().put("gameID", this.id.toString()).put("username", user.username())
+							.put("clientID", user.clientID()).toString());
 	}
 
 	@Override

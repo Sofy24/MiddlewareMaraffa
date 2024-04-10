@@ -16,6 +16,7 @@ import game.CardSuit;
 import game.CardValue;
 import game.GameMode;
 import game.service.GameService;
+import game.service.User;
 import game.utils.Constants;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
@@ -23,7 +24,7 @@ import io.vertx.junit5.VertxExtension;
 @TestInstance(Lifecycle.PER_CLASS)
 @ExtendWith(VertxExtension.class)
 public class StatisticMongoTest {
-	private final String usernameTest = "user";
+	private final User userTest = new User("user", UUID.randomUUID());
 	private static final int MARAFFA_PLAYERS = 4;
 	private static final int EXPECTED_SCORE = 11;
 	private static final GameMode GAME_MODE = GameMode.CLASSIC;
@@ -48,13 +49,13 @@ public class StatisticMongoTest {
 	 */
 	@AfterAll
 	public void tearDown() {
-		vertx.close();
+		this.vertx.close();
 	}
 
 	@Test
 	public void prepareGame() {
 		final String gameID = this.gameService
-				.createGame(MARAFFA_PLAYERS, this.usernameTest, EXPECTED_SCORE, GAME_MODE.toString())
+				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString())
 				.getString(Constants.GAME_ID);
 		final var doc = this.mongoStatisticManager.getRecord(gameID);
 		assertNotNull(doc);
@@ -63,18 +64,19 @@ public class StatisticMongoTest {
 	@Test
 	public void playCard() {
 		final String gameID = this.gameService
-				.createGame(MARAFFA_PLAYERS, this.usernameTest, EXPECTED_SCORE, GAME_MODE.toString())
+				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString())
 				.getString(Constants.GAME_ID);
 		final UUID gameId = UUID.fromString(gameID);
 		for (int i = 2; i < MARAFFA_PLAYERS + 1; i++) {
-			System.out.println(this.gameService.joinGame(gameId, this.usernameTest + i));
+			System.out.println(this.gameService.joinGame(gameId,
+					new User(this.userTest.username() + i, this.userTest.clientID())));
 		}
 
-		this.gameService.chooseTrump(gameId, cardTest.cardSuit().toString());
-		this.gameService.playCard(gameId, this.usernameTest, new Card<>(CardValue.ONE, CardSuit.CLUBS));
-		this.gameService.playCard(gameId, this.usernameTest + "2", new Card<>(CardValue.TWO, CardSuit.CLUBS));
-		this.gameService.playCard(gameId, this.usernameTest + "3", new Card<>(CardValue.THREE, CardSuit.CLUBS));
-		this.gameService.playCard(gameId, this.usernameTest + "4", new Card<>(CardValue.FOUR, CardSuit.CLUBS));
-		this.gameService.playCard(gameId, this.usernameTest + "3", new Card<>(CardValue.KING, CardSuit.CLUBS));
+		this.gameService.chooseTrump(gameId, this.cardTest.cardSuit().toString());
+		this.gameService.playCard(gameId, this.userTest.username(), new Card<>(CardValue.ONE, CardSuit.CLUBS));
+		this.gameService.playCard(gameId, this.userTest.username() + "2", new Card<>(CardValue.TWO, CardSuit.CLUBS));
+		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.THREE, CardSuit.CLUBS));
+		this.gameService.playCard(gameId, this.userTest.username() + "4", new Card<>(CardValue.FOUR, CardSuit.CLUBS));
+		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.KING, CardSuit.CLUBS));
 	}
 }

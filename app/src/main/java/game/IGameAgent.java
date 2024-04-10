@@ -4,7 +4,7 @@ import game.service.User;
 
 public interface IGameAgent {
 
-    void onCreateGame();
+    void onCreateGame(User user);
 
     void onJoinGame(User user);
 

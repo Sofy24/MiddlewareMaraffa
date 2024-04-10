@@ -23,8 +23,10 @@ public class ChatController {
 	// }
 	)
 	public void messageReceived(final RoutingContext context) {
+		final String gameID = context.body().asJsonObject().getString("gameID");
+		final String author = context.body().asJsonObject().getString("author");
 		final String msg = context.body().asJsonObject().getString("message");
-		this.service.messageReceived(msg);
+		this.service.messageReceived(msg, gameID, author);
 		context.response().setStatusCode(201).end(); // TODO temp
 	}
 }

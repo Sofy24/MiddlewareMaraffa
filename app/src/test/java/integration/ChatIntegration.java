@@ -2,6 +2,8 @@ package integration;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterAll;
@@ -13,7 +15,9 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import chatModule.ChatService;
+import game.service.User;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
@@ -21,6 +25,7 @@ import io.vertx.junit5.VertxTestContext;
 @ExtendWith(VertxExtension.class)
 public class ChatIntegration {
 
+    private final static User TEST_USER = new User("testUser", UUID.randomUUID());
     private Vertx vertx;
     private ChatService chatService;
 
@@ -39,16 +44,37 @@ public class ChatIntegration {
         this.vertx.close();
     }
 
+    private CompletableFuture<JsonObject> createAGame() {
+        return this.chatService.createGameChatHandler("genericGameID");
+    }
+
+    private CompletableFuture<JsonObject> joinTheGame(final String gameID, final User user) {
+        return this.chatService.joinGameHandler(gameID, user);
+    }
+
     @Timeout(value = 10, unit = TimeUnit.SECONDS)
     @Test
     public void testCreateGameChatHandler(final VertxTestContext context) {
-        this.chatService.createGameChatHandler("genericGameID").whenComplete((res, err) -> {
+        this.createAGame().whenComplete((res, err) -> {
             context.verify(() -> {
                 assertNull(res.getString("error"));
                 context.completeNow();
             });
-            // Otherwise timeout will be triggered to fail the test
         });
+    }
+
+    @Timeout(value = 10, unit = TimeUnit.SECONDS)
+    @Test
+    public void testJoin(final VertxTestContext context) {
+        this.createAGame().join();
+        for (int i = 0; i < 3; i++) {
+            this.joinTheGame("genericGameID", new User(TEST_USER.username() + i, TEST_USER.clientID())).whenComplete((res, err) -> {
+                context.verify(() -> {
+                    assertNull(res.getString("error"));
+                });
+            });
+        }
+        context.completeNow();
     }
 
 }

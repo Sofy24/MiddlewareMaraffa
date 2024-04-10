@@ -40,10 +40,11 @@ public class ChatService {
 		});
 	}
 
-	private CompletableFuture<JsonObject> joinGameHandler(final String gameID, final User user) {
+	public CompletableFuture<JsonObject> joinGameHandler(final String gameID, final User user) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-		this.askServiceWithFuture(new JsonObject().put("callback", FE_HOST + "/manageMessage/" + user.clientID()),
-				HttpMethod.POST, "joinChat/" + gameID + "/" + user.username(), future)
+		this.askServiceWithFuture(new JsonObject().put("callback", FE_HOST + "/manageMessage/" + user.clientID()), // enorme
+																													// assunzione
+				HttpMethod.POST, "/joinChat/" + gameID + "/" + user.username(), future)
 				.whenComplete((result, error) -> {
 					if (result.containsKey("error")) {
 						LOGGER.error("Error in joining game : " + result.getString("error"));
@@ -67,9 +68,18 @@ public class ChatService {
 		return future;
 	}
 
-	public void messageReceived(final String msg) {
+	public void messageReceived(final String msg, final String gameID, final String author) {
 		LOGGER.info("Received message: " + msg);
 		System.out.println(msg);
+		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
+		this.askServiceWithFutureNoBody(HttpMethod.POST, "/handleChatMessage/" + gameID + "/" + author, future)
+				.whenComplete((result, error) -> {
+					if (result.containsKey("error")) {
+						LOGGER.error("Error in sending message : " + result.getString("error"));
+					} else {
+						LOGGER.info("Message sent");
+					}
+				});
 	}
 
 	public CompletableFuture<JsonObject> askServiceWithFutureNoBody(final HttpMethod method,

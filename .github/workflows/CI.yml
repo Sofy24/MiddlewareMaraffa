@@ -87,8 +87,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: [ windows, macos, ubuntu ]
-        node-version: [18.x]
+        os:
+          [ubuntu-22.04]
     steps:
       - name: Checkout
         uses: actions/checkout@v3

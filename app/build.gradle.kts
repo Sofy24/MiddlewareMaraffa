@@ -84,6 +84,25 @@ testing {
         }
     }
 }
+tasks.register<Test>("integrationTest", Test::class) {
+    group = "verification"
+    description = "Runs unit tests"
+    useJUnitPlatform()
+    // Configura le impostazioni del task di test
+    testClassesDirs = sourceSets.getByName("test").output.classesDirs
+    classpath = sourceSets.getByName("test").runtimeClasspath
+
+    filter{
+        includeTestsMatching("integration.*")
+    }
+}
+
+tasks.test {
+        filter {
+            excludeTestsMatching("integration.*")
+            // includeTestsMatching("game.*")
+            }
+}
 
 // Apply a specific Java toolchain to ease working on different environments.
 java {

@@ -57,15 +57,15 @@
 
     <!-- logger for application package -->
     <!-- TODO   -->
-    <logger level="INFO" name="org.example" additivity="false">
+    <logger level="INFO" name="java" additivity="false">
         <appender-ref ref="SERVER_LOG_ASYNC"/>
     </logger>
 
-    <logger level="DEBUG" name="org.example" additivity="false">
+    <logger level="DEBUG" name="java" additivity="false">
         <appender-ref ref="DEBUG_LOG_ASYNC"/>
     </logger>
 
-    <logger level="DEBUG" name="org.example.repository" additivity="false">
+    <logger level="DEBUG" name="repository" additivity="false">
         <appender-ref ref="DEBUG_LOG_ASYNC"/>
     </logger>
 

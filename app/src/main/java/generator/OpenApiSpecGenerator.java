@@ -64,17 +64,17 @@ public final class OpenApiSpecGenerator {
     private static void decorateOperationsFromAnnotationsOnHandlers(Router router, Map<String, PathItem> paths) {
         router.getRoutes().stream().filter(x -> x.getPath() != null).forEach(route -> {
             try {
-              Field stateF = route.getClass().getDeclaredField("state");
-              stateF.setAccessible(true);
-              Field contextHandlers = stateF.get(route).getClass().getDeclaredField("contextHandlers");
-              contextHandlers.setAccessible(true);
-              List<Handler<RoutingContext>> handlers = (List<Handler<RoutingContext>>) contextHandlers.get(stateF.get(route));
+                Field stateF = route.getClass().getDeclaredField("state");
+                stateF.setAccessible(true);
+                Field contextHandlers = stateF.get(route).getClass().getDeclaredField("contextHandlers");
+                contextHandlers.setAccessible(true);
+                List<Handler<RoutingContext>> handlers = (List<Handler<RoutingContext>>) contextHandlers.get(stateF.get(route));
                 handlers.forEach(handler -> {
                     try {
                         Class<?> delegate = handler.getClass().getDeclaredField("arg$1").getType();
                         Arrays.stream(delegate.getDeclaredMethods()).distinct().forEach(method -> {
                             io.swagger.v3.oas.annotations.Operation annotation = method.getAnnotation(io.swagger.v3.oas.annotations.Operation.class);
-                            if (annotation != null ) {
+                            if (annotation != null) {
                                 String httpMethod = annotation.method();
                                 PathItem pathItem = paths.get(route.getPath());
                                 Operation matchedOperation = null;
@@ -136,11 +136,11 @@ public final class OpenApiSpecGenerator {
 
     private static List<Operation> extractOperations(Route route, PathItem pathItem) {
         try {
-          Field stateF = route.getClass().getDeclaredField("state");
-          stateF.setAccessible(true);
-          Field methodsF = stateF.get(route).getClass().getDeclaredField("methods");
-          methodsF.setAccessible(true);
-          Set<HttpMethod> httpMethods = (Set<HttpMethod>) methodsF.get(stateF.get(route));
+            Field stateF = route.getClass().getDeclaredField("state");
+            stateF.setAccessible(true);
+            Field methodsF = stateF.get(route).getClass().getDeclaredField("methods");
+            methodsF.setAccessible(true);
+            Set<HttpMethod> httpMethods = (Set<HttpMethod>) methodsF.get(stateF.get(route));
             return httpMethods.stream().map(httpMethod -> {
                 Operation operation = new Operation();
                 switch (PathItem.HttpMethod.valueOf(httpMethod.name())) {

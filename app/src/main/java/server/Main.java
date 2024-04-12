@@ -8,7 +8,7 @@ public class Main {
         VertxOptions options = new VertxOptions().setBlockedThreadCheckInterval(300_000);
         Vertx vertx = Vertx.vertx(options);
 
-       vertx.deployVerticle(new AppServer(), serverResult -> {
+        vertx.deployVerticle(new AppServer(), serverResult -> {
             if (serverResult.succeeded()) {
                 System.out.println("AppServer deployed successfully");
             } else {

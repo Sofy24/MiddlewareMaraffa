@@ -15,6 +15,8 @@ plugins {
     id("com.adarshr.test-logger") version "4.0.0"
 }
 
+
+
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
@@ -73,13 +75,58 @@ testing {
 // Apply a specific Java toolchain to ease working on different environments.
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(19)
+        languageVersion.set(JavaLanguageVersion.of(19))
     }
 }
 
-application {
-    // Define the main class for the application.
-    mainClass = "server.Main"
+// tasks.withType<Jar> {
+//     manifest {
+//         attributes["Main-Class"] = "server.Main"
+//         attributes["Class-Path"] = configurations
+//         .runtimeClasspath
+//         .get()
+//         .joinToString(separator = " ") { file ->
+//             "libs/${file.name}"
+//         }
+//     }
+
+// }
+
+tasks.register<Jar>("fatJar") {
+    archiveBaseName.set("Middleware")
+    manifest {
+        attributes["Main-Class"] = "server.Main"
+    }
+    // dependsOn(configurations.runtimeClasspath)
+    // from({ configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) } })
+    // with(tasks.getByName<JavaCompile>("compileJava"))
+    from(sourceSets.main.get().output)
+    dependsOn(configurations.runtimeClasspath)
+    from({ configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) } })
+
+    // Dipendenza dal task di compilazione Java
+    dependsOn("compileJava")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE // Puoi utilizzare altre strategie come DuplicatesStrategy.WARN per avvisare ma non fermare la build
+
+}
+// tasks.withType<ShadowJar> {
+//     classifier = "fat"
+//     manifest {
+//       attributes["Main-Verticle"] = "server.AppServer" 
+//     }
+//     mergeServiceFiles()
+// }
+
+//i commented this
+// application {
+//     // Define the main class for the application.
+//     mainClass = "server.Main"
+// }
+
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = "server.Main"
+    }
 }
 
 

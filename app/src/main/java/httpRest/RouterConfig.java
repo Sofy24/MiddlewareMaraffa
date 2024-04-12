@@ -100,10 +100,10 @@ public class RouterConfig {
         });
         router.route().failureHandler(ErrorHandler.create(vertx, true));
 
-        for(IRouteResponse route : controller.getRoutes()){
+        for (IRouteResponse route : controller.getRoutes()) {
             router.route(route.getMethod(), route.getRoute()).handler(route.getHandler());
         }
-        
+
         OpenAPI openAPIDoc = OpenApiRoutePublisher.publishOpenApiSpec(
                 router,
                 "spec",
@@ -135,9 +135,9 @@ public class RouterConfig {
             }
 
             fields = modelClass.load().getDeclaredFields();
-            
+
             for (Field field : fields) {
-                if(field.getType() != null &&  field.getType().getComponentType() != null) mapParameters(field, map);
+                if (field.getType() != null && field.getType().getComponentType() != null) mapParameters(field, map);
             }
 
             openAPIDoc.schema(modelClass.getSimpleName(),

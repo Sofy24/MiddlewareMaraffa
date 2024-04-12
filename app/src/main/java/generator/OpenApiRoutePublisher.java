@@ -25,7 +25,7 @@ public final class OpenApiRoutePublisher {
         if (spec.isPresent()) {
             Optional<OpenAPI> finalSpec = spec;
             return finalSpec.get();
-        }else{
+        } else {
             return new OpenAPI();
         }
     }

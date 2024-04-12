@@ -123,7 +123,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{github.actor}}
-          password: ${{ secrets.CHANGELOG }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build Docker image
         run: docker build -t ghcr.io/${{ env.IMAGE_NAME}}:${{ env.VERSION }}  .
       - name: Push Docker image

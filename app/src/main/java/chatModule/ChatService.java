@@ -1,5 +1,8 @@
 package chatModule;
 
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
 import game.service.User;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -8,9 +11,10 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
+/**
+ * TODO javadoc
+ */
 public class ChatService {
 	private final Vertx vertx;
 	private static final int PORT = 3004;

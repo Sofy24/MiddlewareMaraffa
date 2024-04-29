@@ -5,16 +5,18 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * TODO javadoc
+ */
 @Api(tags = "Chat Operations", description = "APIs for chat management")
 public class ChatController {
-	public ChatService service;
+	private final ChatService service;
 
 	public ChatController(final Vertx vertx) {
 		this.service = new ChatService(vertx);
 	}
 
 	/**
-	 * 
 	 * @param context
 	 */
 	@Operation(summary = "MSG rec operation", description = "Authenticate user and generate token", method = "POST", operationId = "chat", tags = {

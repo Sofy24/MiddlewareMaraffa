@@ -10,9 +10,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
 
-/**
- * 
- */
+/** 
+ * TODO javadoc
+*/
 public class BusinessLogicController {
 	private final Vertx vertx;
 	private static final int PORT = 3000;
@@ -24,7 +24,6 @@ public class BusinessLogicController {
 	}
 
 	/**
-	 * 
 	 * @param numberOfPlayers
 	 * @return
 	 */
@@ -80,8 +79,8 @@ public class BusinessLogicController {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		LOGGER.info("Computing the score");
 		WebClient.create(this.vertx).post(PORT, LOCALHOST, "/games/computeScore")
-				.putHeader("Accept", "application/json")
-				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
+				.putHeader("Accept", "application/json").as(BodyCodec.jsonObject())
+				.sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
 						future.complete(handler.result().body());
 					} else {

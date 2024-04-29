@@ -1,5 +1,9 @@
 package game.service;
 
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 import BLManagment.BusinessLogicController;
 import game.Call;
 import game.Card;
@@ -12,11 +16,11 @@ import game.utils.Constants;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import repository.AbstractStatisticManager;
 
+/**
+ * TODO javadoc
+ */
 public class GameService {
 	private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
 	private final Vertx vertx;

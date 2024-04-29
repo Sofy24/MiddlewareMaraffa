@@ -1,10 +1,8 @@
 package game.service.schema;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import game.utils.Constants;
+import java.util.Objects;
 
 public class PlayCardBody {
 	@JsonProperty(Constants.GAME_ID)

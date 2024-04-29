@@ -14,7 +14,7 @@ public class Constants {
 	public static final String GAME = "games";
 	public static final String STATUS = "status";
 	public static final String GAME_MODE = "mode";
-    public static final String GUIID = "GUIID";
+	public static final String GUIID = "GUIID";
 	// routes
 	public static final String CREATE_GAME = "game/create";
 	public static final String JOIN_GAME = "game/join";

@@ -1,12 +1,6 @@
 package userModule;
 
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.CompletableFuture;
-
 import com.google.gson.Gson;
-
 import game.Team;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -16,6 +10,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.CompletableFuture;
 
 public class UserService {
 	private final Vertx vertx;
@@ -71,8 +69,9 @@ public class UserService {
 	public CompletableFuture<JsonObject> askService(final JsonObject requestBody, final HttpMethod method,
 			final String requestURI) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-		WebClient.create(this.vertx).request(method, PORT, LOCALHOST, requestURI).putHeader("Accept", "application/json")
-				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
+		WebClient.create(this.vertx).request(method, PORT, LOCALHOST, requestURI)
+				.putHeader("Accept", "application/json").as(BodyCodec.jsonObject())
+				.sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
 						future.complete(handler.result().body());
 					} else {
@@ -84,8 +83,9 @@ public class UserService {
 
 	public CompletableFuture<JsonObject> askServiceWithFuture(final JsonObject requestBody, final HttpMethod method,
 			final String requestURI, final CompletableFuture<JsonObject> future) {
-		WebClient.create(this.vertx).request(method, PORT, LOCALHOST, requestURI).putHeader("Accept", "application/json")
-				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
+		WebClient.create(this.vertx).request(method, PORT, LOCALHOST, requestURI)
+				.putHeader("Accept", "application/json").as(BodyCodec.jsonObject())
+				.sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
 						future.complete(handler.result().body());
 					} else {
@@ -107,7 +107,7 @@ public class UserService {
 							this.askServiceWithFuture(requestBody, HttpMethod.POST, "/user", future);
 						else if (handler.result().body().getString("nickname").equals(nickname))
 							future.complete(new JsonObject().put("error", "User already exists"));
-							// future.completeExceptionally(new RuntimeException("User already exists"));
+						// future.completeExceptionally(new RuntimeException("User already exists"));
 					}
 				});
 		return future;
@@ -123,9 +123,11 @@ public class UserService {
 						if (handler.result().statusCode() == 200)
 							future.complete(JsonObject.of().put("token", encryptThisString(nickname)));
 						else
-							future.complete(new JsonObject().put("error",handler.result().body().getString("message")));
-							// future.completeExceptionally(
-							// 		new RuntimeException(handler.result().body().getString("message"))); // TODO neeeds
+							future.complete(
+									new JsonObject().put("error", handler.result().body().getString("message")));
+						// future.completeExceptionally(
+						// new RuntimeException(handler.result().body().getString("message"))); // TODO
+						// neeeds
 						// refactor
 						// non mi
 						// piace per

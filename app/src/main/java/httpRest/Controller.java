@@ -1,12 +1,11 @@
 package httpRest;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import chatModule.ChatController;
 import game.service.GameServiceDecorator;
 import game.utils.Constants;
 import io.vertx.core.http.HttpMethod;
+import java.util.ArrayList;
+import java.util.List;
 import userModule.UserController;
 
 public class Controller implements IController {

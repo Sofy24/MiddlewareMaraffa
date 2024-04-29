@@ -1,16 +1,5 @@
 package generator;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -23,6 +12,15 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author ckaratza Tries to interrogate vertx router and build an OpenAPI
@@ -89,31 +87,31 @@ public final class OpenApiSpecGenerator {
 								final PathItem pathItem = paths.get(route.getPath());
 								Operation matchedOperation = null;
 								switch (PathItem.HttpMethod.valueOf(httpMethod.toUpperCase())) {
-									case TRACE:
+									case TRACE :
 										matchedOperation = pathItem.getTrace();
 										break;
-									case PUT:
+									case PUT :
 										matchedOperation = pathItem.getPut();
 										break;
-									case POST:
+									case POST :
 										matchedOperation = pathItem.getPost();
 										break;
-									case PATCH:
+									case PATCH :
 										matchedOperation = pathItem.getPatch();
 										break;
-									case GET:
+									case GET :
 										matchedOperation = pathItem.getGet();
 										break;
-									case OPTIONS:
+									case OPTIONS :
 										matchedOperation = pathItem.getOptions();
 										break;
-									case HEAD:
+									case HEAD :
 										matchedOperation = pathItem.getHead();
 										break;
-									case DELETE:
+									case DELETE :
 										matchedOperation = pathItem.getDelete();
 										break;
-									default:
+									default :
 										break;
 								}
 								if (matchedOperation != null
@@ -155,31 +153,31 @@ public final class OpenApiSpecGenerator {
 			return httpMethods.stream().map(httpMethod -> {
 				final Operation operation = new Operation();
 				switch (PathItem.HttpMethod.valueOf(httpMethod.name())) {
-					case TRACE:
+					case TRACE :
 						pathItem.trace(operation);
 						break;
-					case PUT:
+					case PUT :
 						pathItem.put(operation);
 						break;
-					case POST:
+					case POST :
 						pathItem.post(operation);
 						break;
-					case PATCH:
+					case PATCH :
 						pathItem.patch(operation);
 						break;
-					case GET:
+					case GET :
 						pathItem.get(operation);
 						break;
-					case OPTIONS:
+					case OPTIONS :
 						pathItem.options(operation);
 						break;
-					case HEAD:
+					case HEAD :
 						pathItem.head(operation);
 						break;
-					case DELETE:
+					case DELETE :
 						pathItem.delete(operation);
 						break;
-					default:
+					default :
 						break;
 				}
 				return operation;

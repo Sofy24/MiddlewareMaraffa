@@ -5,9 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import game.Team;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -15,12 +19,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import game.Team;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
 import userModule.UserService;
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -66,14 +64,15 @@ public class UserTestIntegration {
 		}).join();
 
 		this.userService.registerUser("duplicateUser", "password", "email@gmail.com").whenComplete((res, err) -> {
-			}).whenComplete((res, err) -> {
-				context.verify(() -> {
-					assertNotNull(res.getString("error"));
-					assertEquals(res.getString("error"), "User already exists");
-					context.completeNow();
-				});
+		}).whenComplete((res, err) -> {
+			context.verify(() -> {
+				assertNotNull(res.getString("error"));
+				assertEquals(res.getString("error"), "User already exists");
+				context.completeNow();
 			});
+		});
 	}
+
 	// context.verify(() -> {
 	// });
 
@@ -100,14 +99,14 @@ public class UserTestIntegration {
 			});
 		});
 		// try {
-		// 	this.userService.loginUser("user1", "pass").whenComplete((res, err) -> {
-		// 		System.out.println(res);
-		// 		if (err == null)
-		// 			context.completeNow();
-		// 		// Otherwise timeout will be triggered to fail the test
-		// 	}).join();
+		// this.userService.loginUser("user1", "pass").whenComplete((res, err) -> {
+		// System.out.println(res);
+		// if (err == null)
+		// context.completeNow();
+		// // Otherwise timeout will be triggered to fail the test
+		// }).join();
 		// } catch (final RuntimeException e) {
-		// 	context.completeNow();
+		// context.completeNow();
 		// }
 	}
 

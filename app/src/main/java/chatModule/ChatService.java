@@ -1,8 +1,5 @@
 package chatModule;
 
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
 import game.service.User;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -11,6 +8,8 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class ChatService {
 	private final Vertx vertx;
@@ -43,7 +42,7 @@ public class ChatService {
 	public CompletableFuture<JsonObject> joinGameHandler(final String gameID, final User user) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		this.askServiceWithFuture(new JsonObject().put("callback", FE_HOST + "/manageMessage/" + user.clientID()), // enorme
-																													// assunzione
+				// assunzione
 				HttpMethod.POST, "/joinChat/" + gameID + "/" + user.username(), future)
 				.whenComplete((result, error) -> {
 					if (result.containsKey("error")) {
@@ -82,11 +81,10 @@ public class ChatService {
 				});
 	}
 
-	public CompletableFuture<JsonObject> askServiceWithFutureNoBody(final HttpMethod method,
-			final String requestURI, final CompletableFuture<JsonObject> future) {
+	public CompletableFuture<JsonObject> askServiceWithFutureNoBody(final HttpMethod method, final String requestURI,
+			final CompletableFuture<JsonObject> future) {
 		WebClient.create(this.vertx).request(method, PORT, LOCALHOST, requestURI)
-				.putHeader("Accept", "application/json")
-				.as(BodyCodec.jsonObject()).send(handler -> {
+				.putHeader("Accept", "application/json").as(BodyCodec.jsonObject()).send(handler -> {
 					if (handler.succeeded()) {
 						future.complete(handler.result().body());
 					} else {
@@ -99,8 +97,8 @@ public class ChatService {
 	public CompletableFuture<JsonObject> askServiceWithFuture(final JsonObject requestBody, final HttpMethod method,
 			final String requestURI, final CompletableFuture<JsonObject> future) {
 		WebClient.create(this.vertx).request(method, PORT, LOCALHOST, requestURI)
-				.putHeader("Accept", "application/json")
-				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
+				.putHeader("Accept", "application/json").as(BodyCodec.jsonObject())
+				.sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
 						future.complete(handler.result().body());
 					} else {

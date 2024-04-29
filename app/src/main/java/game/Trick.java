@@ -8,7 +8,7 @@ public interface Trick {
 	 * add a card played by a player
 	 *
 	 * @param card
-	 *             played
+	 *            played
 	 */
 	void addCard(Card<CardValue, CardSuit> card, String username);
 
@@ -31,11 +31,10 @@ public interface Trick {
 
 	/**
 	 * @param call
-	 *                 the call
+	 *            the call
 	 * @param username
-	 *                 the user who makes the call check if the user can make a call
-	 *                 and
-	 *                 if true set the call
+	 *            the user who makes the call check if the user can make a call and
+	 *            if true set the call
 	 */
 	void setCall(Call call, String username);
 

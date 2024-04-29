@@ -1,9 +1,5 @@
 package game.service;
 
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 import BLManagment.BusinessLogicController;
 import game.Call;
 import game.Card;
@@ -16,6 +12,9 @@ import game.utils.Constants;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import repository.AbstractStatisticManager;
 
 public class GameService {
@@ -36,19 +35,19 @@ public class GameService {
 		this.statisticManager = statisticManager;
 	}
 
-	public JsonObject createGame(final Integer numberOfPlayers, final User user,  final int expectedScore,
+	public JsonObject createGame(final Integer numberOfPlayers, final User user, final int expectedScore,
 			final String gameMode) {
 		final JsonObject jsonGame = new JsonObject();
 		final UUID newId = UUID.randomUUID();
 		GameVerticle currentGame;
 		try {
 			// if (this.statisticManager != null)
-				currentGame = new GameVerticle(newId, user, numberOfPlayers, expectedScore,
-						GameMode.valueOf(gameMode), this.statisticManager);
-				//TODO migliore gestione qui perche e' terribile ma per testare OK
+			currentGame = new GameVerticle(newId, user, numberOfPlayers, expectedScore, GameMode.valueOf(gameMode),
+					this.statisticManager);
+			// TODO migliore gestione qui perche e' terribile ma per testare OK
 			// else
-				// currentGame = new GameVerticle(newId, user, numberOfPlayers, expectedScore,
-						// GameMode.valueOf(gameMode.toUpperCase()));
+			// currentGame = new GameVerticle(newId, user, numberOfPlayers, expectedScore,
+			// GameMode.valueOf(gameMode.toUpperCase()));
 		} catch (final IllegalArgumentException e) {
 			return jsonGame.put(Constants.INVALID, gameMode);
 		}
@@ -59,7 +58,7 @@ public class GameService {
 		return jsonGame;
 	}
 
-	public JsonObject joinGame(final UUID gameID, final User user){
+	public JsonObject joinGame(final UUID gameID, final User user) {
 		final JsonObject jsonJoin = new JsonObject();
 		if (this.games.get(gameID) != null) {
 			if (this.games.get(gameID).getNumberOfPlayersIn() < this.games.get(gameID).getMaxNumberOfPlayers()) {

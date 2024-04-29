@@ -4,12 +4,11 @@ import java.util.UUID;
 
 public record User(String username, UUID clientID) {
 
-    public String username() {
-        return this.username;
-    }
+	public String username() {
+		return this.username;
+	}
 
-    public UUID clientID() {
-        return this.clientID;
-    }
-
+	public UUID clientID() {
+		return this.clientID;
+	}
 }

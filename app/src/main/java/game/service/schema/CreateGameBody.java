@@ -1,7 +1,6 @@
 package game.service.schema;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import game.utils.Constants;
 
 public class CreateGameBody {
@@ -100,6 +99,4 @@ public class CreateGameBody {
 			return false;
 		return true;
 	}
-	
-
 }

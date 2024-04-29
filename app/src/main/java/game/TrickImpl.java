@@ -4,7 +4,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.bson.codecs.pojo.annotations.BsonIgnore;
 
 public class TrickImpl implements Trick {
@@ -29,7 +28,7 @@ public class TrickImpl implements Trick {
 
 	/**
 	 * @param card
-	 *             added to the trick, if not all the players has already played
+	 *            added to the trick, if not all the players has already played
 	 */
 	@Override
 	public void addCard(final Card<CardValue, CardSuit> card, final String username) {

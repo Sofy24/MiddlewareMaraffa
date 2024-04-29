@@ -2,22 +2,9 @@ package httpRest;
 
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import org.apache.commons.lang3.reflect.FieldUtils;
-
+import chatModule.ChatController;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
-
-import chatModule.ChatController;
 import game.service.GameServiceDecorator;
 import game.utils.Constants;
 import generator.OpenApiRoutePublisher;
@@ -32,6 +19,16 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.ErrorHandler;
 import io.vertx.ext.web.handler.StaticHandler;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import userModule.UserController;
 
 public class RouterConfig {
@@ -106,8 +103,7 @@ public class RouterConfig {
 		}
 
 		final OpenAPI openAPIDoc = OpenApiRoutePublisher.publishOpenApiSpec(router, "spec",
-				"Vertx Swagger Auto Generation",
-				"1.0.0", "http://localhost:" + this.port + "/");
+				"Vertx Swagger Auto Generation", "1.0.0", "http://localhost:" + this.port + "/");
 
 		/*
 		 * Tagging section. This is where we can group end point operations; The tag

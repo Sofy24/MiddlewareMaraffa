@@ -13,6 +13,10 @@ public class ChatController {
 		this.service = new ChatService(vertx);
 	}
 
+	/**
+	 * 
+	 * @param context
+	 */
 	@Operation(summary = "MSG rec operation", description = "Authenticate user and generate token", method = "POST", operationId = "chat", tags = {
 			"Chat Operations" }
 	// requestBody = @RequestBody(description = "User's credentials"), responses =
@@ -27,6 +31,6 @@ public class ChatController {
 		final String author = context.body().asJsonObject().getString("author");
 		final String msg = context.body().asJsonObject().getString("message");
 		this.service.messageReceived(msg, gameID, author);
-		context.response().setStatusCode(201).end(); // TODO temp
+		context.response().setStatusCode(java.net.HttpURLConnection.HTTP_ACCEPTED).end(); // TODO temp
 	}
 }

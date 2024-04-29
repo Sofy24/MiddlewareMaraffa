@@ -1,5 +1,7 @@
 package BLManagment;
 
+import java.util.concurrent.CompletableFuture;
+
 import game.Trick;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.logging.Logger;
@@ -7,8 +9,10 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
-import java.util.concurrent.CompletableFuture;
 
+/**
+ * 
+ */
 public class BusinessLogicController {
 	private final Vertx vertx;
 	private static final int PORT = 3000;
@@ -19,10 +23,15 @@ public class BusinessLogicController {
 		this.vertx = vertx;
 	}
 
+	/**
+	 * 
+	 * @param numberOfPlayers
+	 * @return
+	 */
 	public CompletableFuture<JsonObject> getShuffledDeck(final Integer numberOfPlayers) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		System.out.println("Getting the shuffled deck");
-		WebClient.create(vertx).get(PORT, LOCALHOST, "/games/startRound")
+		WebClient.create(this.vertx).get(PORT, LOCALHOST, "/games/startRound")
 				// .ssl(true)
 				.putHeader("Accept", "application/json") // (4)
 				.as(BodyCodec.jsonObject()).send(handler -> {
@@ -60,17 +69,18 @@ public class BusinessLogicController {
 	 * the winning team and position
 	 *
 	 * @param trick
-	 *            the completed trick with which it computes the score
+	 *              the completed trick with which it computes the score
 	 * @param trump
-	 *            used while computing the score
+	 *              used while computing the score
 	 * @return a completable future of the json response
 	 */
 	public CompletableFuture<JsonObject> computeScore(final Trick trick, final String trump) {
-		final int[] cards = trick.getCards().stream().mapToInt(card -> Integer.parseInt(card)).toArray();
+		final int[] cards = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
 		final JsonObject requestBody = new JsonObject().put("trick", cards).put("trump", Integer.parseInt(trump));
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		LOGGER.info("Computing the score");
-		WebClient.create(vertx).post(PORT, LOCALHOST, "/games/computeScore").putHeader("Accept", "application/json")
+		WebClient.create(this.vertx).post(PORT, LOCALHOST, "/games/computeScore")
+				.putHeader("Accept", "application/json")
 				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
 						future.complete(handler.result().body());

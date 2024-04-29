@@ -4,15 +4,15 @@ import game.service.User;
 
 public interface IGameAgent {
 
-    void onCreateGame(User user);
+	void onCreateGame(User user);
 
-    void onJoinGame(User user);
+	void onJoinGame(User user);
 
-    void onStartGame();
+	void onStartGame();
 
-    void onPlayCard();
+	void onPlayCard();
 
-    void onMessage();
+	void onMessage();
 
-    void onEndRound();
+	void onEndRound();
 }

@@ -7,17 +7,15 @@ import static com.mongodb.client.model.Updates.set;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
-import org.bson.codecs.configuration.CodecProvider;
-import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.codecs.pojo.PojoCodecProvider;
-
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
-
 import game.GameSchema;
 import game.Trick;
+import org.bson.codecs.configuration.CodecProvider;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.PojoCodecProvider;
 
 // TODO ma un bel singleton?
 public class MongoStatisticManager extends AbstractStatisticManager {
@@ -49,9 +47,8 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 
 	@Override
 	public void updateRecordWithTrick(final String recordID, final Trick trick) {
-		final var res = this.database.getCollection("MaraffaStatistics", GameSchema.class).updateOne(
-				eq("gameID", recordID),
-				push("tricks", trick), new UpdateOptions().upsert(true));
+		final var res = this.database.getCollection("MaraffaStatistics", GameSchema.class)
+				.updateOne(eq("gameID", recordID), push("tricks", trick), new UpdateOptions().upsert(true));
 		System.out.println("Update result: " + res);
 	}
 

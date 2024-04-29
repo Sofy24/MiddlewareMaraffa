@@ -104,8 +104,7 @@ public class GameService {
 
     public boolean playCard(UUID gameID, String username, Card<CardValue, CardSuit> card) {
         if (this.games.get(gameID) != null && this.games.get(gameID).canStart()) {
-            this.games.get(gameID).addCard(card, username);
-            return true;
+            return this.games.get(gameID).addCard(card, username);
         }
         return false;
     }

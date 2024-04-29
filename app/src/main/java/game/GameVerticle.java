@@ -41,6 +41,7 @@ public class GameVerticle extends AbstractVerticle {
     private Team team2;
     private Status status = Status.WAITING_PLAYERS;
     private GameMode gameMode;
+    private int turn = 0; //cambia con chi ha il 4 di denara
 
     public GameSchema getGameSchema() {
         return gameSchema;
@@ -101,13 +102,17 @@ public class GameVerticle extends AbstractVerticle {
      * @param card to be added to the trick
      */
     public boolean addCard(Card<CardValue, CardSuit> card, String username) {
-        if (canStart()) {
+        if (canStart() && this.users.get(this.turn).equals(username)){
             if (this.currentTrick == null) {
                 this.currentTrick = this.states.getOrDefault(this.currentState.get(),
                         new TrickImpl(this.numberOfPlayers, this.trump));
                 this.tricks.add(this.currentTrick);
             }
+            if (this.currentTrick.getCardsAndUsers().containsValue(username)){
+                return false;
+            }
             this.currentTrick.addCard(card, username);
+            this.turn = (this.turn + 1) % this.numberOfPlayers;
             if (this.currentTrick.isCompleted()) {
                 this.gameSchema.addTrick(currentTrick);
                 if (this.statisticManager != null)
@@ -115,6 +120,7 @@ public class GameVerticle extends AbstractVerticle {
                 this.states.put(this.currentState.get(), currentTrick);
                 this.currentTrick = new TrickImpl(this.numberOfPlayers, this.trump);
                 this.tricks.add(this.currentTrick);
+                //this.turn = chi prende;
             }
             return true;
         }
@@ -200,6 +206,14 @@ public class GameVerticle extends AbstractVerticle {
 
     public Trick getLatestTrick() {
         return this.tricks.get(this.getCurrentState().get());
+    }
+
+    public int getTurn() {
+        return this.turn;
+    }
+
+    public List<String> getUsers() {
+        return users;
     }
 
     /**

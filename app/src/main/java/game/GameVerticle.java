@@ -120,7 +120,6 @@ public class GameVerticle extends AbstractVerticle {
                 this.states.put(this.currentState.get(), currentTrick);
                 this.currentTrick = new TrickImpl(this.numberOfPlayers, this.trump);
                 this.tricks.add(this.currentTrick);
-                //this.turn = chi prende;
             }
             return true;
         }
@@ -210,6 +209,11 @@ public class GameVerticle extends AbstractVerticle {
 
     public int getTurn() {
         return this.turn;
+    }
+
+    public void setTurn(int turn) {
+        System.out.println("Setting turn to " + turn);
+        this.turn = turn;
     }
 
     public List<String> getUsers() {

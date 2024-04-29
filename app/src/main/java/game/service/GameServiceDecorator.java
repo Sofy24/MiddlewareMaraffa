@@ -194,7 +194,9 @@ public class GameServiceDecorator {
                             this.businessLogicController.computeScore(latestTrick, this.gameService.getGames().get(gameID).getTrump().getValue().toString()).whenComplete((result, err) -> {
                                 LOGGER.info("Got sample response");
                                 response.put("result", result);
+                                this.gameService.getGames().get(gameID).setTurn(result.getInteger("winningPosition"));
                                 this.gameService.getGames().get(gameID).setScore(result.getInteger("score"), result.getBoolean("firstTeam"));//TODO i punti della businesslogic sono moltiplicati per 3
+                                response.put("turn", this.gameService.getGames().get(gameID).getTurn());
                                 context.response().end(response.toBuffer());
                             });
                         } else {

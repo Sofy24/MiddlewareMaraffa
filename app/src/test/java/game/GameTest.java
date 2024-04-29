@@ -385,6 +385,30 @@ public class GameTest {
         context.completeNow();
     }
 
-
+    /*
+     * the winning player will start the next hand 
+     */
+    @Test
+    public void winningPlayerWillStartNextHand(VertxTestContext context) {
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER + "0", EXPECTED_SCORE, GAME_MODE.toString());
+        Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+        for (int i = 1; i < MARAFFA_PLAYERS; i++) {
+            assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD));
+            JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
+            assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+        }
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
+        assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+        assertFalse(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
+        for (int i = 0; i < MARAFFA_PLAYERS; i++) {
+            assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + (i % MARAFFA_PLAYERS), TEST_CARDS.get(i % MARAFFA_PLAYERS)));
+            if (this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getLatestTrick().isCompleted()) {
+                this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).incrementCurrentState();
+            }
+        }
+        //const
+        assertEquals(1, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getTurn());
+        context.completeNow();
+    }
 
 }

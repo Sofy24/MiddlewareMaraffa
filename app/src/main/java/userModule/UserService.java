@@ -1,6 +1,12 @@
 package userModule;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.CompletableFuture;
+
 import com.google.gson.Gson;
+
 import game.Team;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -10,18 +16,16 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.CompletableFuture;
+import server.AbstractRestAPI;
 
-public class UserService {
+public class UserService extends AbstractRestAPI {
 	private final Vertx vertx;
 	private static final int PORT = 3001;
 	private static final String LOCALHOST = "127.0.0.1";
 	private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
 	public UserService(final Vertx vertx) {
+		super(vertx, PORT, LOCALHOST);
 		this.vertx = vertx;
 		this.vertx.eventBus().consumer("user-component", message -> {
 			LOGGER.info("Received message: " + message.body());
@@ -66,35 +70,6 @@ public class UserService {
 		return future;
 	}
 
-	public CompletableFuture<JsonObject> askService(final JsonObject requestBody, final HttpMethod method,
-			final String requestURI) {
-		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-		WebClient.create(this.vertx).request(method, PORT, LOCALHOST, requestURI)
-				.putHeader("Accept", "application/json").as(BodyCodec.jsonObject())
-				.sendJsonObject(requestBody, handler -> {
-					if (handler.succeeded()) {
-						future.complete(handler.result().body());
-					} else {
-						future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
-					}
-				});
-		return future;
-	}
-
-	public CompletableFuture<JsonObject> askServiceWithFuture(final JsonObject requestBody, final HttpMethod method,
-			final String requestURI, final CompletableFuture<JsonObject> future) {
-		WebClient.create(this.vertx).request(method, PORT, LOCALHOST, requestURI)
-				.putHeader("Accept", "application/json").as(BodyCodec.jsonObject())
-				.sendJsonObject(requestBody, handler -> {
-					if (handler.succeeded()) {
-						future.complete(handler.result().body());
-					} else {
-						future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
-					}
-				});
-		return future;
-	}
-
 	public CompletableFuture<JsonObject> registerUser(final String nickname, final String password,
 			final String email) {
 		final JsonObject requestBody = new JsonObject().put("nickname", nickname).put("password", password).put("email",
@@ -125,13 +100,6 @@ public class UserService {
 						else
 							future.complete(
 									new JsonObject().put("error", handler.result().body().getString("message")));
-						// future.completeExceptionally(
-						// new RuntimeException(handler.result().body().getString("message"))); // TODO
-						// neeeds
-						// refactor
-						// non mi
-						// piace per
-						// niente
 					}
 				});
 		return future;

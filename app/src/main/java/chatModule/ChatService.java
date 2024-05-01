@@ -9,13 +9,12 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.codec.BodyCodec;
+import server.AbstractRestAPI;
 
 /**
  * TODO javadoc
  */
-public class ChatService {
+public class ChatService extends AbstractRestAPI {
 	private final Vertx vertx;
 	private static final int PORT = 3004;
 	private static final String LOCALHOST = "127.0.0.1";
@@ -23,6 +22,7 @@ public class ChatService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChatService.class);
 
 	public ChatService(final Vertx vertx) {
+		super(vertx, PORT, LOCALHOST);
 		this.vertx = vertx;
 
 		this.vertx.eventBus().consumer("chat-component:onCreateGame", message -> {
@@ -83,32 +83,5 @@ public class ChatService {
 						LOGGER.info("Message sent");
 					}
 				});
-	}
-
-	public CompletableFuture<JsonObject> askServiceWithFutureNoBody(final HttpMethod method, final String requestURI,
-			final CompletableFuture<JsonObject> future) {
-		WebClient.create(this.vertx).request(method, PORT, LOCALHOST, requestURI)
-				.putHeader("Accept", "application/json").as(BodyCodec.jsonObject()).send(handler -> {
-					if (handler.succeeded()) {
-						future.complete(handler.result().body());
-					} else {
-						future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
-					}
-				});
-		return future;
-	}
-
-	public CompletableFuture<JsonObject> askServiceWithFuture(final JsonObject requestBody, final HttpMethod method,
-			final String requestURI, final CompletableFuture<JsonObject> future) {
-		WebClient.create(this.vertx).request(method, PORT, LOCALHOST, requestURI)
-				.putHeader("Accept", "application/json").as(BodyCodec.jsonObject())
-				.sendJsonObject(requestBody, handler -> {
-					if (handler.succeeded()) {
-						future.complete(handler.result().body());
-					} else {
-						future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
-					}
-				});
-		return future;
 	}
 }

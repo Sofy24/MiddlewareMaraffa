@@ -125,14 +125,7 @@ public class GameServiceDecorator {
 			context.response().setStatusCode(404).end(startResponse.toBuffer());
 	}
 
-	@Operation(summary = "Check if a round can start", method = Constants.CAN_START_METHOD, operationId = Constants.CAN_START, // !
-			// operationId
-			// must
-			// be
-			// the
-			// same
-			// as
-			// controller
+	@Operation(summary = "Check if a round can start", method = Constants.CAN_START_METHOD, operationId = Constants.CAN_START,
 			tags = { Constants.ROUND_TAG }, parameters = {
 					@Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID, required = true, description = "The unique ID belonging to the game", schema = @Schema(type = "string")) }, responses = {
 							@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json; charset=utf-8", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = CanStartResponse.class))),

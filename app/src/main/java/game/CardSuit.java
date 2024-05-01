@@ -11,14 +11,13 @@ public enum CardSuit {
 	}
 
 	public Integer getValue() {
-		return value;
+		return this.value;
 	}
 
 	public static CardSuit getName(final String value) {
 		for (final CardSuit v : values())
 			if (v.toString().equals(value))
 				return v;
-		System.out.println("Oh oh oh oh oh, value = " + value);
 		throw new IllegalArgumentException();
 	}
 }

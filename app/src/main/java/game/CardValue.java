@@ -11,14 +11,13 @@ public enum CardValue {
 	}
 
 	public Integer getValue() {
-		return value;
+		return this.value;
 	}
 
 	public static CardValue getName(final String value) {
 		for (final CardValue v : values())
 			if (v.toString().equals(value))
 				return v;
-		System.out.println("Oh oh oh oh oh, value = " + value);
 		throw new IllegalArgumentException();
 	}
 }

@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import BLManagment.BusinessLogicController;
 import game.Call;
 import game.Card;
 import game.CardSuit;
@@ -24,18 +23,15 @@ import repository.AbstractStatisticManager;
 public class GameService {
 	private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
 	private final Vertx vertx;
-	private final BusinessLogicController businessLogicController;
 
 	private AbstractStatisticManager statisticManager;
 
 	public GameService(final Vertx vertx) {
 		this.vertx = vertx;
-		this.businessLogicController = new BusinessLogicController(vertx);
 	}
 
 	public GameService(final Vertx vertx, final AbstractStatisticManager statisticManager) {
 		this.vertx = vertx;
-		this.businessLogicController = new BusinessLogicController(vertx);
 		this.statisticManager = statisticManager;
 	}
 
@@ -45,13 +41,10 @@ public class GameService {
 		final UUID newId = UUID.randomUUID();
 		GameVerticle currentGame;
 		try {
-			// if (this.statisticManager != null)
-			currentGame = new GameVerticle(newId, user, numberOfPlayers, expectedScore, GameMode.valueOf(gameMode),
+			currentGame = new GameVerticle(newId, user, numberOfPlayers, expectedScore,
+					GameMode.valueOf(gameMode.toUpperCase()),
 					this.statisticManager);
 			// TODO migliore gestione qui perche e' terribile ma per testare OK
-			// else
-			// currentGame = new GameVerticle(newId, user, numberOfPlayers, expectedScore,
-			// GameMode.valueOf(gameMode.toUpperCase()));
 		} catch (final IllegalArgumentException e) {
 			return jsonGame.put(Constants.INVALID, gameMode);
 		}

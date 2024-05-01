@@ -1,11 +1,12 @@
 package httpRest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import chatModule.ChatController;
 import game.service.GameServiceDecorator;
 import game.utils.Constants;
 import io.vertx.core.http.HttpMethod;
-import java.util.ArrayList;
-import java.util.List;
 import userModule.UserController;
 
 public class Controller implements IController {
@@ -47,6 +48,7 @@ public class Controller implements IController {
 		// user management
 		this.routes.add(new RouteResponse(HttpMethod.POST, "/login", this.userController::loginRoute));
 		this.routes.add(new RouteResponse(HttpMethod.POST, "/register", this.userController::registerRoute));
+		this.routes.add(new RouteResponse(HttpMethod.POST, "/resetPassword", this.userController::registerRoute));
 		this.routes.add(new RouteResponse(HttpMethod.POST, "/logout", this.userController::logoutRoute));
 		// chat management
 		this.routes.add(new RouteResponse(HttpMethod.POST, "/chat", this.chatController::messageReceived));

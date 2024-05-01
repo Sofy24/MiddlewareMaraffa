@@ -11,7 +11,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import userModule.schema.UserLoginSchema;
-import userModule.schema.UserSchema;
+import userModule.schema.UserRegisterSchema;
 
 // @Api(tags = "login", description = "APIs for user management")
 @Api(tags = "User Operations", description = "APIs for user management")
@@ -27,7 +27,8 @@ public class UserController {
 					+ "\"nickname" + "\": \"user\",\n" + "  \"" + "password" + "\": \"password\"\n"
 					+ "}"))), responses = {
 							@ApiResponse(responseCode = "200", description = "Login successful"),
-							@ApiResponse(responseCode = "401", description = "Unauthorized"),
+							@ApiResponse(responseCode = "404", description = "User Not Found"),
+							@ApiResponse(responseCode = "401", description = "Wrong password"),
 							@ApiResponse(responseCode = "500", description = "Internal Server Error") })
 	public void loginRoute(final RoutingContext context) {
 		this.userService.loginUser(context.body().asJsonObject().getString("nickname"),
@@ -35,14 +36,41 @@ public class UserController {
 					if (error != null) {
 						context.response().setStatusCode(500).end(error.getMessage());
 					} else {
+						switch (context.response().getStatusCode()) {
+							case 404:
+								context.response().setStatusCode(404)
+										.end(new JsonObject()
+												.put("message", context.body().asJsonObject().getString("message"))
+												.toBuffer());
+								break;
+							case 401:
+								context.response().setStatusCode(401)
+										.end(new JsonObject()
+												.put("message", context.body().asJsonObject().getString("message"))
+												.toBuffer());
+								break;
+							default:
+								break;
+						}
 						context.response().setStatusCode(201).end(response.encode());
 					}
 				});
 	}
 
-	// TODO non funziona lo schema d'esempio !
+	@Operation(summary = "Reset password operation", description = "Reset the password", method = "POST", operationId = "reset", tags = {
+			"User Operations" }, requestBody = @RequestBody(description = "User's credentials", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = UserLoginSchema.class, example = "{\n"
+					+ "\"nickname" + "\": \"user\",\n" + "  \"" + "password" + "\": \"password\"\n"
+					+ "}"))), responses = {
+							@ApiResponse(responseCode = "200", description = "Login successful"),
+							@ApiResponse(responseCode = "401", description = "Unauthorized"),
+							@ApiResponse(responseCode = "500", description = "Internal Server Error") })
+	public void resetRoute(final RoutingContext context) {
+		context.response().setStatusCode(500)
+				.end(new JsonObject().put("message", "To be impplemenented !").toBuffer());
+	}
+
 	@Operation(summary = "Register operation", description = "Create a new user account", method = "POST", operationId = "register", tags = {
-			"User Operations" }, requestBody = @RequestBody(description = "User's details", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = UserSchema.class, example = "{\n"
+			"User Operations" }, requestBody = @RequestBody(description = "User's details", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = UserRegisterSchema.class, example = "{\n"
 					+ "\"nickname" + "\": \"user\",\n" + "  \"" + "password" + "\": \"password\",\n" + "  \""
 					+ "email" + "\": \"mmm@gmail.com\"\n" + "}"))), responses = {
 							@ApiResponse(responseCode = "201", description = "User registered successfully"),
@@ -67,5 +95,8 @@ public class UserController {
 					@ApiResponse(responseCode = "500", description = "Internal Server Error") })
 	public void logoutRoute(final RoutingContext context) {
 		// TODO: Implement logout logic
+		context.response().setStatusCode(500)
+				.end(new JsonObject().put("message", "To be impplemenented !").toBuffer());
 	}
+
 }

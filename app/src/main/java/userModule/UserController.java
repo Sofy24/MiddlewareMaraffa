@@ -36,23 +36,25 @@ public class UserController {
 					if (error != null) {
 						context.response().setStatusCode(500).end(error.getMessage());
 					} else {
-						switch (context.response().getStatusCode()) {
-							case 404:
+						switch (response.getString("status")) {
+							case "404":
 								context.response().setStatusCode(404)
 										.end(new JsonObject()
-												.put("message", context.body().asJsonObject().getString("message"))
+												.put("error", context.body().asJsonObject().getString("message"))
 												.toBuffer());
 								break;
-							case 401:
+							case "401":
+								System.out.println("Error: " + context.body().asJsonObject().getString("message"));
 								context.response().setStatusCode(401)
 										.end(new JsonObject()
-												.put("message", context.body().asJsonObject().getString("message"))
+												.put("error", context.body().asJsonObject().getString("message"))
 												.toBuffer());
 								break;
 							default:
+								System.out.println("QUI NO !");
+								context.response().setStatusCode(201).end(response.encode());
 								break;
 						}
-						context.response().setStatusCode(201).end(response.encode());
 					}
 				});
 	}

@@ -81,7 +81,7 @@ public class UserService extends AbstractRestAPI {
 						if (handler.result().statusCode() == 404)
 							this.askServiceWithFuture(requestBody, HttpMethod.POST, "/user", future);
 						else if (handler.result().body().getString("nickname").equals(nickname))
-							future.complete(new JsonObject().put("error", "User already exists"));
+							future.complete(new JsonObject().put("status", "409").put("error", "User already exists"));
 						// future.completeExceptionally(new RuntimeException("User already exists"));
 					}
 				});
@@ -96,10 +96,12 @@ public class UserService extends AbstractRestAPI {
 				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
 						if (handler.result().statusCode() == 200)
-							future.complete(JsonObject.of().put("token", encryptThisString(nickname)));
+							future.complete(JsonObject.of().put("status", String.valueOf(handler.result().statusCode()))
+									.put("token", encryptThisString(nickname)));
 						else
 							future.complete(
-									new JsonObject().put("error", handler.result().body().getString("message")));
+									new JsonObject().put("status", String.valueOf(handler.result().statusCode()))
+											.put("error", handler.result().body().getString("message")));
 					}
 				});
 		return future;

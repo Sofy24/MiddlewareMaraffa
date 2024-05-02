@@ -40,14 +40,14 @@ public class UserController {
 							case "404":
 								context.response().setStatusCode(404)
 										.end(new JsonObject()
-												.put("error", context.body().asJsonObject().getString("message"))
+												.put("error", response.getString("error"))
 												.toBuffer());
 								break;
 							case "401":
-								System.out.println("Error: " + context.body().asJsonObject().getString("message"));
+								System.out.println("Error: " + response.toString());
 								context.response().setStatusCode(401)
 										.end(new JsonObject()
-												.put("error", context.body().asJsonObject().getString("message"))
+												.put("error", response.getString("error"))
 												.toBuffer());
 								break;
 							default:

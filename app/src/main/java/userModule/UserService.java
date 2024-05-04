@@ -70,6 +70,12 @@ public class UserService extends AbstractRestAPI {
 		return future;
 	}
 
+	public CompletableFuture<JsonObject> getUserInfo(final String nickname) {
+		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
+		this.askServiceWithFutureNoBody(HttpMethod.GET, "/user/" + nickname, future);
+		return future;
+    }
+
 	public CompletableFuture<JsonObject> registerUser(final String nickname, final String password,
 			final String email) {
 		final JsonObject requestBody = new JsonObject().put("nickname", nickname).put("password", password).put("email",
@@ -121,4 +127,5 @@ public class UserService extends AbstractRestAPI {
 			throw new RuntimeException(e);
 		}
 	}
+
 }

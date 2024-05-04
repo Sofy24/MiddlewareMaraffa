@@ -19,14 +19,15 @@ public abstract class AbstractRestAPI {
         this.localhost = localhost;
     }
 
-    public CompletableFuture<JsonObject> askService(final JsonObject requestBody, final HttpMethod method,
+    protected CompletableFuture<JsonObject> askService(final JsonObject requestBody, final HttpMethod method,
             final String requestURI) {
         final CompletableFuture<JsonObject> future = new CompletableFuture<>();
         WebClient.create(this.vertx).request(method, this.port, this.localhost, requestURI)
                 .putHeader("Accept", "application/json").as(BodyCodec.jsonObject())
                 .sendJsonObject(requestBody, handler -> {
                     if (handler.succeeded()) {
-                        future.complete(handler.result().body());
+                        future.complete(
+                                handler.result().body().put("status", String.valueOf(handler.result().statusCode())));
                     } else {
                         future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
                     }
@@ -34,13 +35,14 @@ public abstract class AbstractRestAPI {
         return future;
     }
 
-    public CompletableFuture<JsonObject> askServiceWithFuture(final JsonObject requestBody, final HttpMethod method,
+    protected CompletableFuture<JsonObject> askServiceWithFuture(final JsonObject requestBody, final HttpMethod method,
             final String requestURI, final CompletableFuture<JsonObject> future) {
         WebClient.create(this.vertx).request(method, this.port, this.localhost, requestURI)
                 .putHeader("Accept", "application/json").as(BodyCodec.jsonObject())
                 .sendJsonObject(requestBody, handler -> {
                     if (handler.succeeded()) {
-                        future.complete(handler.result().body());
+                        future.complete(
+                                handler.result().body().put("status", String.valueOf(handler.result().statusCode())));
                     } else {
                         future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
                     }
@@ -48,12 +50,14 @@ public abstract class AbstractRestAPI {
         return future;
     }
 
-    public CompletableFuture<JsonObject> askServiceWithFutureNoBody(final HttpMethod method, final String requestURI,
+    protected CompletableFuture<JsonObject> askServiceWithFutureNoBody(final HttpMethod method, final String requestURI,
             final CompletableFuture<JsonObject> future) {
         WebClient.create(this.vertx).request(method, this.port, this.localhost, requestURI)
                 .putHeader("Accept", "application/json").as(BodyCodec.jsonObject()).send(handler -> {
                     if (handler.succeeded()) {
-                        future.complete(handler.result().body());
+
+                        future.complete(
+                                handler.result().body().put("status", String.valueOf(handler.result().statusCode())));
                     } else {
                         future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
                     }

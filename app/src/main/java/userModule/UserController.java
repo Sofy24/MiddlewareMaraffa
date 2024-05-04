@@ -2,6 +2,8 @@ package userModule;
 
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,6 +22,38 @@ public class UserController {
 
 	public UserController(final Vertx vertx) {
 		this.userService = new UserService(vertx);
+	}
+
+	@Operation(summary = "Single user info", description = "Get User info", method = "GET", operationId = "user/:nickname", tags = {
+			"User Operations" }, parameters = {
+					@Parameter(in = ParameterIn.PATH, name = "nickname", required = true, description = "The unique nickname of the user", schema = @Schema(type = "string")) }, responses = {
+							@ApiResponse(responseCode = "200", description = "Search successfull"),
+							@ApiResponse(responseCode = "404", description = "User Not Found"),
+							@ApiResponse(responseCode = "500", description = "Internal Server Error") })
+	public void fetchUserInfo(final RoutingContext context) {
+		this.userService.getUserInfo(context.pathParam("nickname")).whenComplete((response, error) -> {
+			if (error != null) {
+				context.response().setStatusCode(500).end(error.getMessage());
+			} else {
+				switch (response.getString("status")) {
+					case "404":
+						context.response().setStatusCode(404)
+								.end(new JsonObject()
+										.put("error", response.getString("error"))
+										.toBuffer());
+						break;
+					case "401":
+						context.response().setStatusCode(401)
+								.end(new JsonObject()
+										.put("error", response.getString("error"))
+										.toBuffer());
+						break;
+					default:
+						context.response().setStatusCode(201).end(response.encode());
+						break;
+				}
+			}
+		});
 	}
 
 	@Operation(summary = "Login operation", description = "Authenticate user and generate token", method = "POST", operationId = "login", tags = {
@@ -44,14 +78,12 @@ public class UserController {
 												.toBuffer());
 								break;
 							case "401":
-								System.out.println("Error: " + response.toString());
 								context.response().setStatusCode(401)
 										.end(new JsonObject()
 												.put("error", response.getString("error"))
 												.toBuffer());
 								break;
 							default:
-								System.out.println("QUI NO !");
 								context.response().setStatusCode(201).end(response.encode());
 								break;
 						}

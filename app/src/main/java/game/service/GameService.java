@@ -102,11 +102,13 @@ public class GameService {
         return jsonCanStart.put(Constants.MESSAGE, "Game " + gameID + " not found");
     }
 
-    public boolean playCard(UUID gameID, String username, Card<CardValue, CardSuit> card) {
+    public JsonObject playCard(UUID gameID, String username, Card<CardValue, CardSuit> card) {
+        JsonObject jsonPlayCard = new JsonObject();
         if (this.games.get(gameID) != null && this.games.get(gameID).canStart()) {
-            return this.games.get(gameID).addCard(card, username);
+            return jsonPlayCard.put(Constants.PLAY, this.games.get(gameID).addCard(card, username));
         }
-        return false;
+        jsonPlayCard.put(Constants.NOT_FOUND, false);
+        return jsonPlayCard.put(Constants.PLAY, false);
     }
 
     public JsonObject chooseTrump(UUID gameID, String cardSuit) {

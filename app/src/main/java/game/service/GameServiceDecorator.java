@@ -165,11 +165,13 @@ public class GameServiceDecorator {
             "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
             "  \"" + Constants.USERNAME + "\": \"sofi\",\n" +
             "  \"" + Constants.CARD_VALUE + "\": \"ONE\",\n" +
-            "  \"" + Constants.CARD_SUIT + "\": \"COINS\"\n" +
+            "  \"" + Constants.CARD_SUIT + "\": \"COINS\",\n" +
+            "  \"" + Constants.IS_SUIT_FINISHED + "\": \"true\"\n" +
             "}"))), responses = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = PlayCardBody.class))),
             @ApiResponse(responseCode = "404", description = "Game or username not found."),
-            @ApiResponse(responseCode = "417", description = "Invalid card."),
+            @ApiResponse(responseCode = "401", description = "Invalid username or card."),
+            @ApiResponse(responseCode = "417", description = "Is not the turn of this player."),
             @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     public void playCard(RoutingContext context) {
@@ -178,28 +180,40 @@ public class GameServiceDecorator {
         UUID gameID = UUID.fromString(uuidAsString);
         String cardValue = context.body().asJsonObject().getString(Constants.CARD_VALUE);
         String cardSuit = context.body().asJsonObject().getString(Constants.CARD_SUIT);
+        Boolean isSuitFinished = context.body().asJsonObject().getBoolean(Constants.IS_SUIT_FINISHED);
         try {
             Card<CardValue, CardSuit> card = new Card<>(CardValue.getName(cardValue), CardSuit.getName(cardSuit));
             String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
+            int userPosition = this.gameService.getGames().get(gameID).getPositionByUsername(username);
+            if (userPosition == -1) {
+                context.response().setStatusCode(401).end("Invalid user " + username);
+            }
             if (card.cardSuit().equals(CardSuit.NONE) || card.cardValue().equals(CardValue.NONE)) {
                 context.response().setStatusCode(401).end("Invalid " + card);
             } else {
-                if (this.gameService.playCard(gameID, username, card)) {
-                    if (!this.gameService.getGames().get(gameID).isUserIn(username)) {
-                        context.response().setStatusCode(401).end("Invalid user " + username);
+                JsonObject playCardResponse = this.gameService.playCard(gameID, username, card);
+                if (!playCardResponse.containsKey(Constants.NOT_FOUND)) {
+                    if (!this.gameService.getGames().get(gameID).isUserIn(username) || !playCardResponse.getBoolean(Constants.PLAY)) {
+                        System.out.println("2Turn: " + this.gameService.getGames().get(gameID).getTurn());
+                        context.response().setStatusCode(417).end("Is not the turn of " + username);
                     } else {
                         Trick latestTrick = this.gameService.getGames().get(gameID).getLatestTrick();
+                        System.out.println("latest =" + latestTrick.toString());
+                        this.gameService.getGames().get(gameID).setIsSuitFinished(isSuitFinished, userPosition);
                         if (latestTrick.isCompleted()) {
+                            System.out.println("completed");
                             this.gameService.getGames().get(gameID).incrementCurrentState();
-                            this.businessLogicController.computeScore(latestTrick, this.gameService.getGames().get(gameID).getTrump().getValue().toString()).whenComplete((result, err) -> {
+                            this.businessLogicController.computeScore(latestTrick, this.gameService.getGames().get(gameID).getTrump().getValue().toString(), this.gameService.getGames().get(gameID).getGameMode().toString(), this.gameService.getGames().get(gameID).getIsSuitFinished()).whenComplete((result, err) -> {
                                 LOGGER.info("Got sample response");
                                 response.put("result", result);
                                 this.gameService.getGames().get(gameID).setTurn(result.getInteger("winningPosition"));
                                 this.gameService.getGames().get(gameID).setScore(result.getInteger("score"), result.getBoolean("firstTeam"));//TODO i punti della businesslogic sono moltiplicati per 3
                                 response.put("turn", this.gameService.getGames().get(gameID).getTurn());
+                                System.out.println("Turn: " + this.gameService.getGames().get(gameID).getTurn());
                                 context.response().end(response.toBuffer());
                             });
                         } else {
+                            System.out.println("everything good");
                             context.response().end(response.toBuffer());
 
                         }

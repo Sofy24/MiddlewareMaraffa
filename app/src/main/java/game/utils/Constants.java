@@ -15,6 +15,7 @@ public class Constants {
     public static final String GAME = "games";
     public static final String STATUS = "status";
     public static final String GAME_MODE = "mode";
+    public static final String IS_SUIT_FINISHED = "isSuitFinished";
     //routes
     public static final String CREATE_GAME = "game/create";
     public static final String JOIN_GAME = "game/join";
@@ -58,6 +59,7 @@ public class Constants {
     public static final String ILLEGAL_TRUMP = "illegalTrump";
     public static final String TRUMP = "trump";
     public static final String INVALID = "invalid";
+    public static final String PLAY = "playCard";
     //game constants
     public static final int NUMBER_OF_CARDS = 40;
 

@@ -1,6 +1,10 @@
 package httpRest;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collector;
+
+import com.google.common.primitives.Booleans;
 
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -70,11 +74,14 @@ public class BusinessLogicController {
      * @param trump used while computing the score
      * @return a completable future of the json response
      */
-    public CompletableFuture<JsonObject> computeScore(Trick trick, String trump) {
+    public CompletableFuture<JsonObject> computeScore(Trick trick, String trump, String mode, List<Boolean> isSuitFinishedList) {
         int[] cards = trick.getCards().stream().mapToInt(card -> Integer.parseInt(card)).toArray();
+        boolean[] isSuitFinished = Booleans.toArray(isSuitFinishedList);
         JsonObject requestBody = new JsonObject()
                 .put("trick", cards)
-                .put("trump", Integer.parseInt(trump));
+                .put("trump", Integer.parseInt(trump))
+                .put("mode", mode)
+                .put("isSuitFinished", isSuitFinished);
         CompletableFuture<JsonObject> future = new CompletableFuture<>();
         LOGGER.info("Computing the score");
         WebClient.create(vertx).post(PORT, LOCALHOST, "/games/computeScore")

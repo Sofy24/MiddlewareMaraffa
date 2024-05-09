@@ -42,7 +42,7 @@ public class GameVerticle extends AbstractVerticle {
     private Status status = Status.WAITING_PLAYERS;
     private GameMode gameMode;
     private int turn = 0; //cambia con chi ha il 4 di denara
-
+    private List<Boolean> isSuitFinished = new ArrayList<>();
     public GameSchema getGameSchema() {
         return gameSchema;
     }
@@ -118,6 +118,7 @@ public class GameVerticle extends AbstractVerticle {
                 if (this.statisticManager != null)
                     this.statisticManager.updateRecordWithTrick(String.valueOf(id), currentTrick);
                 this.states.put(this.currentState.get(), currentTrick);
+                this.isSuitFinished = new ArrayList<>();
                 this.currentTrick = new TrickImpl(this.numberOfPlayers, this.trump);
                 this.tricks.add(this.currentTrick);
             }
@@ -212,12 +213,31 @@ public class GameVerticle extends AbstractVerticle {
     }
 
     public void setTurn(int turn) {
-        System.out.println("Setting turn to " + turn);
         this.turn = turn;
     }
 
     public List<String> getUsers() {
-        return users;
+        return this.users;
+    }
+
+    public int getPositionByUsername(String username) {
+        return this.users.indexOf(username);
+    }
+
+    public List<Boolean> getIsSuitFinished() {
+        return this.isSuitFinished;
+    }
+
+    public boolean setIsSuitFinished(Boolean value, int position) {
+        if (this.isSuitFinished.size() == this.numberOfPlayers){
+            this.isSuitFinished = new ArrayList<>();
+        }
+        try{
+            this.isSuitFinished.add(position, value);
+        }catch (IndexOutOfBoundsException e){
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -282,9 +302,6 @@ public class GameVerticle extends AbstractVerticle {
      */
     public boolean isRoundEnded() {
         double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
-        System.out.println("numberOfTricksInRound = " + numberOfTricksInRound);
-        System.out.println("currentState = " + currentState);
-        System.out.println("tricks = " + tricks);
         return this.currentState.get() == numberOfTricksInRound;
     }
 

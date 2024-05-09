@@ -220,6 +220,20 @@ public class GameService {
         return this.games;
     }
 
+    public JsonObject coins4(UUID gameID, String username) {
+        JsonObject jsonCoins4 = new JsonObject();
+        if (this.games.get(gameID) != null) {
+            int turn = this.games.get(gameID).getPositionByUsername(username);
+            if (turn != -1){
+                this.games.get(gameID).setTurn(turn);
+                return jsonCoins4.put(Constants.COINS_4_NAME, true);
+            }
+        }
+        jsonCoins4.put(Constants.NOT_FOUND, false);
+        jsonCoins4.put(Constants.COINS_4_NAME, false);
+        return jsonCoins4.put(Constants.MESSAGE, "Game " + gameID + " not found");
+    }
+
     /**
      * @return the json with all the games and their properties
      */

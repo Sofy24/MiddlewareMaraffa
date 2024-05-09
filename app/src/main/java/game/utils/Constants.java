@@ -16,6 +16,7 @@ public class Constants {
     public static final String STATUS = "status";
     public static final String GAME_MODE = "mode";
     public static final String IS_SUIT_FINISHED = "isSuitFinished";
+    public static final String COINS_4_USERNAME = "coins4";
     //routes
     public static final String CREATE_GAME = "game/create";
     public static final String JOIN_GAME = "game/join";
@@ -31,6 +32,8 @@ public class Constants {
     public static final String END_GAME = "game/end/:" + GAME_ID;
     public static final String MAKE_CALL = "round/makeCall";
     public static final String GAMES = "game/getGames";
+    public static final String COINS_4 = "game/4Coins/:" + GAME_ID + "/username:" + COINS_4_USERNAME;
+
     //methods
     public static final String CREATE_GAME_METHOD = "POST";
     public static final String JOIN_GAME_METHOD = "PATCH";
@@ -45,10 +48,11 @@ public class Constants {
     public static final String END_METHOD = "GET";
     public static final String MAKE_CALL_METHOD = "POST";
     public static final String GAMES_METHOD = "GET";
+    public static final String COINS_4_METHOD = "GET";
 
     //tags
     public static final String GAME_TAG = "Game";
-    public static final String ROUND_TAG = "Game";
+    public static final String ROUND_TAG = "Round";
     //json attributes
     public static final String START_ATTR = "start";
     public static final String JOIN_ATTR = "join";
@@ -60,6 +64,7 @@ public class Constants {
     public static final String TRUMP = "trump";
     public static final String INVALID = "invalid";
     public static final String PLAY = "playCard";
+    public static final String COINS_4_NAME = "coins4";
     //game constants
     public static final int NUMBER_OF_CARDS = 40;
 

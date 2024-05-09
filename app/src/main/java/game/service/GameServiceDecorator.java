@@ -12,6 +12,7 @@ import httpRest.BusinessLogicController;
 import repository.AbstractStatisticManager;
 import game.service.schema.CanStartResponse;
 import game.service.schema.ChooseTrumpBody;
+import game.service.schema.Coins4Response;
 import game.service.schema.CreateGameBody;
 import game.service.schema.GetGamesResponse;
 import game.service.schema.IsRoundEndedResponse;
@@ -71,8 +72,9 @@ public class GameServiceDecorator {
         JsonObject jsonGame = this.gameService.createGame(numberOfPlayers, username, expectedScore, gameMode);
         if (jsonGame.containsKey(Constants.INVALID)) {
             context.response().setStatusCode(401).end("Invalid game mode");
+        } else {
+            context.response().end(jsonGame.toBuffer());
         }
-        context.response().end(jsonGame.toBuffer());
     }
 
     @Operation(summary = "Join a specific game", method = Constants.JOIN_GAME_METHOD, operationId = Constants.JOIN_GAME, tags = {
@@ -116,8 +118,8 @@ public class GameServiceDecorator {
         String message = startResponse.getString(Constants.MESSAGE);
         if (!startResponse.containsKey(Constants.NOT_FOUND)) {
             context.response().end(message);
-        }
-        context.response().setStatusCode(404).end(message);
+        } else {
+        context.response().setStatusCode(404).end(message);}
     }
 
     @Operation(summary = "Check if a round can start", method = Constants.CAN_START_METHOD, operationId = Constants.CAN_START, // !
@@ -187,6 +189,7 @@ public class GameServiceDecorator {
             int userPosition = this.gameService.getGames().get(gameID).getPositionByUsername(username);
             if (userPosition == -1) {
                 context.response().setStatusCode(401).end("Invalid user " + username);
+                return;
             }
             if (card.cardSuit().equals(CardSuit.NONE) || card.cardValue().equals(CardValue.NONE)) {
                 context.response().setStatusCode(401).end("Invalid " + card);
@@ -194,8 +197,7 @@ public class GameServiceDecorator {
                 JsonObject playCardResponse = this.gameService.playCard(gameID, username, card);
                 if (!playCardResponse.containsKey(Constants.NOT_FOUND)) {
                     if (!this.gameService.getGames().get(gameID).isUserIn(username) || !playCardResponse.getBoolean(Constants.PLAY)) {
-                        System.out.println("2Turn: " + this.gameService.getGames().get(gameID).getTurn());
-                        context.response().setStatusCode(417).end("Is not the turn of " + username);
+                        context.response().setStatusCode(417).end("Is not the turn of " + username + " or the system doesn't know who has the 4 of coins");
                     } else {
                         Trick latestTrick = this.gameService.getGames().get(gameID).getLatestTrick();
                         System.out.println("latest =" + latestTrick.toString());
@@ -371,8 +373,9 @@ public class GameServiceDecorator {
         if (!jsonCall.containsKey(Constants.NOT_FOUND)) {
             if (jsonCall.getBoolean(Constants.MESSAGE)) {
                 context.response().end("Call " + call + " setted!");
-            }
+            } else {
             context.response().setStatusCode(404).end("Invalid call");
+            }
         } else {
             context.response().setStatusCode(404).end(jsonCall.getString(Constants.MESSAGE));
         }
@@ -456,6 +459,41 @@ public class GameServiceDecorator {
          * context.response().setStatusCode(404).end(message);
          */
     }
+
+
+    @Operation(summary = "get the name of the player who has the 4 of coins", method = Constants.COINS_4_METHOD, operationId = Constants.COINS_4, // !
+    // operationId
+    // must
+    // be
+    // the
+    // same
+    // as
+    // controller
+    tags = {Constants.GAME_TAG}, parameters = {
+    @Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID, required = true, description = "The unique ID belonging to the game", schema = @Schema(type = "string")),
+    @Parameter(in = ParameterIn.PATH, name = Constants.COINS_4_USERNAME, required = true, description = "The name of the player who has the trump", schema = @Schema(type = "string"))
+    }, responses = {
+        @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json; charset=utf-8", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "coins4Username", implementation = Coins4Response.class))),
+        @ApiResponse(responseCode = "404", description = "Game not found."),
+        @ApiResponse(responseCode = "417", description = "Invalid user."),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+    })
+    public void coins4(RoutingContext context) {
+        UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
+        String coins4Name = context.pathParam(Constants.COINS_4_USERNAME);
+        JsonObject json4Coins = this.gameService.coins4(gameID, coins4Name);
+        if (!json4Coins.containsKey(Constants.NOT_FOUND)) {
+            if (json4Coins.getBoolean(Constants.COINS_4_NAME)) {
+                context.response().end("4 coins username " + coins4Name + " and turn setted!");
+            } else{
+            context.response().setStatusCode(417).end("Invalid user");
+            }
+        } else {
+            context.response().setStatusCode(404).end(json4Coins.getString(Constants.MESSAGE));
+        }
+    }
+
+
 
     public Map<UUID, GameVerticle> getGames() {
         return games;

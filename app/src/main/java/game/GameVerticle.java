@@ -41,7 +41,7 @@ public class GameVerticle extends AbstractVerticle {
     private Team team2;
     private Status status = Status.WAITING_PLAYERS;
     private GameMode gameMode;
-    private int turn = 0; //cambia con chi ha il 4 di denara
+    private int turn = -1; 
     private List<Boolean> isSuitFinished = new ArrayList<>();
     public GameSchema getGameSchema() {
         return gameSchema;
@@ -102,27 +102,29 @@ public class GameVerticle extends AbstractVerticle {
      * @param card to be added to the trick
      */
     public boolean addCard(Card<CardValue, CardSuit> card, String username) {
-        if (canStart() && this.users.get(this.turn).equals(username)){
-            if (this.currentTrick == null) {
-                this.currentTrick = this.states.getOrDefault(this.currentState.get(),
-                        new TrickImpl(this.numberOfPlayers, this.trump));
-                this.tricks.add(this.currentTrick);
+        if(turn >= 0){
+            if (canStart() && this.users.get(this.turn).equals(username)){
+                if (this.currentTrick == null) {
+                    this.currentTrick = this.states.getOrDefault(this.currentState.get(),
+                            new TrickImpl(this.numberOfPlayers, this.trump));
+                    this.tricks.add(this.currentTrick);
+                }
+                if (this.currentTrick.getCardsAndUsers().containsValue(username)){
+                    return false;
+                }
+                this.currentTrick.addCard(card, username);
+                this.turn = (this.turn + 1) % this.numberOfPlayers;
+                if (this.currentTrick.isCompleted()) {
+                    this.gameSchema.addTrick(currentTrick);
+                    if (this.statisticManager != null)
+                        this.statisticManager.updateRecordWithTrick(String.valueOf(id), currentTrick);
+                    this.states.put(this.currentState.get(), currentTrick);
+                    this.isSuitFinished = new ArrayList<>();
+                    this.currentTrick = new TrickImpl(this.numberOfPlayers, this.trump);
+                    this.tricks.add(this.currentTrick);
+                }
+                return true;
             }
-            if (this.currentTrick.getCardsAndUsers().containsValue(username)){
-                return false;
-            }
-            this.currentTrick.addCard(card, username);
-            this.turn = (this.turn + 1) % this.numberOfPlayers;
-            if (this.currentTrick.isCompleted()) {
-                this.gameSchema.addTrick(currentTrick);
-                if (this.statisticManager != null)
-                    this.statisticManager.updateRecordWithTrick(String.valueOf(id), currentTrick);
-                this.states.put(this.currentState.get(), currentTrick);
-                this.isSuitFinished = new ArrayList<>();
-                this.currentTrick = new TrickImpl(this.numberOfPlayers, this.trump);
-                this.tricks.add(this.currentTrick);
-            }
-            return true;
         }
         return false;
     }

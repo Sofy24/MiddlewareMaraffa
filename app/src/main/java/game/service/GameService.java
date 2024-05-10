@@ -111,24 +111,30 @@ public class GameService {
         return jsonPlayCard.put(Constants.PLAY, false);
     }
 
-    public JsonObject chooseTrump(UUID gameID, String cardSuit) {
+    public JsonObject chooseTrump(UUID gameID, String cardSuit, String username) {
         JsonObject jsonTrump = new JsonObject();
         if (this.games.get(gameID) != null) {
-            CardSuit trump;
-            try {
-                trump = CardSuit.valueOf(cardSuit);
-            } catch (IllegalArgumentException e) {
-                trump = CardSuit.NONE;
-            }
-            this.games.get(gameID).chooseTrump(trump);
-            jsonTrump.put(Constants.MESSAGE, trump + " setted as trump");
-            if (trump.equals(CardSuit.NONE)) {
-                jsonTrump.put(Constants.TRUMP, false);
-                jsonTrump.put(Constants.ILLEGAL_TRUMP, true);
+            if (this.games.get(gameID).getPositionByUsername(username) == this.games.get(gameID).getTurn()){
+                CardSuit trump;
+                try {
+                    trump = CardSuit.valueOf(cardSuit);
+                } catch (IllegalArgumentException e) {
+                    trump = CardSuit.NONE;
+                }
+                this.games.get(gameID).chooseTrump(trump);
+                jsonTrump.put(Constants.MESSAGE, trump + " setted as trump");
+                if (trump.equals(CardSuit.NONE)) {
+                    jsonTrump.put(Constants.TRUMP, false);
+                    jsonTrump.put(Constants.ILLEGAL_TRUMP, true);
+                    return jsonTrump;
+                }
+                jsonTrump.put(Constants.TRUMP, true);
                 return jsonTrump;
+            } else {
+                jsonTrump.put(Constants.TRUMP, false);
+                jsonTrump.put(Constants.NOT_ALLOWED, true);
+                return jsonTrump.put(Constants.MESSAGE, "The user " + username + " is not allowed to choose the trump");
             }
-            jsonTrump.put(Constants.TRUMP, true);
-            return jsonTrump;
         } else {
             jsonTrump.put(Constants.TRUMP, false);
             jsonTrump.put(Constants.NOT_FOUND, false);

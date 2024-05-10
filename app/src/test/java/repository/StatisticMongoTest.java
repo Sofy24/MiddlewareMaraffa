@@ -69,7 +69,7 @@ public class StatisticMongoTest {
             );
         }
 
-        this.gameService.chooseTrump(gameId, cardTest.cardSuit().toString());
+        this.gameService.chooseTrump(gameId, cardTest.cardSuit().toString(), this.usernameTest);
         this.gameService.playCard(gameId, this.usernameTest, new Card<>(CardValue.ONE, CardSuit.CLUBS));
         this.gameService.playCard(gameId, this.usernameTest + "2", new Card<>(CardValue.TWO, CardSuit.CLUBS));
         this.gameService.playCard(gameId, this.usernameTest + "3", new Card<>(CardValue.THREE, CardSuit.CLUBS));

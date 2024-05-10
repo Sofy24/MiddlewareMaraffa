@@ -142,7 +142,7 @@ public class GameTest {
             JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
             assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
         }
-        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER);
         assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
         JsonObject canStartResponse = this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
         assertTrue(canStartResponse.getBoolean(Constants.START_ATTR));
@@ -150,7 +150,7 @@ public class GameTest {
     }
 
     /**
-     * The trump is not a legal suit
+     * The trump is not a legal suit.
      */
     @Test
     public void chooseWrongTrumpTest(VertxTestContext context) {
@@ -162,9 +162,33 @@ public class GameTest {
             JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
             assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
         }
-        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), FAKE_TRUMP);
+        JsonObject coins4Response = this.gameService.coins4(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER);
+        assertTrue(coins4Response.getBoolean(Constants.COINS_4_NAME)); 
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), FAKE_TRUMP, TEST_USER);
         assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
         assertTrue(chooseTrumpResponse.getBoolean(Constants.ILLEGAL_TRUMP));
+        context.completeNow();
+    }
+
+    /**
+     * The trump can be chosen just by the person who has the 4 of coins.
+     */
+    @Test
+    public void chooseTrumpNeeds4CoinsTest(VertxTestContext context) {
+        JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
+        Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+        for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+            JsonObject canStartResponse = this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
+            assertFalse(canStartResponse.getBoolean(Constants.START_ATTR));
+            JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
+            assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+        }
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER);
+        assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+        JsonObject coins4Response = this.gameService.coins4(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER);
+        assertTrue(coins4Response.getBoolean(Constants.COINS_4_NAME)); 
+        chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER);
+        assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
         context.completeNow();
     }
 
@@ -181,7 +205,7 @@ public class GameTest {
             JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
             assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
         }
-        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER);
         assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
         assertTrue(this.gameService.startNewRound(UUID.fromString(gameResponse.getString(Constants.GAME_ID))));
         Assertions.assertEquals(UNDEFINED_TRUMP, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getTrump());
@@ -200,7 +224,7 @@ public class GameTest {
             JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
             assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
         }
-        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER);
         assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
         JsonObject coins4Response = this.gameService.coins4(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER);
         assertTrue(coins4Response.getBoolean(Constants.COINS_4_NAME)); 
@@ -224,9 +248,9 @@ public class GameTest {
         }
         JsonObject stateResponse = this.gameService.getState(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
         assertTrue(stateResponse.containsKey(Constants.NOT_FOUND));
-        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
         JsonObject coins4Response = this.gameService.coins4(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER);
         assertTrue(coins4Response.getBoolean(Constants.COINS_4_NAME)); 
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER);
         assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD).getBoolean(Constants.PLAY));
         assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
         for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
@@ -249,7 +273,7 @@ public class GameTest {
             JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
             assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
         }
-        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER);
         assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
         assertFalse(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
         JsonObject coins4Response = this.gameService.coins4(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + "0");
@@ -276,7 +300,7 @@ public class GameTest {
             JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
             assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
         }
-        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER);
         assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
         assertFalse(this.gameService.isGameEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
         JsonObject coins4Response = this.gameService.coins4(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER  + "0");
@@ -300,7 +324,9 @@ public class GameTest {
             JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
             assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
         }
-        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
+        JsonObject coins4Response = this.gameService.coins4(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER);
+        assertTrue(coins4Response.getBoolean(Constants.COINS_4_NAME)); 
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER);
         assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
         JsonObject callResponse = this.gameService.makeCall(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), CALL, TEST_USER + "0");
         assertFalse(callResponse.getBoolean(Constants.MESSAGE));
@@ -320,7 +346,9 @@ public class GameTest {
             JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
             assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
         }
-        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
+        JsonObject coins4Response = this.gameService.coins4(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER);
+        assertTrue(coins4Response.getBoolean(Constants.COINS_4_NAME)); 
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER);
         assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
         JsonObject callResponse = this.gameService.makeCall(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), FAKE_CALL, TEST_USER);
         assertFalse(callResponse.getBoolean(Constants.MESSAGE));
@@ -366,10 +394,10 @@ public class GameTest {
             JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
             assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
         }
-        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
-        assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
         JsonObject coins4Response = this.gameService.coins4(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER);
         assertTrue(coins4Response.getBoolean(Constants.COINS_4_NAME)); 
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER);
+        assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
         assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD).getBoolean(Constants.PLAY));
         assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARDS.get(1)).getBoolean(Constants.PLAY));
         context.completeNow();
@@ -387,10 +415,10 @@ public class GameTest {
             JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
             assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
         }
-        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
-        assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
         JsonObject coins4Response = this.gameService.coins4(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER);
         assertTrue(coins4Response.getBoolean(Constants.COINS_4_NAME)); 
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER);
+        assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
         int turn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getTurn();
         assertEquals(TEST_USER, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(turn));
         assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD).getBoolean(Constants.PLAY));
@@ -409,11 +437,11 @@ public class GameTest {
             JsonObject joinResponse = this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER + i);
             assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
         }
-        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
-        assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP)); //TODO darà errore
         assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD).getBoolean(Constants.PLAY));
         JsonObject coins4Response = this.gameService.coins4(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER);
         assertTrue(coins4Response.getBoolean(Constants.COINS_4_NAME)); 
+        JsonObject chooseTrumpResponse = this.gameService.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER);
+        assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP)); 
         assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER, TEST_CARD).getBoolean(Constants.PLAY));
         context.completeNow();
     }

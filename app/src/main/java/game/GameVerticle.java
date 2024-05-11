@@ -2,11 +2,6 @@ package game;
 
 import static java.lang.Math.floor;
 
-import game.service.User;
-import game.utils.Constants;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Promise;
-import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +9,12 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
+
+import game.service.User;
+import game.utils.Constants;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Promise;
+import io.vertx.core.json.JsonObject;
 import repository.AbstractStatisticManager;
 
 /***
@@ -37,6 +38,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private final List<Trick> tricks = new ArrayList<>();
 	private Team team1;
 	private Team team2;
+	private String creatorName;
 	private Status status = Status.WAITING_PLAYERS;
 	private final GameMode gameMode;
 
@@ -52,6 +54,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		// this.currentScore = new Pair<>(0, 0);
 		this.currentState = new AtomicInteger(0);
 		this.numberOfPlayers = numberOfPlayers;
+		this.creatorName = user.username();
 		this.users.add(user);
 		this.gameSchema = new GameSchema(String.valueOf(id), CardSuit.NONE);
 		this.statisticManager = statisticManager;
@@ -95,7 +98,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * new trick and updates the current state
 	 *
 	 * @param card
-	 *            to be added to the trick
+	 *             to be added to the trick
 	 */
 	public boolean addCard(final Card<CardValue, CardSuit> card, final String username) {
 		if (this.canStart()) {
@@ -127,7 +130,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	/**
 	 * @param suit
-	 *            the leading suit of the round
+	 *             the leading suit of the round
 	 */
 	public void chooseTrump(final CardSuit suit) {
 		this.trump = suit;
@@ -158,9 +161,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	/**
 	 * @param call
-	 *            the call
+	 *                 the call
 	 * @param username
-	 *            the user who makes the call
+	 *                 the user who makes the call
 	 * @return true if the call is made correctly
 	 */
 	public boolean makeCall(final Call call, final String username) {
@@ -202,9 +205,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * update the score of the teams
 	 *
 	 * @param score
-	 *            of the team who won the trick
+	 *                of the team who won the trick
 	 * @param isTeamA
-	 *            true if team A won the trick
+	 *                true if team A won the trick
 	 */
 	public void setScore(final int score, final boolean isTeamA) {
 		if (isTeamA)
@@ -287,6 +290,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public JsonObject toJson() {
 		final JsonObject json = new JsonObject();
 		json.put("gameID", this.id.toString()).put("status", this.status.toString())
+				.put("creator", this.creatorName)
 				.put("gameMode", this.gameMode.toString()).put("numberOfPlayers", this.numberOfPlayers)
 				.put("team1", this.team1).put("team2", this.team2);
 		return json;

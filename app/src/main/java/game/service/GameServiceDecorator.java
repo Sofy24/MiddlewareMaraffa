@@ -359,8 +359,9 @@ public class GameServiceDecorator {
 		if (!jsonGetGames.isEmpty()) {
 			context.response().end(jsonGetGames.toBuffer());
 		} else {
-			jsonGetGames.add(Constants.NOT_FOUND);
+			// jsonGetGames.add(Constants.NOT_FOUND);
 			context.response().setStatusCode(404).end(jsonGetGames.toBuffer());
+			// context.response().setStatusCode(404).end(new JsonObject().put(Constants.MESSAGE, Constants.NOT_FOUND).toBuffer());
 		}
 	}
 

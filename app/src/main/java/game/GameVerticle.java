@@ -85,7 +85,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * @return true if the user is added
 	 */
 	public boolean addUser(final User user) {
-		if (!this.users.contains(user.username())) {
+		if (!this.users.stream().map(User::username).toList().contains(user.username())) {
 			this.users.add(user);
 			this.status = this.canStart() ? Status.STARTING : Status.WAITING_PLAYERS;
 			return true;
@@ -171,7 +171,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			this.currentTrick = this.states.getOrDefault(this.currentState.get(),
 					new TrickImpl(this.numberOfPlayers, this.trump));
 		}
-		if (this.users.get(0).equals(username)) {
+		if (this.users.stream().map(User::username).toList().get(0).equals(username)) {
 			this.currentTrick.setCall(call, username);
 		}
 		return !Call.NONE.equals(this.currentTrick.getCall());
@@ -247,7 +247,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * @return true if the user is in the game
 	 */
 	public boolean isUserIn(final String user) {
-		return this.users.contains(user);
+		return this.users.stream().map(User::username).toList().contains(user);
 	}
 
 	/**

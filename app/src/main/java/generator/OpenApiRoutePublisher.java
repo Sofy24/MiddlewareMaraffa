@@ -1,10 +1,11 @@
 package generator;
 
-import io.swagger.v3.oas.models.OpenAPI;
-import io.vertx.ext.web.Router;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.vertx.ext.web.Router;
 
 /**
  * @author ckaratza Exposes the OpenAPI spec as a vertx route.

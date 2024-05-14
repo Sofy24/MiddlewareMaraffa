@@ -1,6 +1,8 @@
 package game;
 
-/** An enum with the cards' suits */
+/**
+ * An enum with the cards' suits
+ */
 public enum CardSuit {
 	CUPS(1), SWORDS(3), CLUBS(2), COINS(0), NONE(999);
 

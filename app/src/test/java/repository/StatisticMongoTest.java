@@ -2,6 +2,15 @@ package repository;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.util.UUID;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import game.Card;
 import game.CardSuit;
 import game.CardValue;
@@ -11,13 +20,6 @@ import game.service.User;
 import game.utils.Constants;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
-import java.util.UUID;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 @TestInstance(Lifecycle.PER_CLASS)
 @ExtendWith(VertxExtension.class)

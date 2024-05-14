@@ -13,17 +13,17 @@ public class GameSchema {
 	}
 
 	public CardSuit getTrump() {
-		return leadingSuit;
+		return this.leadingSuit;
 	}
 
 	private List<Trick> tricks;
 
 	public String getGameID() {
-		return gameID;
+		return this.gameID;
 	}
 
 	public List<Trick> getTricks() {
-		return tricks;
+		return this.tricks;
 	}
 
 	public GameSchema() {
@@ -41,6 +41,6 @@ public class GameSchema {
 
 	@Override
 	public String toString() {
-		return "GameSchema [gameID=" + gameID + ", tricks=" + tricks + "]";
+		return "GameSchema [gameID=" + this.gameID + ", tricks=" + this.tricks + "]";
 	}
 }

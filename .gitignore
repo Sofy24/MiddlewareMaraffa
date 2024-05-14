@@ -26,6 +26,7 @@
 hs_err_pid*
 replay_pid*
 
+bin/*
 **/bin/**.class
 **/webroot/**
 
@@ -70,4 +71,3 @@ build
 .gradle/buildOutputCleanup/outputFiles.bin
 build/tmp/compileJava/previous-compilation-data.bin
 build/tmp/compileTestJava/previous-compilation-data.bin
-gradle/wrapper/gradle-wrapper.jar

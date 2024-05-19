@@ -166,6 +166,7 @@ public class GameService {
 		final JsonObject jsonEnd = new JsonObject();
 		if (this.games.get(gameID) != null) {
 			final Boolean isEnded = this.games.get(gameID).isRoundEnded();
+			if(isEnded) this.games.get(gameID).onEndRound();
 			jsonEnd.put(Constants.ENDED, isEnded);
 			jsonEnd.put(Constants.MESSAGE, isEnded);
 			return jsonEnd;

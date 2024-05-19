@@ -1,35 +1,30 @@
 package game.service;
 
-
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import game.*;
-import httpRest.BusinessLogicController;
 import repository.AbstractStatisticManager;
 import game.utils.Constants;
-
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 
 public class GameService {
     private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
     private final Vertx vertx;
-    private final BusinessLogicController businessLogicController;
+
 
     private AbstractStatisticManager statisticManager;
 
     public GameService(Vertx vertx) {
         this.vertx = vertx;
-        this.businessLogicController = new BusinessLogicController(vertx);
+
     }
 
     public GameService(Vertx vertx, AbstractStatisticManager statisticManager) {
         this.vertx = vertx;
-        this.businessLogicController = new BusinessLogicController(vertx);
         this.statisticManager = statisticManager;
     }
 
@@ -226,19 +221,19 @@ public class GameService {
         return this.games;
     }
 
-    public JsonObject coins4(UUID gameID, String username) {
-        JsonObject jsonCoins4 = new JsonObject();
-        if (this.games.get(gameID) != null) {
-            int turn = this.games.get(gameID).getPositionByUsername(username);
-            if (turn != -1){
-                this.games.get(gameID).setTurn(turn);
-                return jsonCoins4.put(Constants.COINS_4_NAME, true);
-            }
-        }
-        jsonCoins4.put(Constants.NOT_FOUND, false);
-        jsonCoins4.put(Constants.COINS_4_NAME, false);
-        return jsonCoins4.put(Constants.MESSAGE, "Game " + gameID + " not found");
-    }
+    // public JsonObject coins4(UUID gameID, String username) {
+    //     JsonObject jsonCoins4 = new JsonObject();
+    //     if (this.games.get(gameID) != null) {
+    //         int turn = this.games.get(gameID).getPositionByUsername(username);
+    //         if (turn != -1){
+    //             this.games.get(gameID).setTurn(turn);
+    //             return jsonCoins4.put(Constants.COINS_4_NAME, true);
+    //         }
+    //     }
+    //     jsonCoins4.put(Constants.NOT_FOUND, false);
+    //     jsonCoins4.put(Constants.COINS_4_NAME, false);
+    //     return jsonCoins4.put(Constants.MESSAGE, "Game " + gameID + " not found");
+    // }
 
     /**
      * @return the json with all the games and their properties

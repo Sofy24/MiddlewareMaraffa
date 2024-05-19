@@ -12,7 +12,6 @@ import httpRest.BusinessLogicController;
 import repository.AbstractStatisticManager;
 import game.service.schema.CanStartResponse;
 import game.service.schema.ChooseTrumpBody;
-import game.service.schema.Coins4Response;
 import game.service.schema.CreateGameBody;
 import game.service.schema.GetGamesResponse;
 import game.service.schema.IsRoundEndedResponse;
@@ -44,12 +43,12 @@ public class GameServiceDecorator {
 
     public GameServiceDecorator(Vertx vertx) {
         this.gameService = new GameService(vertx);
-        this.businessLogicController = new BusinessLogicController(vertx);
+        this.businessLogicController = new BusinessLogicController(vertx, gameService);
     }
 
     public GameServiceDecorator(Vertx vertx, AbstractStatisticManager statisticManager) {
         this.gameService = new GameService(vertx, statisticManager);
-        this.businessLogicController = new BusinessLogicController(vertx);
+        this.businessLogicController = new BusinessLogicController(vertx, gameService);
     }
 
     @Operation(summary = "Create new game", method = Constants.CREATE_GAME_METHOD, operationId = Constants.CREATE_GAME, tags = {
@@ -245,28 +244,6 @@ public class GameServiceDecorator {
 
     }
 
-    // @Operation(summary = "Choose the trump", method =
-    // Constants.CHOOSE_TRUMP_METHOD, operationId = Constants.CHOOSE_TRUMP, tags = {
-    // Constants.ROUND_TAG}, requestBody = @RequestBody(description = "username,
-    // trump and id of the game are required", required = true, content =
-    // @Content(mediaType = "application/json", encoding = @Encoding(contentType =
-    // "application/json"), schema = @Schema(implementation = ChooseTrumpBody.class,
-    // example = "{\n"
-    // +
-    // " \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n"
-    // +
-    // " \"" + Constants.USERNAME + "\": \"sofi\",\n" +
-    // " \"" + Constants.CARD_SUIT + "\": \"COINS\",\n" +
-    // "}"))), responses = {
-    // @ApiResponse(responseCode = "200", description = "OK", content =
-    // @Content(mediaType = "application/json", encoding = @Encoding(contentType =
-    // "application/json"), schema = @Schema(name = "game", implementation =
-    // ChooseTrumpBody.class))),
-    // @ApiResponse(responseCode = "404", description = "Game not found."),
-    // @ApiResponse(responseCode = "417", description = "Invalid suit or user not
-    // allowed."),
-    // @ApiResponse(responseCode = "500", description = "Internal Server Error.")
-    // })
     @Operation(summary = "Choose the trump", method = Constants.CHOOSE_TRUMP_METHOD, operationId = Constants.CHOOSE_TRUMP, tags = {
             Constants.ROUND_TAG }, requestBody = @RequestBody(description = "username, trump and id of the game are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = ChooseTrumpBody.class, example = "{\n"
                     +
@@ -497,38 +474,6 @@ public class GameServiceDecorator {
          * }
          * context.response().setStatusCode(404).end(message);
          */
-    }
-
-    @Operation(summary = "get the name of the player who has the 4 of coins", method = Constants.COINS_4_METHOD, operationId = Constants.COINS_4, // !
-            // operationId
-            // must
-            // be
-            // the
-            // same
-            // as
-            // controller
-            tags = { Constants.GAME_TAG }, parameters = {
-                    @Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID, required = true, description = "The unique ID belonging to the game", schema = @Schema(type = "string")),
-                    @Parameter(in = ParameterIn.PATH, name = Constants.COINS_4_USERNAME, required = true, description = "The name of the player who has the trump", schema = @Schema(type = "string"))
-            }, responses = {
-                    @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json; charset=utf-8", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "coins4Username", implementation = Coins4Response.class))),
-                    @ApiResponse(responseCode = "404", description = "Game not found."),
-                    @ApiResponse(responseCode = "417", description = "Invalid user."),
-                    @ApiResponse(responseCode = "500", description = "Internal Server Error.")
-            })
-    public void coins4(RoutingContext context) {
-        UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
-        String coins4Name = context.pathParam(Constants.COINS_4_USERNAME);
-        JsonObject json4Coins = this.gameService.coins4(gameID, coins4Name);
-        if (!json4Coins.containsKey(Constants.NOT_FOUND)) {
-            if (json4Coins.getBoolean(Constants.COINS_4_NAME)) {
-                context.response().end("4 coins username " + coins4Name + " and turn setted!");
-            } else {
-                context.response().setStatusCode(417).end("Invalid user");
-            }
-        } else {
-            context.response().setStatusCode(404).end(json4Coins.getString(Constants.MESSAGE));
-        }
     }
 
     public Map<UUID, GameVerticle> getGames() {

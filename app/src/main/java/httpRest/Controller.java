@@ -33,7 +33,6 @@ public class Controller implements IController {
         routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.END_GAME, entityService::isGameEnded));
         routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.MAKE_CALL, entityService::makeCall));
         routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GAMES, entityService::getGames));
-        routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.COINS_4, entityService::coins4));
         routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CARDS_ON_HAND, entityService::cardsOnHand));
         routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CARDS_ON_TABLE, entityService::cardsOnTable));
 //TODO delete game

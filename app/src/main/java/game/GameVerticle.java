@@ -299,6 +299,7 @@ public class GameVerticle extends AbstractVerticle {
         return this.numberOfPlayers;
     }
 
+
     /**
      * @return true if the round is ended
      */

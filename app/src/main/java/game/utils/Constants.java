@@ -1,6 +1,5 @@
 package game.utils;
 
-
 public class Constants {
     //params
     public static final String USERNAME = "username";
@@ -17,6 +16,7 @@ public class Constants {
     public static final String GAME_MODE = "mode";
     public static final String IS_SUIT_FINISHED = "isSuitFinished";
     public static final String COINS_4_USERNAME = "coins4";
+    public static final String GUIID = "GUIID";
     //routes
     public static final String CREATE_GAME = "game/create";
     public static final String JOIN_GAME = "game/join";
@@ -50,23 +50,19 @@ public class Constants {
     public static final String GAMES_METHOD = "GET";
     public static final String COINS_4_METHOD = "GET";
 
-    //tags
-    public static final String GAME_TAG = "Game";
-    public static final String ROUND_TAG = "Round";
-    //json attributes
-    public static final String START_ATTR = "start";
-    public static final String JOIN_ATTR = "join";
-    public static final String NOT_FOUND = "not found";
-    public static final String FULL = "full";
-    public static final String MESSAGE = "message";
-    public static final String ALREADY_JOINED = "alreadyJoined";
-    public static final String ILLEGAL_TRUMP = "illegalTrump";
-    public static final String TRUMP = "trump";
-    public static final String INVALID = "invalid";
-    public static final String PLAY = "playCard";
-    public static final String COINS_4_NAME = "coins4";
-    public static final String NOT_ALLOWED = "notAllowed";
-    //game constants
-    public static final int NUMBER_OF_CARDS = 40;
-
+	// tags
+	public static final String GAME_TAG = "Game.Miscellaneous";
+	public static final String ROUND_TAG = "Game.Round";
+	// json attributes
+	public static final String START_ATTR = "start";
+	public static final String JOIN_ATTR = "join";
+	public static final String NOT_FOUND = "not found";
+	public static final String FULL = "full";
+	public static final String MESSAGE = "message";
+	public static final String ALREADY_JOINED = "alreadyJoined";
+	public static final String ILLEGAL_TRUMP = "illegalTrump";
+	public static final String TRUMP = "trump";
+	public static final String INVALID = "invalid";
+	// game constants
+	public static final int NUMBER_OF_CARDS = 40;
 }

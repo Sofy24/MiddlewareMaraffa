@@ -3,19 +3,23 @@ package game;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import javax.smartcardio.Card;
 
 import io.vertx.core.json.JsonObject;
 import repository.AbstractStatisticManager;
 import game.utils.Constants;
 import game.utils.Pair;
-
 import static java.lang.Math.floor;
+import game.service.User;
+
+
+
+
 
 /***
  * This class models a game using a Verticle from vertx.
@@ -39,12 +43,14 @@ public class GameVerticle extends AbstractVerticle {
     private List<Trick> tricks = new ArrayList<>();
     private Team team1;
     private Team team2;
+	private String creatorName;
     private Status status = Status.WAITING_PLAYERS;
     private GameMode gameMode;
     private int turn = -1; 
     private List<Boolean> isSuitFinished = new ArrayList<>();
-    public GameSchema getGameSchema() {
-        return gameSchema;
+    
+	public GameSchema getGameSchema() {
+        return this.gameSchema;
     }
 
     public GameVerticle(UUID id, String username, int numberOfPlayers, int expectedScore, GameMode gameMode,
@@ -55,6 +61,7 @@ public class GameVerticle extends AbstractVerticle {
         this.currentScore = new Pair<>(0, 0);
         this.currentState = new AtomicInteger(0);
         this.numberOfPlayers = numberOfPlayers;
+		this.creatorName = user.username();
         users.add(username);
         this.gameSchema = new GameSchema(String.valueOf(id), CardSuit.NONE);
         this.statisticManager = statisticManager;
@@ -86,7 +93,7 @@ public class GameVerticle extends AbstractVerticle {
      * @return true if the user is added
      */
     public boolean addUser(String username) {
-        if (!this.users.contains(username)) {
+		if (!this.users.stream().map(User::username).toList().contains(user.username())) {
             this.users.add(username);
             this.status = canStart() ? Status.STARTING : Status.WAITING_PLAYERS;
             return true;
@@ -96,9 +103,7 @@ public class GameVerticle extends AbstractVerticle {
 
     /**
      * Adds the card if the trick is not completed, otherwise it adds the card to a
-     * new trick and updates the
-     * current state
-     *
+     * new trick and updates the current state
      * @param card to be added to the trick
      */
     public boolean addCard(Card<CardValue, CardSuit> card, String username) {
@@ -149,19 +154,18 @@ public class GameVerticle extends AbstractVerticle {
     /**
      * @return true if all the players are in
      */
-    public boolean startGame() {
-        if (this.users.size() == this.numberOfPlayers) {
-            this.team1 = new Team(
-                    IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 == 0).mapToObj(this.users::get).toList(),
-                    "A");
-            this.team2 = new Team(
-                    IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 != 0).mapToObj(this.users::get).toList(),
-                    "B");
-            this.status = Status.PLAYING;
-            return true;
-        }
-        return false;
-    }
+	public boolean startGame() {
+		if (this.canStart()) {
+			this.team1 = new Team(IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 == 0)
+					.mapToObj(this.users::get).map(User::username).toList(), "A", 0);
+			this.team2 = new Team(IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 != 0)
+					.mapToObj(this.users::get).map(User::username).toList(), "B", 0);
+			this.status = Status.PLAYING;
+			return true;
+		}
+		return false;
+	}
+
 
     /**
      * reset the trump
@@ -175,23 +179,24 @@ public class GameVerticle extends AbstractVerticle {
      * @param username the user who makes the call
      * @return true if the call is made correctly
      */
-    public boolean makeCall(Call call, String username) {
-        if (currentTrick == null) {
-            this.currentTrick = this.states.getOrDefault(this.currentState.get(),
-                    new TrickImpl(this.numberOfPlayers, this.trump));
-        }
-        if (users.get(0).equals(username)) {
-            this.currentTrick.setCall(call, username);
-        }
-        return !this.currentTrick.getCall().equals(Call.NONE);
-    }
+	public boolean makeCall(final Call call, final String username) {
+		if (this.currentTrick == null) {
+			this.currentTrick = this.states.getOrDefault(this.currentState.get(),
+					new TrickImpl(this.numberOfPlayers, this.trump));
+		}
+		if (this.users.stream().map(User::username).toList().get(0).equals(username)) {
+			this.currentTrick.setCall(call, username);
+		}
+		return !Call.NONE.equals(this.currentTrick.getCall());
+	}
+
 
     public UUID getId() {
         return id;
     }
 
     public Map<Integer, Trick> getStates() {
-        return states;
+        return this.states;
     }
 
     private void setStates(Map<Integer, Trick> states) {
@@ -199,11 +204,11 @@ public class GameVerticle extends AbstractVerticle {
     }
 
     public AtomicInteger getCurrentState() {
-        return currentState;
+        return this.currentState;
     }
 
     public Trick getCurrentTrick() {
-        return currentTrick;
+        return this.currentTrick;
     }
 
     public Trick getLatestTrick() {
@@ -248,16 +253,19 @@ public class GameVerticle extends AbstractVerticle {
      * @param score   of the team who won the trick
      * @param isTeamA true if team A won the trick
      */
-    public void setScore(int score, boolean isTeamA) {
-        this.currentScore = isTeamA ? new Pair<>(this.currentScore.getX() + (score / 3), this.currentScore.getY()) : new Pair<>(this.currentScore.getX(), this.currentScore.getY() + (score / 3));
-    }
+	public void setScore(final int score, final boolean isTeamA) {
+		if (isTeamA)
+			this.team1 = new Team(this.team1.players(), this.team1.nameOfTeam(), this.team1.score() + (score / 3));
+		else
+			this.team2 = new Team(this.team2.players(), this.team2.nameOfTeam(), this.team2.score() + (score / 3));
+	}
 
     public CardSuit getTrump() {
-        return trump;
+        return this.trump;
     }
 
     public Status getStatus() {
-        return status;
+        return this.status;
     }
 
     /**
@@ -268,7 +276,7 @@ public class GameVerticle extends AbstractVerticle {
     }
 
     public GameMode getGameMode() {
-        return gameMode;
+        return this.gameMode;
     }
 
     /**
@@ -281,9 +289,10 @@ public class GameVerticle extends AbstractVerticle {
     /**
      * @return true if the user is in the game
      */
-    public boolean isUserIn(String user) {
-        return this.users.contains(user);
-    }
+    public boolean isUserIn(final String user) {
+		return this.users.stream().map(User::username).toList().contains(user);
+	}
+
 
     /**
      * @return the number of players who have already joined the game
@@ -312,8 +321,9 @@ public class GameVerticle extends AbstractVerticle {
      * @return true if the game is ended
      */
     public boolean isGameEnded() {
-        return this.currentScore.getX() >= this.expectedScore || this.currentScore.getY() >= this.expectedScore;
-    }
+		return this.team1.score() >= this.expectedScore || this.team2.score() >= this.expectedScore;
+	}
+
 
     /**
      * @return a json with id, status and game mode
@@ -325,4 +335,54 @@ public class GameVerticle extends AbstractVerticle {
                 .put("gameMode", this.gameMode.toString());
         return json;
     }
+
+	@Override
+	public void onCreateGame(final User user) {
+		if (this.getVertx() != null) {
+			this.getVertx().eventBus().request("chat-component:onCreateGame", this.toJson().toString(), reply -> {
+				if (reply.succeeded()) {
+					System.out.println("created the chat so add the creator");
+					this.onJoinGame(user);
+				}
+			});
+		}
+	}
+
+	@Override
+	public void onJoinGame(final User user) {
+		if (this.getVertx() != null)
+			this.getVertx().eventBus().send("chat-component:onJoinGame",
+					new JsonObject().put("gameID", this.id.toString()).put("username", user.username())
+							.put("clientID", user.clientID()).toString());
+	}
+
+	@Override
+	public void onStartGame() {
+		throw new UnsupportedOperationException("Unimplemented method 'onStartGame'");
+	}
+
+	@Override
+	public void onPlayCard() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'onPlayCard'");
+	}
+
+	@Override
+	public void onMessage() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'onMessage'");
+	}
+
+	@Override
+	public void onEndRound() {
+		if (this.vertx != null)
+			this.vertx.eventBus().send("user-component", this.toJson().toString());
+	}
+
+
 }
+
+
+
+
+

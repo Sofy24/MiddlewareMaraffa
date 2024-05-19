@@ -5,9 +5,9 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.RoutingContext;
 
 public interface IRouteResponse {
-    HttpMethod getMethod();
+	HttpMethod getMethod();
 
-    String getRoute();
+	String getRoute();
 
-    Handler<RoutingContext> getHandler();
+	Handler<RoutingContext> getHandler();
 }

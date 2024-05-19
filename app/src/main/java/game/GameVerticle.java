@@ -269,11 +269,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public boolean isRoundEnded() {
 		final double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
-		if (this.currentState.get() == numberOfTricksInRound) {
-			this.vertx.eventBus().send("user-component", this.toJson().toString());
-			return true;
-		}
-		return false;
+		return this.currentState.get() == numberOfTricksInRound;
 	}
 
 	/**
@@ -335,7 +331,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	@Override
 	public void onEndRound() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'onEndRound'");
+		this.vertx.eventBus().send("user-component", this.toJson().toString());
 	}
 }

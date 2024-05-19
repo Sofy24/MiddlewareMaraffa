@@ -331,6 +331,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	@Override
 	public void onEndRound() {
-		this.vertx.eventBus().send("user-component", this.toJson().toString());
+		if (this.vertx != null)
+			this.vertx.eventBus().send("user-component", this.toJson().toString());
 	}
 }

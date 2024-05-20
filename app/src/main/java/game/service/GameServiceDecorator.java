@@ -10,7 +10,6 @@ import game.CardSuit;
 import game.CardValue;
 import game.GameVerticle;
 import game.Trick;
-import game.service.GameService;
 import game.service.schema.CanStartResponse;
 import game.service.schema.ChooseTrumpBody;
 import game.service.schema.CreateGameBody;
@@ -49,12 +48,12 @@ public class GameServiceDecorator {
 
 	public GameServiceDecorator(final Vertx vertx) {
 		this.gameService = new GameService(vertx);
-		this.businessLogicController = new BusinessLogicController(vertx, gameService);
+		this.businessLogicController = new BusinessLogicController(vertx);
 	}
 
 	public GameServiceDecorator(final Vertx vertx, final AbstractStatisticManager statisticManager) {
 		this.gameService = new GameService(vertx, statisticManager);
-		this.businessLogicController = new BusinessLogicController(vertx, gameService);
+		this.businessLogicController = new BusinessLogicController(vertx);
 	}
 
 	@Operation(summary = "Create new game", method = Constants.CREATE_GAME_METHOD, operationId = Constants.CREATE_GAME, tags = {
@@ -126,8 +125,8 @@ public class GameServiceDecorator {
 			context.response().setStatusCode(404).end(startResponse.toBuffer());
 	}
 
-	@Operation(summary = "Check if a round can start", method = Constants.CAN_START_METHOD, operationId = Constants.CAN_START,
-			tags = { Constants.ROUND_TAG }, parameters = {
+	@Operation(summary = "Check if a round can start", method = Constants.CAN_START_METHOD, operationId = Constants.CAN_START, tags = {
+			Constants.ROUND_TAG }, parameters = {
 					@Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID, required = true, description = "The unique ID belonging to the game", schema = @Schema(type = "string")) }, responses = {
 							@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json; charset=utf-8", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = CanStartResponse.class))),
 							@ApiResponse(responseCode = "404", description = "Game not found."),
@@ -159,7 +158,7 @@ public class GameServiceDecorator {
 			Constants.ROUND_TAG }, requestBody = @RequestBody(description = "username, card and id of the game are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = PlayCardBody.class, example = "{\n"
 					+ "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
 					"  \"" + Constants.USERNAME + "\": \"sofi\",\n" +
-					"  \"" + Constants.CARD_VALUE + "\": \"ONE\",\n" + 
+					"  \"" + Constants.CARD_VALUE + "\": \"ONE\",\n" +
 					"  \"" + Constants.IS_SUIT_FINISHED + "\": \"true\",\n" +
 					"  \"" + Constants.CARD_SUIT + "\": \"COINS\"\n" + "}"))), responses = {
 							@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = PlayCardBody.class))),
@@ -172,27 +171,27 @@ public class GameServiceDecorator {
 		final String uuidAsString = context.body().asJsonObject().getString(Constants.GAME_ID);
 		final UUID gameID = UUID.fromString(uuidAsString);
 		final String cardValue = context.body().asJsonObject().getString(Constants.CARD_VALUE);
-		String cardSuit = context.body().asJsonObject().getString(Constants.CARD_SUIT);
-		Boolean isSuitFinished = context.body().asJsonObject().getBoolean(Constants.IS_SUIT_FINISHED);
+		final String cardSuit = context.body().asJsonObject().getString(Constants.CARD_SUIT);
+		final Boolean isSuitFinished = context.body().asJsonObject().getBoolean(Constants.IS_SUIT_FINISHED);
 		try {
-			Card<CardValue, CardSuit> card = new Card<>(CardValue.getName(cardValue), CardSuit.getName(cardSuit));
-			String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
-			int userPosition = this.gameService.getGames().get(gameID).getPositionByUsername(username);
+			final Card<CardValue, CardSuit> card = new Card<>(CardValue.getName(cardValue), CardSuit.getName(cardSuit));
+			final String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
+			final int userPosition = this.gameService.getGames().get(gameID).getPositionByUsername(username);
 			if (userPosition == -1) {
 				context.response().setStatusCode(401).end("Invalid user " + username);
 				return;
 			}
-			if (card.cardSuit().equals(CardSuit.NONE) || card.cardValue().equals(CardValue.NONE)) {
+			if (CardSuit.NONE.equals(card.cardSuit()) || CardValue.NONE.equals(card.cardValue())) {
 				context.response().setStatusCode(401).end("Invalid " + card);
 			} else {
-				JsonObject playCardResponse = this.gameService.playCard(gameID, username, card);
+				final JsonObject playCardResponse = this.gameService.playCard(gameID, username, card);
 				if (!playCardResponse.containsKey(Constants.NOT_FOUND)) {
 					if (!this.gameService.getGames().get(gameID).isUserIn(username)
 							|| !playCardResponse.getBoolean(Constants.PLAY)) {
 						context.response().setStatusCode(417).end("Is not the turn of " + username
 								+ " or the system doesn't know who has the 4 of coins");
 					} else {
-						Trick latestTrick = this.gameService.getGames().get(gameID).getLatestTrick();
+						final Trick latestTrick = this.gameService.getGames().get(gameID).getLatestTrick();
 						System.out.println("latest =" + latestTrick.toString());
 						this.gameService.getGames().get(gameID).setIsSuitFinished(isSuitFinished, userPosition);
 						if (latestTrick.isCompleted()) {
@@ -226,7 +225,7 @@ public class GameServiceDecorator {
 					context.response().setStatusCode(404).end(response.toBuffer());
 				}
 			}
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			response.put(Constants.MESSAGE, "Error playing " + cardValue + ", " + cardSuit);
 			context.response().setStatusCode(417).end(response.toBuffer());
 		}
@@ -235,11 +234,11 @@ public class GameServiceDecorator {
 
 	@Operation(summary = "Choose the trump", method = Constants.CHOOSE_TRUMP_METHOD, operationId = Constants.CHOOSE_TRUMP, tags = {
 			Constants.ROUND_TAG }, requestBody = @RequestBody(description = "username, trump and id of the game are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = ChooseTrumpBody.class, example = "{\n"
-			+
-            "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
-            "  \"" + Constants.USERNAME + "\": \"sofi\",\n" +
-            "  \"" + Constants.CARD_SUIT + "\": \"COINS\"\n" +
-            "}"))), responses = {
+					+
+					"  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
+					"  \"" + Constants.USERNAME + "\": \"sofi\",\n" +
+					"  \"" + Constants.CARD_SUIT + "\": \"COINS\"\n" +
+					"}"))), responses = {
 							@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = ChooseTrumpBody.class))),
 							@ApiResponse(responseCode = "404", description = "Game not found."),
 							@ApiResponse(responseCode = "417", description = "Invalid suit or user not allowed."),
@@ -250,13 +249,14 @@ public class GameServiceDecorator {
 		final String cardSuit = context.body().asJsonObject().getString(Constants.CARD_SUIT);
 		final String username = context.body().asJsonObject().getString(Constants.USERNAME);
 		final JsonObject trumpResponse = this.gameService.chooseTrump(gameID, cardSuit, username);
-		if (!trumpResponse.containsKey(Constants.NOT_FOUND) && !trumpResponse.containsKey(Constants.ILLEGAL_TRUMP)
-        && !trumpResponse.containsKey(Constants.NOT_ALLOWED)) {
+		// TODOsofy risolvi qua
+		if (!trumpResponse.containsKey(Constants.NOT_FOUND) && !trumpResponse.containsKey(Constants.ILLEGAL_TRUMP)) {
+			// && !trumpResponse.containsKey(Constants.NOT_ALLOWED)) {
 			context.response().end(trumpResponse.toBuffer());
 		} else if (trumpResponse.containsKey(Constants.ILLEGAL_TRUMP)) {
 			context.response().setStatusCode(401).end(trumpResponse.toBuffer());
-		} else if (trumpResponse.containsKey(Constants.NOT_ALLOWED)) {
-			context.response().setStatusCode(417).end(trumpResponse.toBuffer());
+			// } else if (trumpResponse.containsKey(Constants.NOT_ALLOWED)) {
+			// context.response().setStatusCode(417).end(trumpResponse.toBuffer());
 		} else {
 			context.response().setStatusCode(404).end(trumpResponse.toBuffer());
 		}
@@ -393,7 +393,8 @@ public class GameServiceDecorator {
 		} else {
 			// jsonGetGames.add(Constants.NOT_FOUND);
 			context.response().setStatusCode(404).end(jsonGetGames.toBuffer());
-			// context.response().setStatusCode(404).end(new JsonObject().put(Constants.MESSAGE, Constants.NOT_FOUND).toBuffer());
+			// context.response().setStatusCode(404).end(new
+			// JsonObject().put(Constants.MESSAGE, Constants.NOT_FOUND).toBuffer());
 		}
 	}
 

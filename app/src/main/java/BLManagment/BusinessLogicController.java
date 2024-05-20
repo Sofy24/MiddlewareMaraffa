@@ -1,6 +1,9 @@
 package BLManagment;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
+import com.google.common.primitives.Booleans;
 
 import game.Trick;
 import io.vertx.core.Vertx;
@@ -10,9 +13,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
 
-/** 
- * TODO javadoc
-*/
+
 public class BusinessLogicController {
 	private final Vertx vertx;
 	private static final int PORT = 3000;
@@ -67,19 +68,24 @@ public class BusinessLogicController {
 	 * perform a post request to business logic in order to compute the score, get
 	 * the winning team and position
 	 *
-	 * @param trick
-	 *              the completed trick with which it computes the score
-	 * @param trump
-	 *              used while computing the score
+	 * @param trick the completed trick with which it computes the score
+	 * @param trump used while computing the score
 	 * @return a completable future of the json response
 	 */
-	public CompletableFuture<JsonObject> computeScore(final Trick trick, final String trump) {
+	public CompletableFuture<JsonObject> computeScore(final Trick trick, final String trump, final String mode,
+			final List<Boolean> isSuitFinishedList) {
 		final int[] cards = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
-		final JsonObject requestBody = new JsonObject().put("trick", cards).put("trump", Integer.parseInt(trump));
+		final boolean[] isSuitFinished = Booleans.toArray(isSuitFinishedList);
+		final JsonObject requestBody = new JsonObject()
+				.put("trick", cards)
+				.put("trump", Integer.parseInt(trump))
+				.put("mode", mode)
+				.put("isSuitFinished", isSuitFinished);
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		LOGGER.info("Computing the score");
 		WebClient.create(this.vertx).post(PORT, LOCALHOST, "/games/computeScore")
-				.putHeader("Accept", "application/json").as(BodyCodec.jsonObject())
+				.putHeader("Accept", "application/json")
+				.as(BodyCodec.jsonObject())
 				.sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
 						future.complete(handler.result().body());

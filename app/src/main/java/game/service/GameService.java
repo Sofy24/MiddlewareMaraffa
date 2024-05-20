@@ -1,11 +1,5 @@
 package game.service;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import game.*;
-import repository.AbstractStatisticManager;
-import game.utils.Constants;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,12 +27,12 @@ public class GameService {
 
 	private AbstractStatisticManager statisticManager;
 
-    public GameService(Vertx vertx) {
+    public GameService(final Vertx vertx) {
         this.vertx = vertx;
 
     }
 
-    public GameService(Vertx vertx, AbstractStatisticManager statisticManager) {
+    public GameService(final Vertx vertx, final AbstractStatisticManager statisticManager) {
         this.vertx = vertx;
         this.statisticManager = statisticManager;
     }
@@ -113,8 +107,8 @@ public class GameService {
 		return jsonCanStart.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
-    public JsonObject playCard(UUID gameID, String username, Card<CardValue, CardSuit> card) {
-        JsonObject jsonPlayCard = new JsonObject();
+    public JsonObject playCard(final UUID gameID, final String username, final Card<CardValue, CardSuit> card) {
+        final JsonObject jsonPlayCard = new JsonObject();
         if (this.games.get(gameID) != null && this.games.get(gameID).canStart()) {
             return jsonPlayCard.put(Constants.PLAY, this.games.get(gameID).addCard(card, username));
         }
@@ -122,19 +116,19 @@ public class GameService {
         return jsonPlayCard.put(Constants.PLAY, false);
     }
 
-    public JsonObject chooseTrump(UUID gameID, String cardSuit, String username) {
-        JsonObject jsonTrump = new JsonObject();
+    public JsonObject chooseTrump(final UUID gameID, final String cardSuit, final String username) {
+        final JsonObject jsonTrump = new JsonObject();
         if (this.games.get(gameID) != null) {
             if (this.games.get(gameID).getPositionByUsername(username) == this.games.get(gameID).getTurn()){
                 CardSuit trump;
                 try {
                     trump = CardSuit.valueOf(cardSuit);
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     trump = CardSuit.NONE;
                 }
                 this.games.get(gameID).chooseTrump(trump);
                 jsonTrump.put(Constants.MESSAGE, trump + " setted as trump");
-                if (trump.equals(CardSuit.NONE)) {
+                if (CardSuit.NONE.equals(trump)) {
                     jsonTrump.put(Constants.TRUMP, false);
                     jsonTrump.put(Constants.ILLEGAL_TRUMP, true);
                     return jsonTrump;
@@ -143,7 +137,7 @@ public class GameService {
                 return jsonTrump;
             } else {
                 jsonTrump.put(Constants.TRUMP, false);
-                jsonTrump.put(Constants.NOT_ALLOWED, true);
+                // jsonTrump.put(Constants.NOT_ALLOWED, true);
                 return jsonTrump.put(Constants.MESSAGE, "The user " + username + " is not allowed to choose the trump");
             }
         } else {

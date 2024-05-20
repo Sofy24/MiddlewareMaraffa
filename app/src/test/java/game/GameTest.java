@@ -509,34 +509,42 @@ public class GameTest {
 	/*
 	 * A player can't play if the system doesn't know who has the 4 of coins
 	 */
-	// @Test
-	// public void dontPlayWithout4Coins(final VertxTestContext context) {
-	// 	final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
-	// 			GAME_MODE.toString());
-	// 	Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
-	// 	for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
-	// 		assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-	// 				TEST_USER.username(), TEST_CARD).getBoolean(Constants.PLAY));
-	// 		final JsonObject joinResponse = this.gameService.joinGame(
-	// 				UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-	// 				new User(TEST_USER.username() + i, TEST_USER.clientID()));
-	// 		assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
-	// 	}
-	// 	assertFalse(this.gameService
-	// 			.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username(), TEST_CARD)
-	// 			.getBoolean(Constants.PLAY));
-	// 	// JsonObject coins4Response =
-	// 	// this.gameService.coins4(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-	// 	// TEST_USER);
-	// 	// assertTrue(coins4Response.getBoolean(Constants.COINS_4_NAME));
-	// 	final JsonObject chooseTrumpResponse = this.gameService
-	// 			.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username());
-	// 	assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-	// 	assertTrue(this.gameService
-	// 			.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username(), TEST_CARD)
-	// 			.getBoolean(Constants.PLAY));
-	// 	context.completeNow();
-	// }
+	@Test
+	public void dontPlayWithout4Coins(final VertxTestContext context) {
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
+				GAME_MODE.toString());
+		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					TEST_USER.username(), TEST_CARD).getBoolean(Constants.PLAY));
+			final JsonObject joinResponse = this.gameService.joinGame(
+					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+		}
+		assertFalse(this.gameService
+				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username(), TEST_CARD)
+				.getBoolean(Constants.PLAY));
+		JsonObject chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username());
+		assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+		final JsonObject startGame = this.gameService.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
+		assertTrue(startGame.getBoolean(Constants.START_ATTR));
+		int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+		chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username());
+		if (initialTurn != 0){
+			assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+		}
+		System.out.println("init"+initialTurn);
+		chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+		assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+		assertTrue(this.gameService
+				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username(), TEST_CARD)
+				.getBoolean(Constants.PLAY));
+		context.completeNow();
+	}
 
 	/**
 	 * The initial turn of the new round is correct when a new round starts

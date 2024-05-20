@@ -82,6 +82,7 @@ public class GameService {
 		if (this.games.get(gameID) != null) {
 			if (this.games.get(gameID).startGame()) {
 				jsonStartGame.put(Constants.START_ATTR, true);
+				this.games.get(gameID).onStartGame();
 				return jsonStartGame.put(Constants.MESSAGE, "The game " + gameID + " can start");
 			} else {
 				jsonStartGame.put(Constants.START_ATTR, false);
@@ -89,6 +90,7 @@ public class GameService {
 			}
 		}
 		jsonStartGame.put(Constants.NOT_FOUND, false);
+		jsonStartGame.put(Constants.START_ATTR, false);
 		return jsonStartGame.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
@@ -137,7 +139,7 @@ public class GameService {
                 return jsonTrump;
             } else {
                 jsonTrump.put(Constants.TRUMP, false);
-                // jsonTrump.put(Constants.NOT_ALLOWED, true);
+                jsonTrump.put(Constants.NOT_ALLOWED, true);
                 return jsonTrump.put(Constants.MESSAGE, "The user " + username + " is not allowed to choose the trump");
             }
         } else {

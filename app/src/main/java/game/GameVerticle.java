@@ -43,8 +43,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private String creatorName;
 	private Status status = Status.WAITING_PLAYERS;
 	private final GameMode gameMode;
-	private int turn = 0; //TODO setta a -1 affinchè si sappia chi ha il 4
-    private int initialTurn = 0; //TODO setta a -1 affinchè si sappia chi ha il 4
+	private int turn = -1; 
+    private int initialTurn = -1; 
 	private List<Boolean> isSuitFinished = new ArrayList<>();
 
 	public GameSchema getGameSchema() {
@@ -218,6 +218,11 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.initialTurn;
 	}
 
+    public void setInitialTurn(final int initialTurn) {
+		this.initialTurn = initialTurn % this.numberOfPlayers;
+        this.turn = this.initialTurn;
+	}
+
 	public int getTurn() {
 		return this.turn;
 	}
@@ -316,9 +321,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public boolean isRoundEnded() {
 		final double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
         if (this.currentState.get() == numberOfTricksInRound) {
-            this.initialTurn++;
-            this.initialTurn = this.initialTurn % this.numberOfPlayers;
-            this.turn = this.initialTurn;
+            setInitialTurn(this.initialTurn++);
         }
 		return this.currentState.get() == numberOfTricksInRound;
 	}
@@ -363,7 +366,11 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	@Override
 	public void onStartGame() {
-		throw new UnsupportedOperationException("Unimplemented method 'onStartGame'");
+		if (this.getVertx() != null)
+        System.out.println("not null, sending sms");
+			this.getVertx().eventBus().send("game-startRound:onStartGame",
+					new JsonObject().put(Constants.GAME_ID, this.id.toString())
+							.put(Constants.NUMBER_OF_PLAYERS, this.numberOfPlayers).toString());
 	}
 
 	@Override

@@ -62,8 +62,9 @@ public class Constants {
     public static final String ALREADY_JOINED = "alreadyJoined";
     public static final String ILLEGAL_TRUMP = "illegalTrump";
     public static final String TRUMP = "trump";
+    public static final String PLAY = "play";
     public static final String INVALID = "invalid";
+    public static final String NOT_ALLOWED = "notAllowed";
     // game constants
     public static final int NUMBER_OF_CARDS = 40;
-    public static final String PLAY = "play";
 }

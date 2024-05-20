@@ -44,6 +44,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private Status status = Status.WAITING_PLAYERS;
 	private final GameMode gameMode;
 	private int turn = 0; //TODO setta a -1 affinchè si sappia chi ha il 4
+    private int initialTurn = 0; //TODO setta a -1 affinchè si sappia chi ha il 4
 	private List<Boolean> isSuitFinished = new ArrayList<>();
 
 	public GameSchema getGameSchema() {
@@ -213,6 +214,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.tricks.get(this.getCurrentState().get());
 	}
 
+    public int getInitialTurn() {
+		return this.initialTurn;
+	}
+
 	public int getTurn() {
 		return this.turn;
 	}
@@ -310,6 +315,11 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public boolean isRoundEnded() {
 		final double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
+        if (this.currentState.get() == numberOfTricksInRound) {
+            this.initialTurn++;
+            this.initialTurn = this.initialTurn % this.numberOfPlayers;
+            this.turn = this.initialTurn;
+        }
 		return this.currentState.get() == numberOfTricksInRound;
 	}
 

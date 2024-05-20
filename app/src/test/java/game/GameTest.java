@@ -538,9 +538,8 @@ public class GameTest {
 	// 	context.completeNow();
 	// }
 
-		/**
-	 * A round should not end if less than @code{{Constants.NUMBER_OF_CARDS}} are
-	 * played
+	/**
+	 * The initial turn of the new round is correct when a new round starts
 	 */
 	@Test
 	public void isTurnCorrectWhenRoundEndedTest(final VertxTestContext context) {
@@ -570,12 +569,13 @@ public class GameTest {
 						.incrementCurrentState();
 			}
 		}
+		final int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+				.getInitialTurn();
 		assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 				.getBoolean(Constants.ENDED));
 		final int turn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 				.getTurn();
-		assertEquals(TEST_USER, this.gameService.getGames()
-				.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(turn));
+		assertEquals(initialTurn + 1 % MARAFFA_PLAYERS, turn);
 		context.completeNow();
 	}
 

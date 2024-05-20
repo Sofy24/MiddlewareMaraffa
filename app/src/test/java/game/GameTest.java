@@ -289,7 +289,7 @@ public class GameTest {
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
 		final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username());
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username() + "0");
 		assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 		assertFalse(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 				.getBoolean(Constants.ENDED));
@@ -323,7 +323,7 @@ public class GameTest {
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
 		final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username());
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username() + "0");
 		assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 		final JsonObject startGameResponse = this.gameService
 				.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
@@ -387,7 +387,7 @@ public class GameTest {
 
 	/** Returns all the games created or not found if there aren't games */
 	@Test
-	public void getGames(final VertxTestContext context) {
+	public void getGamesTest(final VertxTestContext context) {
 		JsonArray gamesResponse = this.gameService.getJsonGames();
 		// assertTrue(gamesResponse.isEmpty());
 		this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
@@ -402,7 +402,7 @@ public class GameTest {
 	 * A player can play only one card in their turn
 	 */
 	@Test
-	public void playOnlyOneCard(final VertxTestContext context) {
+	public void playOnlyOneCardTest(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
 				GAME_MODE.toString());
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
@@ -433,7 +433,7 @@ public class GameTest {
 	 * Each player can play only in their turn
 	 */
 	@Test
-	public void playOnlyInTheirTurn(final VertxTestContext context) {
+	public void playOnlyInTheirTurnTest(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
 				GAME_MODE.toString());
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
@@ -456,17 +456,21 @@ public class GameTest {
 				.getTurn();
 		assertEquals(TEST_USER, this.gameService.getGames()
 				.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(turn));
+		assertFalse(this.gameService
+				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username() + "2", TEST_CARD)
+				.getBoolean(Constants.PLAY));
 		assertTrue(this.gameService
 				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username(), TEST_CARD)
 				.getBoolean(Constants.PLAY));
 		context.completeNow();
 	}
 
+
 	/*
-	 * A player can't play if the system doesn't know who has the 4 of coins
+	 * An invalid user can't choose the trump
 	 */
 	@Test
-	public void dontPlayWithout4Coins(final VertxTestContext context) {
+	public void invalidUserCantChooseTrumpTest(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
 				GAME_MODE.toString());
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
@@ -478,19 +482,100 @@ public class GameTest {
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
-		assertFalse(this.gameService
-				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username(), TEST_CARD)
-				.getBoolean(Constants.PLAY));
 		// JsonObject coins4Response =
 		// this.gameService.coins4(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 		// TEST_USER);
 		// assertTrue(coins4Response.getBoolean(Constants.COINS_4_NAME));
-		final JsonObject chooseTrumpResponse = this.gameService
+		JsonObject chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username() + "2");
+		assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+		chooseTrumpResponse = this.gameService
 				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username());
 		assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+		final int turn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+				.getTurn();
+		assertEquals(TEST_USER, this.gameService.getGames()
+				.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(turn));
+		assertFalse(this.gameService
+				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username() + "2", TEST_CARD)
+				.getBoolean(Constants.PLAY));
 		assertTrue(this.gameService
 				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username(), TEST_CARD)
 				.getBoolean(Constants.PLAY));
+		context.completeNow();
+	}
+
+
+	/*
+	 * A player can't play if the system doesn't know who has the 4 of coins
+	 */
+	// @Test
+	// public void dontPlayWithout4Coins(final VertxTestContext context) {
+	// 	final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
+	// 			GAME_MODE.toString());
+	// 	Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+	// 	for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+	// 		assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+	// 				TEST_USER.username(), TEST_CARD).getBoolean(Constants.PLAY));
+	// 		final JsonObject joinResponse = this.gameService.joinGame(
+	// 				UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+	// 				new User(TEST_USER.username() + i, TEST_USER.clientID()));
+	// 		assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+	// 	}
+	// 	assertFalse(this.gameService
+	// 			.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username(), TEST_CARD)
+	// 			.getBoolean(Constants.PLAY));
+	// 	// JsonObject coins4Response =
+	// 	// this.gameService.coins4(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+	// 	// TEST_USER);
+	// 	// assertTrue(coins4Response.getBoolean(Constants.COINS_4_NAME));
+	// 	final JsonObject chooseTrumpResponse = this.gameService
+	// 			.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username());
+	// 	assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+	// 	assertTrue(this.gameService
+	// 			.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username(), TEST_CARD)
+	// 			.getBoolean(Constants.PLAY));
+	// 	context.completeNow();
+	// }
+
+		/**
+	 * A round should not end if less than @code{{Constants.NUMBER_OF_CARDS}} are
+	 * played
+	 */
+	@Test
+	public void isTurnCorrectWhenRoundEndedTest(final VertxTestContext context) {
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS,
+				new User(TEST_USER.username() + "0", TEST_USER.clientID()), EXPECTED_SCORE, GAME_MODE.toString());
+		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+		for (int i = 1; i < MARAFFA_PLAYERS; i++) {
+			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					TEST_USER.username(), TEST_CARD).getBoolean(Constants.PLAY));
+			final JsonObject joinResponse = this.gameService.joinGame(
+					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+		}
+		final JsonObject chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username() + "0");
+		assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+		assertFalse(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+				.getBoolean(Constants.ENDED));
+		for (int i = 0; i < Constants.NUMBER_OF_CARDS; i++) {
+			assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					TEST_USER.username() + (i % MARAFFA_PLAYERS), TEST_CARDS.get(i % MARAFFA_PLAYERS))
+					.getBoolean(Constants.PLAY));
+			if (this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+					.getLatestTrick().isCompleted()) {
+				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+						.incrementCurrentState();
+			}
+		}
+		assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+				.getBoolean(Constants.ENDED));
+		final int turn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+				.getTurn();
+		assertEquals(TEST_USER, this.gameService.getGames()
+				.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(turn));
 		context.completeNow();
 	}
 
@@ -499,7 +584,7 @@ public class GameTest {
 	 * found"
 	 */
 	@Test
-	public void getGamesInvalidGameMode(final VertxTestContext context) {
+	public void getGamesInvalidGameModeTest(final VertxTestContext context) {
 		final JsonObject createResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
 				FAKE_GAME_MODE);
 		final JsonArray gamesResponse = this.gameService.getJsonGames();

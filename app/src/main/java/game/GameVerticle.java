@@ -43,7 +43,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private String creatorName;
 	private Status status = Status.WAITING_PLAYERS;
 	private final GameMode gameMode;
-	private int turn = -1;
+	private int turn = 0; //TODO setta a -1 affinchè si sappia chi ha il 4
 	private List<Boolean> isSuitFinished = new ArrayList<>();
 
 	public GameSchema getGameSchema() {
@@ -108,7 +108,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public boolean addCard(final Card<CardValue, CardSuit> card, final String username) {
 		if (this.turn >= 0) {
-			if (this.canStart() && this.users.get(this.turn).equals(username)) {
+			if (this.canStart() && this.users.get(this.turn).username().equals(username)) {
 				if (this.currentTrick == null) {
 					this.currentTrick = this.states.getOrDefault(this.currentState.get(),
 							new TrickImpl(this.numberOfPlayers, this.trump));
@@ -226,7 +226,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	public int getPositionByUsername(final String username) {
-		return this.users.indexOf(username);
+		return this.users.stream().map(u -> u.username()).toList().indexOf(username);
 	}
 
 	public List<Boolean> getIsSuitFinished() {

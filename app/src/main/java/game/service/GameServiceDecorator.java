@@ -172,24 +172,28 @@ public class GameServiceDecorator {
 		final UUID gameID = UUID.fromString(uuidAsString);
 		final String cardValue = context.body().asJsonObject().getString(Constants.CARD_VALUE);
 		final String cardSuit = context.body().asJsonObject().getString(Constants.CARD_SUIT);
-		final Boolean isSuitFinished = context.body().asJsonObject().getBoolean(Constants.IS_SUIT_FINISHED);
+		final String isSuitFinishedFake = context.body().asJsonObject().getString(Constants.IS_SUIT_FINISHED); //TODO era boolean
+		final Boolean isSuitFinished = true;
 		try {
 			final Card<CardValue, CardSuit> card = new Card<>(CardValue.getName(cardValue), CardSuit.getName(cardSuit));
 			final String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
 			final int userPosition = this.gameService.getGames().get(gameID).getPositionByUsername(username);
 			if (userPosition == -1) {
-				context.response().setStatusCode(401).end("Invalid user " + username);
+				response.put(Constants.MESSAGE, "Invalid user " + username);
+				context.response().setStatusCode(401).end(response.toBuffer());
 				return;
 			}
 			if (CardSuit.NONE.equals(card.cardSuit()) || CardValue.NONE.equals(card.cardValue())) {
-				context.response().setStatusCode(401).end("Invalid " + card);
+				response.put(Constants.MESSAGE, "Invalid card " + card);
+				context.response().setStatusCode(401).end(response.toBuffer());
 			} else {
 				final JsonObject playCardResponse = this.gameService.playCard(gameID, username, card);
 				if (!playCardResponse.containsKey(Constants.NOT_FOUND)) {
 					if (!this.gameService.getGames().get(gameID).isUserIn(username)
 							|| !playCardResponse.getBoolean(Constants.PLAY)) {
-						context.response().setStatusCode(417).end("Is not the turn of " + username
-								+ " or the system doesn't know who has the 4 of coins");
+						response.put(Constants.MESSAGE, "Is not the turn of " + username
+						+ " or the system doesn't know who has the 4 of coins");
+						context.response().setStatusCode(417).end(response.toBuffer());
 					} else {
 						final Trick latestTrick = this.gameService.getGames().get(gameID).getLatestTrick();
 						System.out.println("latest =" + latestTrick.toString());

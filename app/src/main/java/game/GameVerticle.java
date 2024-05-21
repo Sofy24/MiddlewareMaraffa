@@ -367,7 +367,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	@Override
 	public void onStartGame() {
 		if (this.getVertx() != null)
-        System.out.println("not null, sending sms");
 			this.getVertx().eventBus().send("game-startRound:onStartGame",
 					new JsonObject().put(Constants.GAME_ID, this.id.toString())
 							.put(Constants.NUMBER_OF_PLAYERS, this.numberOfPlayers).toString());

@@ -36,14 +36,24 @@ public class BusinessLogicController {
 	 * @param numberOfPlayers
 	 * @return
 	 */
-	public CompletableFuture<JsonObject> getShuffledDeck(final Integer numberOfPlayers) {
+	public CompletableFuture<JsonObject> getShuffledDeck(final UUID gameID, final Integer numberOfPlayers) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		System.out.println("Getting the shuffled deck");
+		JsonObject startResponse = new JsonObject();
 		WebClient.create(this.vertx).get(PORT, LOCALHOST, "/games/startRound")
 				// .ssl(true)
 				.putHeader("Accept", "application/json") 
 				.as(BodyCodec.jsonObject()).send(handler -> {
 					if (handler.succeeded()) {
+						final JsonArray deck = handler.result().body().getJsonArray("deck");
+						final Integer firstPlayer = handler.result().body().getInteger("firstPlayer");
+						startResponse.put("deck", deck);
+						startResponse.put("firstPlayer", firstPlayer);
+						LOGGER.info("The first player is: " + firstPlayer);
+						startResponse.put(Constants.START_ATTR, true);
+						this.gameService.getGames().get(gameID).setInitialTurn(firstPlayer);
+						LOGGER.info("Round started");
+
 						future.complete(handler.result().body());
 					} else {
 						System.out.println("Error in getting the shuffled deck");
@@ -65,7 +75,7 @@ public class BusinessLogicController {
 			JsonObject body = new JsonObject((String) message.body());
 			UUID gameID = UUID.fromString(body.getString("gameID"));
         	int numberOfPlayers = body.getInteger("numberOfPlayers");
-            this.getShuffledDeck(numberOfPlayers).whenComplete((result, error) -> {
+            this.getShuffledDeck(gameID, numberOfPlayers).whenComplete((result, error) -> {
 				System.out.println(result);
 				if (!result.containsKey("error")) {
 					final JsonArray deck = result.getJsonArray("deck");

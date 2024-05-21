@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -15,9 +17,11 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import BLManagment.BusinessLogicController;
 import game.service.GameService;
 import game.service.User;
 import game.utils.Constants;
+import io.netty.util.concurrent.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -46,6 +50,7 @@ public class GameTest {
 			new Card<>(CardValue.KNAVE, CardSuit.COINS), new Card<>(CardValue.SEVEN, CardSuit.SWORDS), TEST_CARD);
 	private Vertx vertx;
 	private GameService gameService;
+	private BusinessLogicController businessLogicController;
 
 	/**
 	 * Before executing our test, let's deploy our verticle. This method
@@ -57,6 +62,7 @@ public class GameTest {
 	public void setUp() {
 		this.vertx = Vertx.vertx();
 		this.gameService = new GameService(this.vertx);
+		this.businessLogicController = new BusinessLogicController(this.vertx, this.gameService);
 	}
 
 	/**
@@ -482,10 +488,6 @@ public class GameTest {
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
-		// JsonObject coins4Response =
-		// this.gameService.coins4(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-		// TEST_USER);
-		// assertTrue(coins4Response.getBoolean(Constants.COINS_4_NAME));
 		JsonObject chooseTrumpResponse = this.gameService
 				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username() + "2");
 		assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
@@ -528,21 +530,28 @@ public class GameTest {
 		JsonObject chooseTrumpResponse = this.gameService
 				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username());
 		assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-		final JsonObject startGame = this.gameService.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
-		assertTrue(startGame.getBoolean(Constants.START_ATTR));
-		int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
-		chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username());
-		if (initialTurn != 0){
-			assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+			chooseTrumpResponse = this.gameService
+					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username());
+			if (initialTurn != 0){
+				assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			}
+
+			chooseTrumpResponse = this.gameService
+					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			assertTrue(this.gameService
+					.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username(), TEST_CARD)
+					.getBoolean(Constants.PLAY));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
 		}
-		System.out.println("init"+initialTurn);
-		chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
-		assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-		assertTrue(this.gameService
-				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username(), TEST_CARD)
-				.getBoolean(Constants.PLAY));
 		context.completeNow();
 	}
 

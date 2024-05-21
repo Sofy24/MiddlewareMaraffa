@@ -184,7 +184,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			this.currentTrick = this.states.getOrDefault(this.currentState.get(),
 					new TrickImpl(this.numberOfPlayers, this.trump));
 		}
-		if (this.users.stream().map(User::username).toList().get(0).equals(username)) {
+		if (this.users.stream().map(User::username).toList().get(turn).equals(username)) {
 			this.currentTrick.setCall(call, username);
 		}
 		return !Call.NONE.equals(this.currentTrick.getCall());

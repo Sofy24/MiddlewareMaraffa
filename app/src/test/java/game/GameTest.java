@@ -1,10 +1,13 @@
 package game;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -14,6 +17,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import BLManagment.BusinessLogicController;
 import game.service.GameService;
 import game.service.User;
 import game.utils.Constants;
@@ -45,6 +49,7 @@ public class GameTest {
 			new Card<>(CardValue.KNAVE, CardSuit.COINS), new Card<>(CardValue.SEVEN, CardSuit.SWORDS), TEST_CARD);
 	private Vertx vertx;
 	private GameService gameService;
+	private BusinessLogicController businessLogicController;
 
 	/**
 	 * Before executing our test, let's deploy our verticle. This method
@@ -56,6 +61,7 @@ public class GameTest {
 	public void setUp() {
 		this.vertx = Vertx.vertx();
 		this.gameService = new GameService(this.vertx);
+		this.businessLogicController = new BusinessLogicController(this.vertx, this.gameService);
 	}
 
 	/**
@@ -159,12 +165,22 @@ public class GameTest {
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
-		final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
-		assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-		final JsonObject canStartResponse = this.gameService
-				.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
-		assertTrue(canStartResponse.getBoolean(Constants.START_ATTR));
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+			final JsonObject chooseTrumpResponse = this.gameService
+					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			final JsonObject canStartResponse = this.gameService
+					.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
+			assertTrue(canStartResponse.getBoolean(Constants.START_ATTR));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
 		context.completeNow();
 	}
 
@@ -183,10 +199,23 @@ public class GameTest {
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
-		final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), FAKE_TRUMP);
-		assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-		assertTrue(chooseTrumpResponse.getBoolean(Constants.ILLEGAL_TRUMP));
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+
+			final JsonObject chooseTrumpResponse = this.gameService
+					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), FAKE_TRUMP, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.ILLEGAL_TRUMP));
+		
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+
 		context.completeNow();
 	}
 
@@ -196,7 +225,7 @@ public class GameTest {
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
 				GAME_MODE.toString());
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
-		for (int i = 0; i < MARAFFA_PLAYERS - 2; i++) {
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			final JsonObject canStartResponse = this.gameService
 					.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
 			assertFalse(canStartResponse.getBoolean(Constants.START_ATTR));
@@ -205,12 +234,25 @@ public class GameTest {
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
-		final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
-		assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-		assertTrue(this.gameService.startNewRound(UUID.fromString(gameResponse.getString(Constants.GAME_ID))));
-		Assertions.assertEquals(UNDEFINED_TRUMP,
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+
+			final JsonObject chooseTrumpResponse = this.gameService
+					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			assertTrue(this.gameService.startNewRound(UUID.fromString(gameResponse.getString(Constants.GAME_ID))));
+			Assertions.assertEquals(UNDEFINED_TRUMP,
 				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getTrump());
+		
+		
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
 		context.completeNow();
 	}
 
@@ -222,21 +264,36 @@ public class GameTest {
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username(), TEST_CARD));
+					TEST_USER.username(), TEST_CARD).getBoolean(Constants.PLAY));
 			final JsonObject joinResponse = this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
-		final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
-		assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-		assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-				TEST_USER.username(), TEST_CARD));
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+
+			final JsonObject chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			assertTrue(this.gameService
+					.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username(), TEST_CARD)
+					.getBoolean(Constants.PLAY));
+		
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+
+
 		context.completeNow();
 	}
 
-	// TODO un giocatore non può giocare due volte in un turno
 
 	/** Get a state */
 	@Test
@@ -246,7 +303,7 @@ public class GameTest {
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username(), TEST_CARD));
+					TEST_USER.username(), TEST_CARD).getBoolean(Constants.PLAY));
 			final JsonObject joinResponse = this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
@@ -255,17 +312,31 @@ public class GameTest {
 		JsonObject stateResponse = this.gameService
 				.getState(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
 		assertTrue(stateResponse.containsKey(Constants.NOT_FOUND));
-		final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
-		assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-				TEST_USER.username(), TEST_CARD));
-		assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
-			assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username() + i, TEST_CARDS.get(i)));
-		}
-		stateResponse = this.gameService.getState(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
-		assertFalse(stateResponse.containsKey(Constants.NOT_FOUND));
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+
+			final JsonObject chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			assertTrue(this.gameService
+					.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username(), TEST_CARD)
+					.getBoolean(Constants.PLAY));
+						
+			for (int i = 1; i < MARAFFA_PLAYERS; i++) {
+				assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get((initialTurn + i) % MARAFFA_PLAYERS).username(), TEST_CARDS.get(i - 1)).getBoolean(Constants.PLAY));
+			}
+			stateResponse = this.gameService.getState(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
+			assertFalse(stateResponse.containsKey(Constants.NOT_FOUND));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}	
 		context.completeNow();
 	}
 
@@ -280,20 +351,29 @@ public class GameTest {
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
 		for (int i = 1; i < MARAFFA_PLAYERS; i++) {
 			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username(), TEST_CARD));
+					TEST_USER.username(), TEST_CARD).getBoolean(Constants.PLAY));
 			final JsonObject joinResponse = this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
-		final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
-		assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-		assertFalse(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+
+			final JsonObject chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			assertFalse(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 				.getBoolean(Constants.ENDED));
-		for (int i = 0; i < Constants.NUMBER_OF_CARDS; i++) {
+
+			for (int i = 0; i < Constants.NUMBER_OF_CARDS; i++) {
 			assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username() + (i % MARAFFA_PLAYERS), TEST_CARDS.get(i % MARAFFA_PLAYERS)));
+			this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get((initialTurn + i) % MARAFFA_PLAYERS).username(), TEST_CARDS.get(i % MARAFFA_PLAYERS))
+					.getBoolean(Constants.PLAY));
 			if (this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 					.getLatestTrick().isCompleted()) {
 				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
@@ -302,6 +382,12 @@ public class GameTest {
 		}
 		assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 				.getBoolean(Constants.ENDED));
+
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}	
 		context.completeNow();
 	}
 
@@ -313,26 +399,47 @@ public class GameTest {
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
 		for (int i = 1; i < MARAFFA_PLAYERS; i++) {
 			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username(), TEST_CARD));
+					TEST_USER.username(), TEST_CARD).getBoolean(Constants.PLAY));
 			final JsonObject joinResponse = this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
-		final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
-		assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-		final JsonObject startGameResponse = this.gameService
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+
+			final JsonObject chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			final JsonObject startGameResponse = this.gameService
 				.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
-		assertTrue(startGameResponse.getBoolean(Constants.START_ATTR));
-		assertFalse(this.gameService.isGameEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+			assertTrue(startGameResponse.getBoolean(Constants.START_ATTR));
+			assertFalse(this.gameService.isGameEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 				.getBoolean(Constants.ENDED));
-		for (int i = 0; i < Constants.NUMBER_OF_CARDS; i++) {
+
+			for (int i = 0; i < Constants.NUMBER_OF_CARDS; i++) {
 			assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username() + (i % MARAFFA_PLAYERS), TEST_CARDS.get(i % MARAFFA_PLAYERS)));
+			this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get((initialTurn + i) % MARAFFA_PLAYERS).username(), TEST_CARDS.get(i % MARAFFA_PLAYERS))
+					.getBoolean(Constants.PLAY));
+			if (this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+					.getLatestTrick().isCompleted()) {
+				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+						.incrementCurrentState();
+			}
 		}
-		// TODO finish it
-		// assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
+		//TODO finish it
+		// assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+		// 		.getBoolean(Constants.ENDED));
+
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}	
 		context.completeNow();
 	}
 
@@ -348,15 +455,29 @@ public class GameTest {
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
-		final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
-		assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-		JsonObject callResponse = this.gameService.makeCall(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-				CALL, TEST_USER.username() + "0");
-		assertFalse(callResponse.getBoolean(Constants.MESSAGE));
-		callResponse = this.gameService.makeCall(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), CALL,
-				TEST_USER.username());
-		assertTrue(callResponse.getBoolean(Constants.MESSAGE));
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+
+			final JsonObject chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			
+			JsonObject callResponse = this.gameService.makeCall(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+				CALL, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get((initialTurn + 1) % MARAFFA_PLAYERS).username());
+			assertFalse(callResponse.getBoolean(Constants.MESSAGE));
+			callResponse = this.gameService.makeCall(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), CALL,
+			this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(callResponse.getBoolean(Constants.MESSAGE));
+
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}	
 		context.completeNow();
 	}
 
@@ -372,18 +493,33 @@ public class GameTest {
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
-		final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP);
-		assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-		final JsonObject callResponse = this.gameService
-				.makeCall(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), FAKE_CALL, TEST_USER.username());
-		assertFalse(callResponse.getBoolean(Constants.MESSAGE));
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+
+			final JsonObject chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			
+			JsonObject callResponse = this.gameService.makeCall(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+			FAKE_CALL, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertFalse(callResponse.getBoolean(Constants.MESSAGE));
+			
+
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}	
 		context.completeNow();
 	}
 
 	/** Returns all the games created or not found if there aren't games */
 	@Test
-	public void getGames(final VertxTestContext context) {
+	public void getGamesTest(final VertxTestContext context) {
 		JsonArray gamesResponse = this.gameService.getJsonGames();
 		// assertTrue(gamesResponse.isEmpty());
 		this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE, GAME_MODE.toString());
@@ -394,12 +530,247 @@ public class GameTest {
 		context.completeNow();
 	}
 
+	/*
+	 * A player can play only one card in their turn
+	 */
+	@Test
+	public void playOnlyOneCardTest(final VertxTestContext context) {
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
+				GAME_MODE.toString());
+		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					TEST_USER.username(), TEST_CARD).getBoolean(Constants.PLAY));
+			final JsonObject joinResponse = this.gameService.joinGame(
+					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+		}
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+
+			final JsonObject chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			assertTrue(this.gameService
+					.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username(), TEST_CARD)
+					.getBoolean(Constants.PLAY));
+			assertFalse(this.gameService
+					.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username(), TEST_CARDS.get(1))
+					.getBoolean(Constants.PLAY));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+		context.completeNow();
+	}
+
+	/*
+	 * Each player can play only in their turn
+	 */
+	@Test
+	public void playOnlyInTheirTurnTest(final VertxTestContext context) {
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
+				GAME_MODE.toString());
+		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					TEST_USER.username(), TEST_CARD).getBoolean(Constants.PLAY));
+			final JsonObject joinResponse = this.gameService.joinGame(
+					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+		}
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+
+			final JsonObject chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			final int turn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+				.getTurn();
+
+			assertEquals(this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username(), this.gameService.getGames()
+				.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(turn).username());
+			assertFalse(this.gameService
+				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get((initialTurn + 1) % MARAFFA_PLAYERS).username(), TEST_CARD)
+				.getBoolean(Constants.PLAY));
+			assertTrue(this.gameService
+				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username(), TEST_CARD)
+				.getBoolean(Constants.PLAY));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+		context.completeNow();
+	}
+
+
+	/*
+	 * An invalid user can't choose the trump
+	 */
+	@Test
+	public void invalidUserCantChooseTrumpTest(final VertxTestContext context) {
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
+				GAME_MODE.toString());
+		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					TEST_USER.username(), TEST_CARD).getBoolean(Constants.PLAY));
+			final JsonObject joinResponse = this.gameService.joinGame(
+					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+		}
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+
+			JsonObject chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get((initialTurn + 1) % MARAFFA_PLAYERS).username());
+			assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			final int turn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+				.getTurn();
+
+			assertEquals(this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username(), this.gameService.getGames()
+				.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(turn).username());
+			assertFalse(this.gameService
+				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get((initialTurn + 1) % MARAFFA_PLAYERS).username(), TEST_CARD)
+				.getBoolean(Constants.PLAY));
+			assertTrue(this.gameService
+				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username(), TEST_CARD)
+				.getBoolean(Constants.PLAY));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+
+		context.completeNow();
+	}
+
+
+	/*
+	 * A player can't play if the system doesn't know who has the 4 of coins
+	 */
+	@Test
+	public void dontPlayWithout4Coins(final VertxTestContext context) {
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
+				GAME_MODE.toString());
+		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					TEST_USER.username(), TEST_CARD).getBoolean(Constants.PLAY));
+			final JsonObject joinResponse = this.gameService.joinGame(
+					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+		}
+		assertFalse(this.gameService
+				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username(), TEST_CARD)
+				.getBoolean(Constants.PLAY));
+		JsonObject chooseTrumpResponse = this.gameService
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username());
+		assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+			chooseTrumpResponse = this.gameService
+					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username());
+			if (initialTurn != 0){
+				assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			}
+
+			chooseTrumpResponse = this.gameService
+					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			assertTrue(this.gameService
+					.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username(), TEST_CARD)
+					.getBoolean(Constants.PLAY));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+		context.completeNow();
+	}
+
+	/**
+	 * The initial turn of the new round is correct when a new round starts
+	 */
+	@Test
+	public void isTurnCorrectWhenRoundEndedTest(final VertxTestContext context) {
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS,
+				new User(TEST_USER.username() + "0", TEST_USER.clientID()), EXPECTED_SCORE, GAME_MODE.toString());
+		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+		for (int i = 1; i < MARAFFA_PLAYERS; i++) {
+			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					TEST_USER.username(), TEST_CARD).getBoolean(Constants.PLAY));
+			final JsonObject joinResponse = this.gameService.joinGame(
+					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+		}
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+			final JsonObject chooseTrumpResponse = this.gameService
+					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			assertFalse(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+				.getBoolean(Constants.ENDED));
+
+			for (int i = 0; i < Constants.NUMBER_OF_CARDS; i++) {
+			assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+			this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get((initialTurn + i) % MARAFFA_PLAYERS).username(), TEST_CARDS.get(i % MARAFFA_PLAYERS))
+					.getBoolean(Constants.PLAY));
+			if (this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+					.getLatestTrick().isCompleted()) {
+				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+						.incrementCurrentState();
+			}
+		}
+		assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+				.getBoolean(Constants.ENDED));
+		final int turn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+				.getTurn();
+		assertEquals(this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username(), this.gameService.getGames()
+				.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(turn).username());
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+		context.completeNow();
+	}
+
 	/**
 	 * The game mode is invalid, create returns "invalid" and getJsonGames "not
 	 * found"
 	 */
 	@Test
-	public void getGamesInvalidGameMode(final VertxTestContext context) {
+	public void getGamesInvalidGameModeTest(final VertxTestContext context) {
 		final JsonObject createResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
 				FAKE_GAME_MODE);
 		final JsonArray gamesResponse = this.gameService.getJsonGames();

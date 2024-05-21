@@ -152,10 +152,10 @@ tasks.register<Jar>("fatJar") {
 // }
 
 //i commented this
-// application {
-//     // Define the main class for the application.
-//     mainClass = "server.Main"
-// }
+application {
+    // Define the main class for the application.
+    mainClass = "server.Main"
+}
 
 tasks.withType<Jar> {
     manifest {

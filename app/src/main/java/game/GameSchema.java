@@ -3,44 +3,47 @@ package game;
 import java.util.ArrayList;
 import java.util.List;
 
-/** TODO/Define the mongodb schema of the game */
+/**
+ * TODO/Define the mongodb schema of the game
+ */
 public class GameSchema {
-	private String gameID;
-	private CardSuit leadingSuit;
+    private String gameID;
+    private CardSuit trump;
 
-	public void setTrump(final CardSuit leadingSuit) {
-		this.leadingSuit = leadingSuit;
-	}
+    public void setTrump(CardSuit trump) {
+        this.trump = trump;
+    }
 
-	public CardSuit getTrump() {
-		return this.leadingSuit;
-	}
+    public CardSuit getTrump() {
+        return trump;
+    }
 
-	private List<Trick> tricks;
+    private List<Trick> tricks;
 
-	public String getGameID() {
-		return this.gameID;
-	}
+    public String getGameID() {
+        return gameID;
+    }
 
-	public List<Trick> getTricks() {
-		return this.tricks;
-	}
+    public List<Trick> getTricks() {
+        return tricks;
+    }
 
-	public GameSchema() {
-	}
+    public GameSchema() {
+    }
 
-	public GameSchema(final String identifier, final CardSuit leadingSuit) {
-		this.gameID = identifier;
-		this.leadingSuit = leadingSuit;
-		this.tricks = new ArrayList<>();
-	}
+    public GameSchema(String identifier, CardSuit trump) {
+        this.gameID = identifier;
+        this.trump = trump;
+        this.tricks = new ArrayList<>();
+    }
 
-	public void addTrick(final Trick trick) {
-		this.tricks.add(trick);
-	}
+    public void addTrick(Trick trick) {
+        this.tricks.add(trick);
+    }
 
-	@Override
-	public String toString() {
-		return "GameSchema [gameID=" + this.gameID + ", tricks=" + this.tricks + "]";
-	}
+    @Override
+    public String toString() {
+        return "GameSchema [gameID=" + gameID + ", tricks=" + tricks + "]";
+    }
+
 }

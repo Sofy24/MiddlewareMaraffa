@@ -14,9 +14,6 @@ public class PlayCardBody {
     private String cardValue;
     @JsonProperty(Constants.CARD_SUIT)
     private String cardSuit;
-    @JsonProperty(Constants.IS_SUIT_FINISHED)
-    private Boolean isSuitFinished;
-
 
     @Override
     public boolean equals(Object o) {

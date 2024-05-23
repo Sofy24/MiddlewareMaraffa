@@ -33,7 +33,7 @@ public class GameTest {
 
 	// private static final String TEST_USER = "testUser";
 	private static final User TEST_USER = new User("testUser", UUID.randomUUID());
-	private static final String TRUMP = "COINS";
+	private static final CardSuit TRUMP = CardSuit.COINS;
 	private static final String FAKE_TRUMP = "hammers";
 	private static final String CALL = "busso";
 	private static final String FAKE_CALL = "suono";
@@ -171,7 +171,7 @@ public class GameTest {
 			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
 			assertEquals(firstPlayer, initialTurn);
 			final JsonObject chooseTrumpResponse = this.gameService
-					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
 			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 			final JsonObject canStartResponse = this.gameService
 					.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
@@ -241,7 +241,7 @@ public class GameTest {
 			assertEquals(firstPlayer, initialTurn);
 
 			final JsonObject chooseTrumpResponse = this.gameService
-					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
 			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 			assertTrue(this.gameService.startNewRound(UUID.fromString(gameResponse.getString(Constants.GAME_ID))));
 			Assertions.assertEquals(UNDEFINED_TRUMP,
@@ -277,7 +277,7 @@ public class GameTest {
 			assertEquals(firstPlayer, initialTurn);
 
 			final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(),
 				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
 			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 			assertTrue(this.gameService
@@ -319,7 +319,7 @@ public class GameTest {
 			assertEquals(firstPlayer, initialTurn);
 
 			final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(),
 				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
 			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 			assertTrue(this.gameService
@@ -364,7 +364,7 @@ public class GameTest {
 			assertEquals(firstPlayer, initialTurn);
 
 			final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(),
 				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
 			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 			assertFalse(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
@@ -412,7 +412,7 @@ public class GameTest {
 			assertEquals(firstPlayer, initialTurn);
 
 			final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(),
 				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
 			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 			final JsonObject startGameResponse = this.gameService
@@ -462,7 +462,7 @@ public class GameTest {
 			assertEquals(firstPlayer, initialTurn);
 
 			final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(),
 				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
 			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 			
@@ -500,7 +500,7 @@ public class GameTest {
 			assertEquals(firstPlayer, initialTurn);
 
 			final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(),
 				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
 			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 			
@@ -553,7 +553,7 @@ public class GameTest {
 			assertEquals(firstPlayer, initialTurn);
 
 			final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(),
 				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
 			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 			assertTrue(this.gameService
@@ -593,7 +593,7 @@ public class GameTest {
 			assertEquals(firstPlayer, initialTurn);
 
 			final JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(),
 				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
 			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 			final int turn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
@@ -639,11 +639,11 @@ public class GameTest {
 			assertEquals(firstPlayer, initialTurn);
 
 			JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(),
 				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get((initialTurn + 1) % MARAFFA_PLAYERS).username());
 			assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 			chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP,
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(),
 				this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
 			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 			final int turn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
@@ -687,7 +687,7 @@ public class GameTest {
 				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username(), TEST_CARD)
 				.getBoolean(Constants.PLAY));
 		JsonObject chooseTrumpResponse = this.gameService
-				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username());
+				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(), TEST_USER.username());
 		assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
 		try {
@@ -695,13 +695,13 @@ public class GameTest {
 			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
 			assertEquals(firstPlayer, initialTurn);
 			chooseTrumpResponse = this.gameService
-					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, TEST_USER.username());
+					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(), TEST_USER.username());
 			if (initialTurn != 0){
 				assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 			}
 
 			chooseTrumpResponse = this.gameService
-					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
 			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 			assertTrue(this.gameService
 					.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username(), TEST_CARD)
@@ -736,7 +736,7 @@ public class GameTest {
 			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
 			assertEquals(firstPlayer, initialTurn);
 			final JsonObject chooseTrumpResponse = this.gameService
-					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP, this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
 			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 			assertFalse(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 				.getBoolean(Constants.ENDED));
@@ -778,4 +778,46 @@ public class GameTest {
 		// assertTrue(gamesResponse.isEmpty());
 		context.completeNow();
 	}
+
+    //TODO increment current state could be done two times
+    @Test
+    public void computeScoreTest(final VertxTestContext context){
+        final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS,
+				new User(TEST_USER.username() + "0", TEST_USER.clientID()), EXPECTED_SCORE, GAME_MODE.toString());
+		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+		for (int i = 1; i < MARAFFA_PLAYERS; i++) {
+			final JsonObject joinResponse = this.gameService.joinGame(
+					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+		}
+
+		CompletableFuture<JsonObject> future = businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), MARAFFA_PLAYERS);
+		try {
+			int firstPlayer = future.get().getInteger("firstPlayer");
+			int initialTurn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
+			assertEquals(firstPlayer, initialTurn);
+			final JsonObject chooseTrumpResponse = this.gameService
+					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(initialTurn).username());
+			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
+			assertTrue(this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).startGame());
+			for (int i = 0; i < MARAFFA_PLAYERS; i++) {
+                assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+                this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get((initialTurn + i) % MARAFFA_PLAYERS).username(), TEST_CARDS.get(i % MARAFFA_PLAYERS))
+                        .getBoolean(Constants.PLAY));	
+		    }
+            CompletableFuture<JsonObject> futureCompScore =  this.businessLogicController.computeScore(this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+            .getLatestTrick(), TRUMP.value.toString(), GAME_MODE.name(), this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getIsSuitFinished() , UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
+            JsonObject compScoreJson = futureCompScore.get();
+            assertEquals(3, compScoreJson.getInteger("score")); //TODO lo score è moltiplicato * 3
+            assertEquals(1, compScoreJson.getInteger("winningPosition"));
+            assertFalse(compScoreJson.getBoolean("firstTeam"));
+		
+        } catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+		context.completeNow();
+    }
 }

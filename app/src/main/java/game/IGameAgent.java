@@ -12,6 +12,8 @@ public interface IGameAgent {
 
 	void onPlayCard();
 
+	void onTrickCommpleted(Trick latestTrick ); 
+
 	void onMessage();
 
 	void onEndRound();

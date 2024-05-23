@@ -112,6 +112,13 @@ public class GameService {
     public JsonObject playCard(final UUID gameID, final String username, final Card<CardValue, CardSuit> card) {
         final JsonObject jsonPlayCard = new JsonObject();
         if (this.games.get(gameID) != null && this.games.get(gameID).canStart()) {
+				//Boolean play = this.games.get(gameID).addCard(card, username);
+				
+				// Trick latestTrick = this.games.get(gameID).getLatestTrick();
+				// if(latestTrick.isCompleted()){
+				// 	this.games.get(gameID).onTrickCommpleted(latestTrick);
+				// }
+			
             return jsonPlayCard.put(Constants.PLAY, this.games.get(gameID).addCard(card, username));
         }
         jsonPlayCard.put(Constants.NOT_FOUND, false);

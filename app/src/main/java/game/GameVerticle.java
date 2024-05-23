@@ -125,7 +125,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					if (this.statisticManager != null)
 						this.statisticManager.updateRecordWithTrick(String.valueOf(this.id), this.currentTrick);
 					this.states.put(this.currentState.get(), this.currentTrick);
-					this.isSuitFinished = new ArrayList<>();
 					this.currentTrick = new TrickImpl(this.numberOfPlayers, this.trump);
 					this.tricks.add(this.currentTrick);
 				}
@@ -211,7 +210,12 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	public Trick getLatestTrick() {
-		return this.tricks.get(this.getCurrentState().get());
+		Trick latestTrick = this.tricks.get(this.getCurrentState().get());
+		if (latestTrick.isCompleted()){
+			this.incrementCurrentState();
+			//this.onTrickCommpleted(latestTrick);
+		}
+		return latestTrick;
 	}
 
     public int getInitialTurn() {
@@ -241,6 +245,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	public List<Boolean> getIsSuitFinished() {
 		return this.isSuitFinished;
+	}
+
+	public void clearIsSuitFinished() {
+		this.isSuitFinished = new ArrayList<>();
 	}
 
 	public boolean setIsSuitFinished(final Boolean value, final int position) {
@@ -377,6 +385,20 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'onPlayCard'");
 	}
+
+	@Override
+	public void onTrickCommpleted(Trick latestTrick) {
+		if (this.getVertx() != null)
+			System.out.println("before send");
+			this.getVertx().eventBus().send("game-trickCommpleted:onTrickCommpleted",
+					new JsonObject().put(Constants.GAME_ID, this.id.toString())
+					.put(Constants.TRICK, latestTrick.getCards().stream().mapToInt(Integer::parseInt).toArray())
+							.put(Constants.GAME_MODE, this.gameMode.toString())
+							.put(Constants.IS_SUIT_FINISHED, this.getIsSuitFinished().toString())
+							.put(Constants.TRUMP, this.trump.getValue()).toString());
+			System.out.println("sending");
+	}
+
 
 	@Override
 	public void onMessage() {

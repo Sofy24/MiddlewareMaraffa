@@ -179,8 +179,7 @@ public class GameServiceDecorator {
 		final UUID gameID = UUID.fromString(uuidAsString);
 		final String cardValue = context.body().asJsonObject().getString(Constants.CARD_VALUE);
 		final String cardSuit = context.body().asJsonObject().getString(Constants.CARD_SUIT);
-		final String isSuitFinishedFake = context.body().asJsonObject().getString(Constants.IS_SUIT_FINISHED); //TODO era boolean
-		final Boolean isSuitFinished = true;
+		final Boolean isSuitFinished = context.body().asJsonObject().getBoolean(Constants.IS_SUIT_FINISHED);
 		try {
 			final Card<CardValue, CardSuit> card = new Card<>(CardValue.getName(cardValue), CardSuit.getName(cardSuit));
 			final String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
@@ -194,6 +193,7 @@ public class GameServiceDecorator {
 				response.put(Constants.MESSAGE, "Invalid card " + card);
 				context.response().setStatusCode(401).end(response.toBuffer());
 			} else {
+				this.gameService.getGames().get(gameID).setIsSuitFinished(isSuitFinished, userPosition);
 				final JsonObject playCardResponse = this.gameService.playCard(gameID, username, card);
 				if (!playCardResponse.containsKey(Constants.NOT_FOUND)) {
 					if (!this.gameService.getGames().get(gameID).isUserIn(username)
@@ -202,34 +202,34 @@ public class GameServiceDecorator {
 						+ " or the system doesn't know who has the 4 of coins");
 						context.response().setStatusCode(417).end(response.toBuffer());
 					} else {
-						final Trick latestTrick = this.gameService.getGames().get(gameID).getLatestTrick();
-						System.out.println("latest =" + latestTrick.toString());
-						this.gameService.getGames().get(gameID).setIsSuitFinished(isSuitFinished, userPosition);
-						if (latestTrick.isCompleted()) {
-							System.out.println("completed");
-							this.gameService.getGames().get(gameID).incrementCurrentState();
-							this.businessLogicController
-									.computeScore(latestTrick,
-											this.gameService.getGames().get(gameID).getTrump().getValue().toString(),
-											this.gameService.getGames().get(gameID).getGameMode().toString(),
-											this.gameService.getGames().get(gameID).getIsSuitFinished())
-									.whenComplete((result, err) -> {
-										LOGGER.info("Got sample response");
-										response.put("result", result);
-										this.gameService.getGames().get(gameID)
-												.setTurn(result.getInteger("winningPosition"));
-										this.gameService.getGames().get(gameID).setScore(result.getInteger("score"),
-												result.getBoolean("firstTeam"));// TODO i punti della businesslogic sono
-																				// moltiplicati per 3
-										response.put("turn", this.gameService.getGames().get(gameID).getTurn());
-										System.out
-												.println("Turn: " + this.gameService.getGames().get(gameID).getTurn());
-										context.response().end(response.toBuffer());
-									});
-						} else {
-							System.out.println("everything good");
-							context.response().end(response.toBuffer());
-						}
+						// final Trick latestTrick = this.gameService.getGames().get(gameID).getLatestTrick();
+						// System.out.println("latest =" + latestTrick.toString());
+						context.response().end(response.toBuffer());
+						// if (latestTrick.isCompleted()) {
+						// 	System.out.println("completed");
+						// 	this.gameService.getGames().get(gameID).incrementCurrentState();
+						// 	this.businessLogicController
+						// 			.computeScore(latestTrick,
+						// 					this.gameService.getGames().get(gameID).getTrump().getValue().toString(),
+						// 					this.gameService.getGames().get(gameID).getGameMode().toString(),
+						// 					this.gameService.getGames().get(gameID).getIsSuitFinished())
+						// 			.whenComplete((result, err) -> {
+						// 				LOGGER.info("Got sample response");
+						// 				response.put("result", result);
+						// 				this.gameService.getGames().get(gameID)
+						// 						.setTurn(result.getInteger("winningPosition"));
+						// 				this.gameService.getGames().get(gameID).setScore(result.getInteger("score"),
+						// 						result.getBoolean("firstTeam"));// TODO i punti della businesslogic sono
+						// 														// moltiplicati per 3
+						// 				response.put("turn", this.gameService.getGames().get(gameID).getTurn());
+						// 				System.out
+						// 						.println("Turn: " + this.gameService.getGames().get(gameID).getTurn());
+						// 				context.response().end(response.toBuffer());
+						// 			});
+						// } else {
+						// 	System.out.println("everything good");
+						// 	context.response().end(response.toBuffer());
+						// }
 					}
 				} else {
 					response.put(Constants.MESSAGE, "Game " + gameID + " not found");

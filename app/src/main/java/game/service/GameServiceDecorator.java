@@ -48,12 +48,12 @@ public class GameServiceDecorator {
 
 	public GameServiceDecorator(final Vertx vertx) {
 		this.gameService = new GameService(vertx);
-		this.businessLogicController = new BusinessLogicController(vertx, gameService);
+		this.businessLogicController = new BusinessLogicController(vertx, this.gameService);
 	}
 
 	public GameServiceDecorator(final Vertx vertx, final AbstractStatisticManager statisticManager) {
 		this.gameService = new GameService(vertx, statisticManager);
-		this.businessLogicController = new BusinessLogicController(vertx, gameService);
+		this.businessLogicController = new BusinessLogicController(vertx, this.gameService);
 	}
 
 	@Operation(summary = "Create new game", method = Constants.CREATE_GAME_METHOD, operationId = Constants.CREATE_GAME, tags = {
@@ -154,7 +154,7 @@ public class GameServiceDecorator {
 		final String username = context.pathParam(Constants.USERNAME);
 		if (this.gameService.getGames().containsKey(gameID)) {
 			context.response().end(new JsonObject()
-					.put("cards", this.gameService.getGames().get(username).getUserCards(username)).toBuffer());
+					.put("cards", this.gameService.getGames().get(gameID).getUserCards(username)).toBuffer());
 		} else {
 			context.response().setStatusCode(404).end("Game " + gameID + " not found");
 		}

@@ -281,7 +281,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	// public Map<User, Card<CardValue, CardSuit>[]> getUserAndCards() {
-	// 	return this.userAndCards;
+	// return this.userAndCards;
 	// }
 
 	public List<Card<CardValue, CardSuit>[]> getUserCards(final String username) {

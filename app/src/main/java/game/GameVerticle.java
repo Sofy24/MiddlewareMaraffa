@@ -280,8 +280,13 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.status;
 	}
 
-	public Map<User, Card<CardValue, CardSuit>[]> getUserAndCards() {
-		return this.userAndCards;
+	// public Map<User, Card<CardValue, CardSuit>[]> getUserAndCards() {
+	// 	return this.userAndCards;
+	// }
+
+	public List<Card<CardValue, CardSuit>[]> getUserCards(final String username) {
+		return this.userAndCards.entrySet().stream().filter(e -> e.getKey().username().equals(username))
+				.map(Map.Entry::getValue).toList();
 	}
 
 	/**

@@ -75,7 +75,7 @@ public class BLIntegration {
 				});
 	}
 
-	@Timeout(value = 1000, unit = TimeUnit.SECONDS)
+	@Timeout(value = 10, unit = TimeUnit.SECONDS)
 	@Test
 	public void testCheckUserHandOK(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame((Integer) 4, TEST_USER, 41,
@@ -93,7 +93,7 @@ public class BLIntegration {
 						assertNull(res.getString("error"));
 						final var userHand = this.gameService.getGames()
 								.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-								.getUserAndCards();
+								.getUserCards(TEST_USER.username());
 						assertNotNull(userHand);
 						context.completeNow();
 					});

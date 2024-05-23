@@ -21,6 +21,7 @@ public class Constants {
     public static final String CREATE_GAME = "game/create";
     public static final String JOIN_GAME = "game/join";
     public static final String START_GAME = "game/start";
+    public static final String PLAYER_CARDS = "game/:" + GAME_ID + "/:" + USERNAME + "/cards";
     public static final String PLAY_CARD = "round/playCard";
     public static final String CAN_START = "round/canStart/:" + GAME_ID;
     public static final String CHOOSE_TRUMP = "round/chooseTrump";
@@ -40,6 +41,7 @@ public class Constants {
     public static final String START_GAME_METHOD = "PATCH";
     public static final String PLAY_CARD_METHOD = "POST";
     public static final String CAN_START_METHOD = "GET";
+    public static final String GET_PLAYER_CARD_METHOD = "GET";
     public static final String CHOOSE_TRUMP_METHOD = "POST";
     public static final String START_NEW_ROUND_METHOD = "PATCH";
     public static final String STATE_METHOD = "GET";

@@ -4,10 +4,10 @@
     <!-- for production please use /var/log/xyz directory instead of /tmp/log/xyz -->
     <!-- <property name="LOG_FILE" value="/tmp/log/woshiadai/server.log"/>
     <property name="REQUEST_LOG_FILE" value="/tmp/log/woshiadai/request.log"/> -->
-    <property name="LOG_DIR" value="..\log" />
+    <property name="LOG_DIR" value="./log" />
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" />
-    <property name="LOG_FILE" value="${LOG_DIR}\server.log"/>
-    <property name="DEBUG_FILE" value="${LOG_DIR}\debug.log"/>
+    <property name="LOG_FILE" value="${LOG_DIR}/server.log"/>
+    <property name="DEBUG_FILE" value="${LOG_DIR}/debug.log"/>
 
     <!-- console output -->
     <appender class="ch.qos.logback.core.ConsoleAppender" name="STDOUT">

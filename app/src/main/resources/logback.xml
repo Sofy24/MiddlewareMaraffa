@@ -1,16 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-
-
-    <!--TODO CONSIDER ADDING 
-    INFO org.mongodb.driver.connection  -->
 
     <!-- for production please use /var/log/xyz directory instead of /tmp/log/xyz -->
     <!-- <property name="LOG_FILE" value="/tmp/log/woshiadai/server.log"/>
     <property name="REQUEST_LOG_FILE" value="/tmp/log/woshiadai/request.log"/> -->
+    <property name="LOG_DIR" value="..\log" />
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" />
+    <property name="LOG_FILE" value="${LOG_DIR}\server.log"/>
+    <property name="DEBUG_FILE" value="${LOG_DIR}\debug.log"/>
 
-    <property name="LOG_FILE" value="./log/server.log"/>
-    <property name="DEBUG_FILE" value="./log/serverDebug.log"/>
-    <!-- <property name="REQUEST_LOG_FILE" value="./log/request.log"/> -->
     <!-- console output -->
     <appender class="ch.qos.logback.core.ConsoleAppender" name="STDOUT">
         <encoder>
@@ -28,7 +26,7 @@
             <totalSizeCap>5GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>%-4relative [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
     <appender name="SERVER_LOG_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
@@ -49,7 +47,7 @@
             <totalSizeCap>2GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>%-4relative [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
     <appender name="DEBUG_LOG_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
@@ -59,26 +57,23 @@
         <neverBlock>true</neverBlock>
     </appender>
 
-    <!-- logger for application package -->
-    <!-- TODO   -->
-    <logger level="INFO" name="java" additivity="false">
+    <!-- We tried -->
+     <logger level="" name="server" additivity="false">
         <appender-ref ref="SERVER_LOG_ASYNC"/>
     </logger>
 
-    <logger level="DEBUG" name="userModule" additivity="false">
+    <logger level="INFO" name="server" additivity="false">
         <appender-ref ref="DEBUG_LOG_ASYNC"/>
     </logger>
 
-    <logger level="DEBUG" name="repository" additivity="false">
+    <logger level="DEBUG" name="server" additivity="false">
         <appender-ref ref="DEBUG_LOG_ASYNC"/>
     </logger>
 
-    <!-- logger for RAPS request log -->
-    <!-- <logger level="INFO" name="io.woshiadai.starter.Slf4jRequestLogger" additivity="false">
-        <appender-ref ref="REQUEST_LOG_ASYNC"/>
+    <!-- <logger level="DEBUG" name="io.vertx.rabbitmq" additivity="false">
+        <appender-ref ref="DEBUG_LOG_ASYNC"/>
     </logger> -->
 
-    <!-- root logger -->
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>

@@ -3,6 +3,7 @@ package game;
 import static java.lang.Math.floor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -36,7 +37,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private CardSuit trump = CardSuit.NONE;
 	private Map<Integer, Trick> states = new ConcurrentHashMap<>();
 	private final List<User> users = new ArrayList<>();
-	private final Map<User, Card<CardValue, CardSuit>[]> userAndCards = new ConcurrentHashMap<>();
+	private final Map<User, List<Card<CardValue, CardSuit>>> userAndCards = new ConcurrentHashMap<>();
 	private final GameSchema gameSchema;
 	private AbstractStatisticManager statisticManager;
 	private Trick currentTrick;
@@ -284,9 +285,15 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	// return this.userAndCards;
 	// }
 
-	public List<Card<CardValue, CardSuit>[]> getUserCards(final String username) {
-		return this.userAndCards.entrySet().stream().filter(e -> e.getKey().username().equals(username))
-				.map(Map.Entry::getValue).toList();
+	public List<Card<CardValue, CardSuit>> getUserCards(final String username) {
+		return this.userAndCards.entrySet().stream()
+				.filter(e -> e.getKey().username().equals(username))
+				.findFirst()
+				.map(Map.Entry::getValue)
+				.orElse(Collections.emptyList());
+		// return this.userAndCards.entrySet().stream().filter(e ->
+		// e.getKey().username().equals(username))
+		// .map(Map.Entry::getValue).toList().get(0);
 	}
 
 	/**
@@ -410,7 +417,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.mapToObj(i -> list.subList(i * chunkSize, Math.min(list.size(), (i + 1) * chunkSize)))
 				.collect(Collectors.toList())) {
 			this.userAndCards.put(this.users.get(index++),
-					integer.stream().map(Card::fromInteger).toArray(Card[]::new));
+					integer.stream().map(Card::fromInteger).toList());
 		}
 	}
 }

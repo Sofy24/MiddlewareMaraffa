@@ -14,7 +14,9 @@ import game.service.User;
 import game.utils.Constants;
 import game.utils.Pair;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import repository.AbstractStatisticManager;
 
@@ -118,12 +120,15 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				if (this.currentTrick.getCardsAndUsers().containsValue(username)) {
 					return false;
 				}
+				System.out.println("4 added username at current trick" + currentTrick);
 				this.currentTrick.addCard(card, username);
 				this.turn = (this.turn + 1) % this.numberOfPlayers;
 				if (this.currentTrick.isCompleted()) {
 					this.gameSchema.addTrick(this.currentTrick);
 					if (this.statisticManager != null)
 						this.statisticManager.updateRecordWithTrick(String.valueOf(this.id), this.currentTrick);
+					this.onTrickCommpleted(currentTrick);
+					System.out.println("5 current trick is completed, verticle" + currentTrick);
 					this.states.put(this.currentState.get(), this.currentTrick);
 					this.currentTrick = new TrickImpl(this.numberOfPlayers, this.trump);
 					this.tricks.add(this.currentTrick);
@@ -251,15 +256,22 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.isSuitFinished = new ArrayList<>();
 	}
 
-	public boolean setIsSuitFinished(final Boolean value, final int position) {
+	/*@param value: true if the user has finished the suit
+	 * the values in isSuitFinished are order by playCard 
+	 * (if Fede plays first, then the first value in the list is the one of Fede)
+	 * @return true if the value is setted
+	 */
+	public boolean setIsSuitFinished(final Boolean value) {
 		if (this.isSuitFinished.size() == this.numberOfPlayers) {
 			this.isSuitFinished = new ArrayList<>();
 		}
+		System.out.println("alternative 2 isSuitFinished set. Turn = "+ turn);
 		try {
-			this.isSuitFinished.add(position, value);
+			this.isSuitFinished.add(value);
 		} catch (final IndexOutOfBoundsException e) {
 			return false;
 		}
+		System.out.println("2 isSuitFinished is setted" + this.isSuitFinished);
 		return true;
 	}
 
@@ -373,11 +385,20 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	@Override
-	public void onStartGame() {
+	public Future<JsonObject> onStartGame() {
+		Promise<JsonObject> promise = Promise.promise();
 		if (this.getVertx() != null)
-			this.getVertx().eventBus().send("game-startRound:onStartGame",
+			this.getVertx().eventBus().request("game-startRound:onStartGame",
 					new JsonObject().put(Constants.GAME_ID, this.id.toString())
-							.put(Constants.NUMBER_OF_PLAYERS, this.numberOfPlayers).toString());
+							.put(Constants.NUMBER_OF_PLAYERS, this.numberOfPlayers).toString(), reply -> {
+								if (reply.succeeded()) {
+									promise.complete((JsonObject) reply.result().body());
+									 
+								} else {
+									promise.fail("Failed to start");
+								}
+							});
+		return promise.future();
 	}
 
 	@Override
@@ -389,14 +410,14 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	@Override
 	public void onTrickCommpleted(Trick latestTrick) {
 		if (this.getVertx() != null)
-			System.out.println("before send");
-			this.getVertx().eventBus().send("game-trickCommpleted:onTrickCommpleted",
-					new JsonObject().put(Constants.GAME_ID, this.id.toString())
-					.put(Constants.TRICK, latestTrick.getCards().stream().mapToInt(Integer::parseInt).toArray())
-							.put(Constants.GAME_MODE, this.gameMode.toString())
-							.put(Constants.IS_SUIT_FINISHED, this.getIsSuitFinished().toString())
-							.put(Constants.TRUMP, this.trump.getValue()).toString());
-			System.out.println("sending");
+			System.out.println("6 before send");
+			this.getVertx().eventBus().send("game-trickCommpleted:onTrickCommpleted", new JsonObject()
+				.put(Constants.GAME_ID, this.id.toString())
+				.put(Constants.TRICK, latestTrick.getCards().stream().mapToInt(Integer::parseInt).toArray().toString())
+				.put(Constants.GAME_MODE, this.gameMode.toString())
+				.put(Constants.IS_SUIT_FINISHED, this.getIsSuitFinished().toString())
+				.put(Constants.TRUMP, this.trump.getValue()));
+			System.out.println("7 sending ");
 	}
 
 

@@ -3,12 +3,8 @@ package BLManagment;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.primitives.Booleans;
-
 import game.Trick;
-import game.TrickImpl;
 import game.service.GameService;
 import game.utils.Constants;
 import io.vertx.core.Vertx;
@@ -91,7 +87,7 @@ public class BusinessLogicController {
 				}
                 if (error != null) {
                     LOGGER.error("Error when starting the round");
-                    message.reply("Error when starting the round");
+                    message.fail(417, "Error when starting the round");
                 } else {
                     LOGGER.info("Round started");
                     message.reply(startResponse);
@@ -108,25 +104,26 @@ public class BusinessLogicController {
 	 */
 	public void trickCompleted() {
 		this.vertx.eventBus().consumer("game-trickCommpleted:onTrickCommpleted", message -> {
-			System.out.println("messaged from bus rcv");
-			// JsonObject startResponse = new JsonObject();
+			System.out.println("8 messaged from bus rcv");
 			LOGGER.info("Received message: " + message.body());
-			JsonObject body = new JsonObject((String) message.body());
+			JsonObject body = new JsonObject(message.body().toString());
+			System.out.println("8.5 in the meantime");
 			UUID gameID = UUID.fromString(body.getString(Constants.GAME_ID));
+			System.out.println("8.6 tra id e trump");
 			String trump = body.getString(Constants.TRUMP);
+			System.out.println("8.70 tra trump e mode");
 			String mode = body.getString(Constants.GAME_MODE);
-			// List<Boolean> isSuitFinishedList =  body.getJsonArray(Constants.IS_SUIT_FINISHED)
-            //                    .stream()
-            //                    .map(Boolean.class::cast)
-            //                    .toList();
-			System.out.println("isSuitFinishedList"+this.gameService.getGames().get(gameID).getIsSuitFinished());
+			System.out.println("9 isSuitFinishedList"+this.gameService.getGames().get(gameID).getIsSuitFinished());
+			System.out.println("10 body"+body);
 			this.computeScore(this.gameService.getGames().get(gameID).getLatestTrick(), trump, mode,
 			 this.gameService.getGames().get(gameID).getIsSuitFinished(), gameID).whenComplete((result, error) -> {
 				System.out.println(result);
                 if (error != null) {
+					System.out.println("error not null");
                     LOGGER.error("Error when computing the score");
-                    message.reply("Error when computing the score");
+                    message.fail(417, "Error when computing the score");
                 } else {
+					System.out.println("score computedll");
                     LOGGER.info("Computed score");
 					this.gameService.getGames().get(gameID).clearIsSuitFinished();
                     message.reply(result);
@@ -137,7 +134,7 @@ public class BusinessLogicController {
 	//	final int[] cards = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
 		// final boolean[] isSuitFinished = Booleans.toArray(isSuitFinishedList);
 		// final JsonObject requestBody = 
-		// body //TODO se non va è perchè coi sono più cose nel body
+		// body 
 				// .put("trick", cards);
 			//	.put("trump", Integer.parseInt(trump))
 			//	.put("mode", mode)
@@ -183,7 +180,7 @@ public class BusinessLogicController {
                                 //   .mapToInt(JsonValue::asJsonNumber) // Convert to JsonNumber
                                 //   .map(JsonNumber::intValue)         // Extract int value
                                 
-		final boolean[] isSuitFinished = new boolean[]{true, true, true, true};//Booleans.toArray(isSuitFinishedList); 
+		final boolean[] isSuitFinished = Booleans.toArray(isSuitFinishedList); 
 		final JsonObject requestBody = new JsonObject()
 				.put("trick", cards)
 				.put("trump", Integer.parseInt(trump))

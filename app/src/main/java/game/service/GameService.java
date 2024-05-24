@@ -12,6 +12,7 @@ import game.GameMode;
 import game.GameVerticle;
 import game.Trick;
 import game.utils.Constants;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -77,13 +78,25 @@ public class GameService {
 		return jsonJoin;
 	}
 
+	/**
+	 * @param gameID
+	 * @return
+	 */
 	public JsonObject startGame(final UUID gameID) {
 		final JsonObject jsonStartGame = new JsonObject();
 		if (this.games.get(gameID) != null) {
 			if (this.games.get(gameID).startGame()) {
-				jsonStartGame.put(Constants.START_ATTR, true);
-				this.games.get(gameID).onStartGame();
-				return jsonStartGame.put(Constants.MESSAGE, "The game " + gameID + " can start");
+				final Future<JsonObject> future = this.games.get(gameID).onStartGame();
+				future.onComplete(handler -> {
+					if (handler.succeeded()) {
+						jsonStartGame.put(Constants.START_ATTR, handler.result().getBoolean(Constants.START_ATTR));
+						jsonStartGame.put(Constants.MESSAGE, "The game " + gameID + " can start");
+					} else {
+						jsonStartGame.put(Constants.START_ATTR, false);
+						jsonStartGame.put(Constants.MESSAGE, "Not all the players are in");
+					}
+				});
+				return jsonStartGame;
 			} else {
 				jsonStartGame.put(Constants.START_ATTR, false);
 				return jsonStartGame.put(Constants.MESSAGE, "Not all the players are in");
@@ -113,12 +126,12 @@ public class GameService {
         final JsonObject jsonPlayCard = new JsonObject();
         if (this.games.get(gameID) != null && this.games.get(gameID).canStart()) {
 				//Boolean play = this.games.get(gameID).addCard(card, username);
-				
+
 				// Trick latestTrick = this.games.get(gameID).getLatestTrick();
 				// if(latestTrick.isCompleted()){
 				// 	this.games.get(gameID).onTrickCommpleted(latestTrick);
 				// }
-			
+			System.out.println("3 inside service playcard, calling verticle playcard");
             return jsonPlayCard.put(Constants.PLAY, this.games.get(gameID).addCard(card, username));
         }
         jsonPlayCard.put(Constants.NOT_FOUND, false);

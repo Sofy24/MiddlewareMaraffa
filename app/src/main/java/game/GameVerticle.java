@@ -9,7 +9,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
-
+import java.util.concurrent.CompletableFuture;
 import game.service.User;
 import game.utils.Constants;
 import game.utils.Pair;
@@ -48,10 +48,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private int turn = -1; 
     private int initialTurn = -1; 
 	private List<Boolean> isSuitFinished = new ArrayList<>();
-
-	public GameSchema getGameSchema() {
-		return this.gameSchema;
-	}
 
 	public GameVerticle(final UUID id, final User user, final int numberOfPlayers, final int expectedScore,
 			final GameMode gameMode,
@@ -121,18 +117,18 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					return false;
 				}
 				System.out.println("4 added username at current trick" + currentTrick);
+				System.out.println("isSuitFinished ="+this.isSuitFinished);
 				this.currentTrick.addCard(card, username);
 				this.turn = (this.turn + 1) % this.numberOfPlayers;
-				if (this.currentTrick.isCompleted()) {
-					this.gameSchema.addTrick(this.currentTrick);
-					if (this.statisticManager != null)
-						this.statisticManager.updateRecordWithTrick(String.valueOf(this.id), this.currentTrick);
-					this.onTrickCommpleted(currentTrick);
-					System.out.println("5 current trick is completed, verticle" + currentTrick);
-					this.states.put(this.currentState.get(), this.currentTrick);
-					this.currentTrick = new TrickImpl(this.numberOfPlayers, this.trump);
-					this.tricks.add(this.currentTrick);
-				}
+				// if (this.currentTrick.isCompleted()) {
+				// 	this.gameSchema.addTrick(this.currentTrick);
+				// 	if (this.statisticManager != null)
+				// 		this.statisticManager.updateRecordWithTrick(String.valueOf(this.id), this.currentTrick);
+				// 	System.out.println("5 current trick is completed, verticle" + currentTrick);
+				// 	this.states.put(this.currentState.get(), this.currentTrick);
+				// 	this.currentTrick = new TrickImpl(this.numberOfPlayers, this.trump);
+				// 	this.tricks.add(this.currentTrick);
+				//  }
 				return true;
 			}
 		}
@@ -198,6 +194,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.id;
 	}
 
+	public GameSchema getGameSchema() {
+		return this.gameSchema;
+	}
+
 	public Map<Integer, Trick> getStates() {
 		return this.states;
 	}
@@ -214,13 +214,22 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.currentTrick;
 	}
 
+	public void setCurrentTrick(Trick trick) {
+		this.currentTrick = trick;
+	}
+
 	public Trick getLatestTrick() {
+		System.out.println("current state in getLatestTrick" + this.currentState.get());
+		System.out.println("this is tricks" + this.tricks);
 		Trick latestTrick = this.tricks.get(this.getCurrentState().get());
-		if (latestTrick.isCompleted()){
-			this.incrementCurrentState();
-			//this.onTrickCommpleted(latestTrick);
-		}
+		// if (latestTrick.isCompleted()){
+		// 	this.incrementCurrentState();
+		// }
 		return latestTrick;
+	}
+
+	public List<Trick> getTricks() {
+		return this.tricks;
 	}
 
     public int getInitialTurn() {
@@ -407,17 +416,27 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		throw new UnsupportedOperationException("Unimplemented method 'onPlayCard'");
 	}
 
+
+	
 	@Override
-	public void onTrickCommpleted(Trick latestTrick) {
+	public CompletableFuture<JsonObject> onTrickCompleted(Trick latestTrick) {
+		CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		if (this.getVertx() != null)
-			System.out.println("6 before send");
-			this.getVertx().eventBus().send("game-trickCommpleted:onTrickCommpleted", new JsonObject()
+			System.out.println("6 before send, this.getIsSuitFinished()" + this.getIsSuitFinished());
+			this.getVertx().eventBus().request("game-trickCommpleted:onTrickCommpleted", new JsonObject()
 				.put(Constants.GAME_ID, this.id.toString())
 				.put(Constants.TRICK, latestTrick.getCards().stream().mapToInt(Integer::parseInt).toArray().toString())
 				.put(Constants.GAME_MODE, this.gameMode.toString())
 				.put(Constants.IS_SUIT_FINISHED, this.getIsSuitFinished().toString())
-				.put(Constants.TRUMP, this.trump.getValue()));
-			System.out.println("7 sending ");
+				.put(Constants.TRUMP, this.trump.getValue()).toString(), reply -> {
+					if (reply.succeeded()) {
+						System.out.println("7 finally (game_verticle):"+ reply.result().body());
+						future.complete((JsonObject) reply.result().body());
+					} else {
+						future.complete(new JsonObject().put(Constants.ERROR, "Failed to complete the trick"));
+					}
+				});
+		return future;
 	}
 
 

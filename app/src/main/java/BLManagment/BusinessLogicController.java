@@ -115,6 +115,7 @@ public class BusinessLogicController {
 			String mode = body.getString(Constants.GAME_MODE);
 			System.out.println("9 isSuitFinishedList"+this.gameService.getGames().get(gameID).getIsSuitFinished());
 			System.out.println("10 body"+body);
+			System.out.println("11 this is latest" + this.gameService.getGames().get(gameID).getLatestTrick());
 			this.computeScore(this.gameService.getGames().get(gameID).getLatestTrick(), trump, mode,
 			 this.gameService.getGames().get(gameID).getIsSuitFinished(), gameID).whenComplete((result, error) -> {
 				System.out.println(result);
@@ -123,46 +124,13 @@ public class BusinessLogicController {
                     LOGGER.error("Error when computing the score");
                     message.fail(417, "Error when computing the score");
                 } else {
-					System.out.println("score computedll");
+					System.out.println("score computed_business_sibus");
                     LOGGER.info("Computed score");
-					this.gameService.getGames().get(gameID).clearIsSuitFinished();
                     message.reply(result);
                 }
             	});;
 			});
 		}
-	//	final int[] cards = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
-		// final boolean[] isSuitFinished = Booleans.toArray(isSuitFinishedList);
-		// final JsonObject requestBody = 
-		// body 
-				// .put("trick", cards);
-			//	.put("trump", Integer.parseInt(trump))
-			//	.put("mode", mode)
-				// .put("isSuitFinished", isSuitFinished);
-
-		
-		// final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-		// LOGGER.info("Computing the score");
-		// WebClient.create(this.vertx).post(PORT, LOCALHOST, "/games/computeScore")
-		// 		.putHeader("Accept", "application/json")
-		// 		.as(BodyCodec.jsonObject())
-		// 		.sendJsonObject(body, handler -> {
-		// 			if (handler.succeeded()) {
-		// 				this.gameService.getGames().get(gameID)
-		// 					.setTurn(handler.result().body().getInteger("winningPosition"));
-		// 				this.gameService.getGames().get(gameID).setScore(handler.result().body().getInteger("score"),
-		// 					handler.result().body().getBoolean("firstTeam"));
-		// 				handler.result().body().put("turn", this.gameService.getGames().get(gameID).getTurn());
-		// 				future.complete(handler.result().body());
-		// 			} else {
-		// 				LOGGER.info("Error in computing the score");
-		// 				LOGGER.error("Error in computing the score");
-		// 				future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
-		// 			}
-		// 		});
-		
-		//return future;
-	
 
 
 	/**
@@ -177,9 +145,7 @@ public class BusinessLogicController {
 			final List<Boolean> isSuitFinishedList, final UUID gameID) {
 		this.gameService.getGames().get(gameID).incrementCurrentState();
 		final int[] cards = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
-                                //   .mapToInt(JsonValue::asJsonNumber) // Convert to JsonNumber
-                                //   .map(JsonNumber::intValue)         // Extract int value
-                                
+                               
 		final boolean[] isSuitFinished = Booleans.toArray(isSuitFinishedList); 
 		final JsonObject requestBody = new JsonObject()
 				.put("trick", cards)
@@ -193,7 +159,7 @@ public class BusinessLogicController {
 				.as(BodyCodec.jsonObject())
 				.sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
-						System.out.println("RESULT:"+handler.result().body());
+						System.out.println("RESULT_business_nobus:"+handler.result().body());
 						this.gameService.getGames().get(gameID)
 							.setTurn(handler.result().body().getInteger("winningPosition"));
 						this.gameService.getGames().get(gameID).setScore(handler.result().body().getInteger("score"),

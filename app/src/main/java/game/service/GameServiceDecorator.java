@@ -179,7 +179,7 @@ public class GameServiceDecorator {
 		final UUID gameID = UUID.fromString(uuidAsString);
 		final String cardValue = context.body().asJsonObject().getString(Constants.CARD_VALUE);
 		final String cardSuit = context.body().asJsonObject().getString(Constants.CARD_SUIT);
-		final Boolean isSuitFinished = context.body().asJsonObject().getBoolean(Constants.IS_SUIT_FINISHED);
+		final Boolean isSuitFinishedByPlayer = context.body().asJsonObject().getBoolean(Constants.IS_SUIT_FINISHED);
 		try {
 			final Card<CardValue, CardSuit> card = new Card<>(CardValue.getName(cardValue), CardSuit.getName(cardSuit));
 			final String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
@@ -194,8 +194,9 @@ public class GameServiceDecorator {
 				response.put(Constants.MESSAGE, "Invalid card " + card);
 				context.response().setStatusCode(401).end(response.toBuffer());
 			} else {
-				this.gameService.getGames().get(gameID).setIsSuitFinished(isSuitFinished);
-				final JsonObject playCardResponse = this.gameService.playCard(gameID, username, card);
+				
+				System.out.println("Setted isSuitFinished nel decorator = " + isSuitFinishedByPlayer);
+				final JsonObject playCardResponse = this.gameService.playCard(gameID, username, card, isSuitFinishedByPlayer);
 				if (!playCardResponse.containsKey(Constants.NOT_FOUND)) {
 					if (!this.gameService.getGames().get(gameID).isUserIn(username)
 							|| !playCardResponse.getBoolean(Constants.PLAY)) {

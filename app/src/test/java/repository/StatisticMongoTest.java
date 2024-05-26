@@ -32,6 +32,7 @@ public class StatisticMongoTest {
 	private GameService gameService;
 	private static final CardSuit UNDEFINED_TRUMP = CardSuit.NONE;
 	private final Card<CardSuit, CardValue> cardTest = new Card<>(CardValue.THREE, CardSuit.CLUBS);
+	private final Boolean isSuitFinished = true;
 	private final MongoStatisticManager mongoStatisticManager = new MongoStatisticManager(); // TODO andrebbe fatto
 
 	// contro il db
@@ -73,10 +74,10 @@ public class StatisticMongoTest {
 		}
 
 		this.gameService.chooseTrump(gameId, this.cardTest.cardSuit().toString(), this.userTest.username());
-		this.gameService.playCard(gameId, this.userTest.username(), new Card<>(CardValue.ONE, CardSuit.CLUBS));
-		this.gameService.playCard(gameId, this.userTest.username() + "2", new Card<>(CardValue.TWO, CardSuit.CLUBS));
-		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.THREE, CardSuit.CLUBS));
-		this.gameService.playCard(gameId, this.userTest.username() + "4", new Card<>(CardValue.FOUR, CardSuit.CLUBS));
-		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.KING, CardSuit.CLUBS));
+		this.gameService.playCard(gameId, this.userTest.username(), new Card<>(CardValue.ONE, CardSuit.CLUBS), isSuitFinished);
+		this.gameService.playCard(gameId, this.userTest.username() + "2", new Card<>(CardValue.TWO, CardSuit.CLUBS), isSuitFinished);
+		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.THREE, CardSuit.CLUBS), isSuitFinished);
+		this.gameService.playCard(gameId, this.userTest.username() + "4", new Card<>(CardValue.FOUR, CardSuit.CLUBS), isSuitFinished);
+		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.KING, CardSuit.CLUBS), isSuitFinished);
 	}
 }

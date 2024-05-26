@@ -11,12 +11,15 @@ import game.CardValue;
 import game.GameMode;
 import game.GameVerticle;
 import game.Trick;
+import game.TrickImpl;
 import game.utils.Constants;
 import io.vertx.core.Future;
+import java.util.concurrent.CompletableFuture;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import repository.AbstractStatisticManager;
+import rx.Completable;
 
 /**
  * TODO javadoc
@@ -122,21 +125,65 @@ public class GameService {
 		return jsonCanStart.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
-    public JsonObject playCard(final UUID gameID, final String username, final Card<CardValue, CardSuit> card) {
+    public JsonObject playCard(final UUID gameID, final String username, final Card<CardValue, CardSuit> card, final Boolean isSuitFinishedByPlayer) {
         final JsonObject jsonPlayCard = new JsonObject();
         if (this.games.get(gameID) != null && this.games.get(gameID).canStart()) {
-				//Boolean play = this.games.get(gameID).addCard(card, username);
-
-				// Trick latestTrick = this.games.get(gameID).getLatestTrick();
-				// if(latestTrick.isCompleted()){
-				// 	this.games.get(gameID).onTrickCommpleted(latestTrick);
-				// }
+			final GameVerticle game = this.games.get(gameID);
+			game.setIsSuitFinished(isSuitFinishedByPlayer);
+			Boolean play = game.addCard(card, username);
+			jsonPlayCard.put(Constants.PLAY, play);
+				if (play && game.getLatestTrick().isCompleted()) {
+					game.getGameSchema().addTrick(game.getCurrentTrick());
+					if (this.statisticManager != null)
+						this.statisticManager.updateRecordWithTrick(String.valueOf(gameID), game.getCurrentTrick());
+					System.out.println("isSuitFinished ="+game.getIsSuitFinished());
+					System.out.println("performed mongo actions");
+					final CompletableFuture<JsonObject> future = game.onTrickCompleted(game.getCurrentTrick());
+					try{
+						JsonObject result = future.get();
+						jsonPlayCard.put(Constants.RESULT, result);
+						System.out.println("5 current trick is completed, verticle" + game.getCurrentTrick());
+						game.getStates().put(game.getCurrentState().get(), game.getCurrentTrick());
+						game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
+						game.getTricks().add(game.getCurrentTrick());
+						game.clearIsSuitFinished();
+						System.out.println("Finished resetting");
+						return jsonPlayCard;
+					} catch (Exception e){
+						jsonPlayCard.put(Constants.PLAY, false);
+						jsonPlayCard.put(Constants.MESSAGE, "Failed to complete the trick");
+						return jsonPlayCard;
+					}
+				}       
+			jsonPlayCard.put(Constants.NOT_FOUND, false);
+			return jsonPlayCard.put(Constants.PLAY, false);
+		}
+		return jsonPlayCard;
+	}
+					/*future.whenComplete( (result, error) -> {
+						if (error == null) {
+							System.out.println("playcard in service, handler succeeded ");
+							jsonPlayCard.put(Constants.RESULT, result);
+							System.out.println("5 current trick is completed, verticle" + game.getCurrentTrick());
+							game.getStates().put(game.getCurrentState().get(), game.getCurrentTrick());
+							game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
+							game.getTricks().add(game.getCurrentTrick());
+							game.clearIsSuitFinished();
+							System.out.println("Finished resetting");
+						} else {
+							System.out.println("this is compute future (service)");
+							jsonPlayCard.put(Constants.PLAY, false);
+							jsonPlayCard.put(Constants.MESSAGE, "Failed to complete the trick");
+						}
+					});
+					System.out.println("after the compute future (service)");
+				}
+			
 			System.out.println("3 inside service playcard, calling verticle playcard");
-            return jsonPlayCard.put(Constants.PLAY, this.games.get(gameID).addCard(card, username));
-        }
-        jsonPlayCard.put(Constants.NOT_FOUND, false);
-        return jsonPlayCard.put(Constants.PLAY, false);
-    }
+			
+            return jsonPlayCard;*/
+
+
 
     public JsonObject chooseTrump(final UUID gameID, final String cardSuit, final String username) {
         final JsonObject jsonTrump = new JsonObject();

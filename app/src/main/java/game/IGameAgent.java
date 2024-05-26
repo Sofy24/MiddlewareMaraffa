@@ -3,7 +3,6 @@ package game;
 import game.service.User;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
-import java.util.concurrent.CompletableFuture;
 
 public interface IGameAgent {
 
@@ -15,7 +14,7 @@ public interface IGameAgent {
 
 	void onPlayCard();
 
-	CompletableFuture<JsonObject> onTrickCompleted(Trick latestTrick ); 
+	void onTrickCompleted(Trick latestTrick);
 
 	void onMessage();
 

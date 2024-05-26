@@ -21,6 +21,7 @@ import io.vertx.core.json.JsonObject;
 import repository.AbstractStatisticManager;
 import rx.Completable;
 
+
 /**
  * TODO javadoc
  */
@@ -130,7 +131,7 @@ public class GameService {
         if (this.games.get(gameID) != null && this.games.get(gameID).canStart()) {
 			final GameVerticle game = this.games.get(gameID);
 			game.setIsSuitFinished(isSuitFinishedByPlayer);
-			Boolean play = game.addCard(card, username);
+			final Boolean play = game.addCard(card, username);
 			jsonPlayCard.put(Constants.PLAY, play);
 				if (play && game.getLatestTrick().isCompleted()) {
 					game.getGameSchema().addTrick(game.getCurrentTrick());
@@ -138,26 +139,34 @@ public class GameService {
 						this.statisticManager.updateRecordWithTrick(String.valueOf(gameID), game.getCurrentTrick());
 					System.out.println("isSuitFinished ="+game.getIsSuitFinished());
 					System.out.println("performed mongo actions");
-					final CompletableFuture<JsonObject> future = game.onTrickCompleted(game.getCurrentTrick());
-					try{
-						JsonObject result = future.get();
-						jsonPlayCard.put(Constants.RESULT, result);
-						System.out.println("5 current trick is completed, verticle" + game.getCurrentTrick());
-						game.getStates().put(game.getCurrentState().get(), game.getCurrentTrick());
-						game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
-						game.getTricks().add(game.getCurrentTrick());
-						game.clearIsSuitFinished();
-						System.out.println("Finished resetting");
-						return jsonPlayCard;
-					} catch (Exception e){
+					try {
+						game.onTrickCompleted(game.getCurrentTrick());
+					} catch (final Exception e) {
 						jsonPlayCard.put(Constants.PLAY, false);
 						jsonPlayCard.put(Constants.MESSAGE, "Failed to complete the trick");
 						return jsonPlayCard;
 					}
-				}       
-			jsonPlayCard.put(Constants.NOT_FOUND, false);
-			return jsonPlayCard.put(Constants.PLAY, false);
-		}
+					// final CompletableFuture<JsonObject> future = game.onTrickCompleted(game.getCurrentTrick());
+					// try{
+						// JsonObject result = future.get();
+						// jsonPlayCard.put(Constants.RESULT, result);
+						// System.out.println("5 current trick is completed, verticle" + game.getCurrentTrick());
+						// game.getStates().put(game.getCurrentState().get(), game.getCurrentTrick());
+						// game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
+						// game.getTricks().add(game.getCurrentTrick());
+						// game.clearIsSuitFinished();
+						// System.out.println("Finished resetting");
+						// return jsonPlayCard;
+					// } catch (final Exception e){
+						// jsonPlayCard.put(Constants.PLAY, false);
+						// jsonPlayCard.put(Constants.MESSAGE, "Failed to complete the trick");
+						// return jsonPlayCard;
+					// }
+				}      
+		}else {
+						jsonPlayCard.put(Constants.NOT_FOUND, false);
+						return jsonPlayCard.put(Constants.PLAY, false);
+				}  
 		return jsonPlayCard;
 	}
 					/*future.whenComplete( (result, error) -> {

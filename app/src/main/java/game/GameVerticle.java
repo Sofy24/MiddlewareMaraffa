@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.concurrent.CompletableFuture;
 import game.service.User;
@@ -116,7 +117,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				if (this.currentTrick.getCardsAndUsers().containsValue(username)) {
 					return false;
 				}
-				System.out.println("4 added username at current trick" + currentTrick);
+				System.out.println("4 added username at current trick" + this.currentTrick);
 				System.out.println("isSuitFinished ="+this.isSuitFinished);
 				this.currentTrick.addCard(card, username);
 				this.turn = (this.turn + 1) % this.numberOfPlayers;
@@ -124,7 +125,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				// 	this.gameSchema.addTrick(this.currentTrick);
 				// 	if (this.statisticManager != null)
 				// 		this.statisticManager.updateRecordWithTrick(String.valueOf(this.id), this.currentTrick);
-				// 	System.out.println("5 current trick is completed, verticle" + currentTrick);
+				// 	System.out.println("5 current trick is completed, verticle" + this.currentTrick);
 				// 	this.states.put(this.currentState.get(), this.currentTrick);
 				// 	this.currentTrick = new TrickImpl(this.numberOfPlayers, this.trump);
 				// 	this.tricks.add(this.currentTrick);
@@ -184,7 +185,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			this.currentTrick = this.states.getOrDefault(this.currentState.get(),
 					new TrickImpl(this.numberOfPlayers, this.trump));
 		}
-		if (this.users.stream().map(User::username).toList().get(turn).equals(username)) {
+		if (this.users.stream().map(User::username).toList().get(this.turn).equals(username)) {
 			this.currentTrick.setCall(call, username);
 		}
 		return !Call.NONE.equals(this.currentTrick.getCall());
@@ -214,14 +215,14 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.currentTrick;
 	}
 
-	public void setCurrentTrick(Trick trick) {
+	public void setCurrentTrick(final Trick trick) {
 		this.currentTrick = trick;
 	}
 
 	public Trick getLatestTrick() {
 		System.out.println("current state in getLatestTrick" + this.currentState.get());
 		System.out.println("this is tricks" + this.tricks);
-		Trick latestTrick = this.tricks.get(this.getCurrentState().get());
+		final Trick latestTrick = this.tricks.get(this.getCurrentState().get());
 		// if (latestTrick.isCompleted()){
 		// 	this.incrementCurrentState();
 		// }
@@ -254,7 +255,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	public int getPositionByUsername(final String username) {
-		return this.users.stream().map(u -> u.username()).toList().indexOf(username);
+		return this.users.stream().map((Function<? super User, ? extends String>) User::username).toList().indexOf(username);
 	}
 
 	public List<Boolean> getIsSuitFinished() {
@@ -274,7 +275,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		if (this.isSuitFinished.size() == this.numberOfPlayers) {
 			this.isSuitFinished = new ArrayList<>();
 		}
-		System.out.println("alternative 2 isSuitFinished set. Turn = "+ turn);
+		System.out.println("alternative 2 isSuitFinished set. Turn = "+ this.turn);
 		try {
 			this.isSuitFinished.add(value);
 		} catch (final IndexOutOfBoundsException e) {
@@ -350,7 +351,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public boolean isRoundEnded() {
 		final double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
         if (this.currentState.get() == numberOfTricksInRound) {
-            setInitialTurn(this.initialTurn++);
+            this.setInitialTurn(this.initialTurn++);
         }
 		return this.currentState.get() == numberOfTricksInRound;
 	}
@@ -395,14 +396,13 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	@Override
 	public Future<JsonObject> onStartGame() {
-		Promise<JsonObject> promise = Promise.promise();
+		final Promise<JsonObject> promise = Promise.promise();
 		if (this.getVertx() != null)
 			this.getVertx().eventBus().request("game-startRound:onStartGame",
 					new JsonObject().put(Constants.GAME_ID, this.id.toString())
 							.put(Constants.NUMBER_OF_PLAYERS, this.numberOfPlayers).toString(), reply -> {
 								if (reply.succeeded()) {
 									promise.complete((JsonObject) reply.result().body());
-									 
 								} else {
 									promise.fail("Failed to start");
 								}
@@ -419,8 +419,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	
 	@Override
-	public CompletableFuture<JsonObject> onTrickCompleted(Trick latestTrick) {
-		CompletableFuture<JsonObject> future = new CompletableFuture<>();
+	public void onTrickCompleted(final Trick latestTrick) {
+		// CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		if (this.getVertx() != null)
 			System.out.println("6 before send, this.getIsSuitFinished()" + this.getIsSuitFinished());
 			this.getVertx().eventBus().request("game-trickCommpleted:onTrickCommpleted", new JsonObject()
@@ -431,12 +431,17 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.put(Constants.TRUMP, this.trump.getValue()).toString(), reply -> {
 					if (reply.succeeded()) {
 						System.out.println("7 finally (game_verticle):"+ reply.result().body());
-						future.complete((JsonObject) reply.result().body());
+						this.getStates().put(this.getCurrentState().get(), this.getCurrentTrick());
+						this.setCurrentTrick(new TrickImpl(this.getMaxNumberOfPlayers(), this.getTrump()));
+						this.getTricks().add(this.getCurrentTrick());
+						this.clearIsSuitFinished();
+						// future.complete((JsonObject) reply.result().body());
 					} else {
-						future.complete(new JsonObject().put(Constants.ERROR, "Failed to complete the trick"));
+						// future.complete(new JsonObject().put(Constants.ERROR, "Failed to complete the trick"));
+						throw new UnsupportedOperationException("Failed to complete the trick");
 					}
 				});
-		return future;
+		// return future;
 	}
 
 

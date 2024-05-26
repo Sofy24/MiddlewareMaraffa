@@ -23,11 +23,11 @@ public class BusinessLogicController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BusinessLogicController.class);
 	private final GameService gameService;
 
-	public BusinessLogicController(final Vertx vertx, GameService gameService) {
+	public BusinessLogicController(final Vertx vertx, final GameService gameService) {
 		this.vertx = vertx;
 		this.gameService = gameService;
-		startRound();
-		trickCompleted();
+		this.startRound();
+		this.trickCompleted();
 
 	}
 
@@ -38,7 +38,7 @@ public class BusinessLogicController {
 	public CompletableFuture<JsonObject> getShuffledDeck(final UUID gameID, final Integer numberOfPlayers) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		System.out.println("Getting the shuffled deck");
-		JsonObject startResponse = new JsonObject();
+		final JsonObject startResponse = new JsonObject();
 		WebClient.create(this.vertx).get(PORT, LOCALHOST, "/games/startRound")
 				// .ssl(true)
 				.putHeader("Accept", "application/json") 
@@ -69,11 +69,11 @@ public class BusinessLogicController {
 	 * @return a json object with the deck and the first player if there weren't any errors*/
 	public void startRound(){
 		this.vertx.eventBus().consumer("game-startRound:onStartGame", message -> {
-			JsonObject startResponse = new JsonObject();
+			final JsonObject startResponse = new JsonObject();
             LOGGER.info("Received message: " + message.body());
-			JsonObject body = new JsonObject((String) message.body());
-			UUID gameID = UUID.fromString(body.getString("gameID"));
-        	int numberOfPlayers = body.getInteger("numberOfPlayers");
+			final JsonObject body = new JsonObject((String) message.body());
+			final UUID gameID = UUID.fromString(body.getString("gameID"));
+        	final int numberOfPlayers = body.getInteger("numberOfPlayers");
             this.getShuffledDeck(gameID, numberOfPlayers).whenComplete((result, error) -> {
 				System.out.println(result);
 				if (!result.containsKey("error")) {
@@ -106,13 +106,13 @@ public class BusinessLogicController {
 		this.vertx.eventBus().consumer("game-trickCommpleted:onTrickCommpleted", message -> {
 			System.out.println("8 messaged from bus rcv");
 			LOGGER.info("Received message: " + message.body());
-			JsonObject body = new JsonObject(message.body().toString());
+			final JsonObject body = new JsonObject(message.body().toString());
 			System.out.println("8.5 in the meantime");
-			UUID gameID = UUID.fromString(body.getString(Constants.GAME_ID));
+			final UUID gameID = UUID.fromString(body.getString(Constants.GAME_ID));
 			System.out.println("8.6 tra id e trump");
-			String trump = body.getString(Constants.TRUMP);
+			final String trump = body.getString(Constants.TRUMP);
 			System.out.println("8.70 tra trump e mode");
-			String mode = body.getString(Constants.GAME_MODE);
+			final String mode = body.getString(Constants.GAME_MODE);
 			System.out.println("9 isSuitFinishedList"+this.gameService.getGames().get(gameID).getIsSuitFinished());
 			System.out.println("10 body"+body);
 			System.out.println("11 this is latest" + this.gameService.getGames().get(gameID).getLatestTrick());

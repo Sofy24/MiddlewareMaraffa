@@ -50,6 +50,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private int turn = -1;
 	private int initialTurn = -1;
 	private List<Boolean> isSuitFinished = new ArrayList<>();
+	
 
 	public GameSchema getGameSchema() {
 		return this.gameSchema;

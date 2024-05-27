@@ -16,6 +16,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import repository.AbstractStatisticManager;
+import server.WebSocketVertx;
 
 /**
  * TODO javadoc
@@ -23,6 +24,7 @@ import repository.AbstractStatisticManager;
 public class GameService {
 	private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
 	private final Vertx vertx;
+	private WebSocketVertx webSocket;
 
 	private AbstractStatisticManager statisticManager;
 
@@ -31,9 +33,11 @@ public class GameService {
 
 	}
 
-	public GameService(final Vertx vertx, final AbstractStatisticManager statisticManager) {
+	public GameService(final Vertx vertx, final AbstractStatisticManager statisticManager,
+			final WebSocketVertx webSocket) {
 		this.vertx = vertx;
 		this.statisticManager = statisticManager;
+		this.webSocket = webSocket;
 	}
 
 	public JsonObject createGame(final Integer numberOfPlayers, final User user, final int expectedScore,
@@ -62,6 +66,7 @@ public class GameService {
 			if (this.games.get(gameID).getNumberOfPlayersIn() < this.games.get(gameID).getMaxNumberOfPlayers()) {
 				if (this.games.get(gameID).addUser(user)) {
 					jsonJoin.put(Constants.JOIN_ATTR, true);
+					this.webSocket.addConnetedUser(user, gameID);
 					return jsonJoin.put(Constants.MESSAGE, "Game " + gameID + " joined by " + user.username());
 				} else {
 					jsonJoin.put(Constants.ALREADY_JOINED, true);

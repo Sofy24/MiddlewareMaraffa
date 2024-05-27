@@ -11,15 +11,12 @@ import game.CardValue;
 import game.GameMode;
 import game.GameVerticle;
 import game.Trick;
-import game.TrickImpl;
 import game.utils.Constants;
-import io.vertx.core.Future;
-import java.util.concurrent.CompletableFuture;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import repository.AbstractStatisticManager;
-import rx.Completable;
+
 
 
 /**
@@ -90,16 +87,14 @@ public class GameService {
 		final JsonObject jsonStartGame = new JsonObject();
 		if (this.games.get(gameID) != null) {
 			if (this.games.get(gameID).startGame()) {
-				final Future<JsonObject> future = this.games.get(gameID).onStartGame();
-				future.onComplete(handler -> {
-					if (handler.succeeded()) {
-						jsonStartGame.put(Constants.START_ATTR, handler.result().getBoolean(Constants.START_ATTR));
-						jsonStartGame.put(Constants.MESSAGE, "The game " + gameID + " can start");
-					} else {
-						jsonStartGame.put(Constants.START_ATTR, false);
-						jsonStartGame.put(Constants.MESSAGE, "Not all the players are in");
-					}
-				});
+				try{
+					this.games.get(gameID).onStartGame();
+					jsonStartGame.put(Constants.START_ATTR, true);
+					jsonStartGame.put(Constants.MESSAGE, "The game " + gameID + " can start");
+				} catch (final Exception e){
+					jsonStartGame.put(Constants.START_ATTR, false);
+					jsonStartGame.put(Constants.MESSAGE, "Error in starting the game");
+				}
 				return jsonStartGame;
 			} else {
 				jsonStartGame.put(Constants.START_ATTR, false);
@@ -137,8 +132,6 @@ public class GameService {
 					game.getGameSchema().addTrick(game.getCurrentTrick());
 					if (this.statisticManager != null)
 						this.statisticManager.updateRecordWithTrick(String.valueOf(gameID), game.getCurrentTrick());
-					System.out.println("isSuitFinished ="+game.getIsSuitFinished());
-					System.out.println("performed mongo actions");
 					try {
 						game.onTrickCompleted(game.getCurrentTrick());
 					} catch (final Exception e) {
@@ -146,22 +139,6 @@ public class GameService {
 						jsonPlayCard.put(Constants.MESSAGE, "Failed to complete the trick");
 						return jsonPlayCard;
 					}
-					// final CompletableFuture<JsonObject> future = game.onTrickCompleted(game.getCurrentTrick());
-					// try{
-						// JsonObject result = future.get();
-						// jsonPlayCard.put(Constants.RESULT, result);
-						// System.out.println("5 current trick is completed, verticle" + game.getCurrentTrick());
-						// game.getStates().put(game.getCurrentState().get(), game.getCurrentTrick());
-						// game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
-						// game.getTricks().add(game.getCurrentTrick());
-						// game.clearIsSuitFinished();
-						// System.out.println("Finished resetting");
-						// return jsonPlayCard;
-					// } catch (final Exception e){
-						// jsonPlayCard.put(Constants.PLAY, false);
-						// jsonPlayCard.put(Constants.MESSAGE, "Failed to complete the trick");
-						// return jsonPlayCard;
-					// }
 				}      
 		}else {
 						jsonPlayCard.put(Constants.NOT_FOUND, false);
@@ -169,30 +146,6 @@ public class GameService {
 				}  
 		return jsonPlayCard;
 	}
-					/*future.whenComplete( (result, error) -> {
-						if (error == null) {
-							System.out.println("playcard in service, handler succeeded ");
-							jsonPlayCard.put(Constants.RESULT, result);
-							System.out.println("5 current trick is completed, verticle" + game.getCurrentTrick());
-							game.getStates().put(game.getCurrentState().get(), game.getCurrentTrick());
-							game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
-							game.getTricks().add(game.getCurrentTrick());
-							game.clearIsSuitFinished();
-							System.out.println("Finished resetting");
-						} else {
-							System.out.println("this is compute future (service)");
-							jsonPlayCard.put(Constants.PLAY, false);
-							jsonPlayCard.put(Constants.MESSAGE, "Failed to complete the trick");
-						}
-					});
-					System.out.println("after the compute future (service)");
-				}
-			
-			System.out.println("3 inside service playcard, calling verticle playcard");
-			
-            return jsonPlayCard;*/
-
-
 
     public JsonObject chooseTrump(final UUID gameID, final String cardSuit, final String username) {
         final JsonObject jsonTrump = new JsonObject();
@@ -267,7 +220,6 @@ public class GameService {
 		if (this.games.get(gameID) != null) {
 			final Boolean isEnded = this.games.get(gameID).isGameEnded();
 			jsonEnd.put(Constants.ENDED, isEnded);
-			// jsonEnd.put(Constants.MESSAGE, isEnded);
 			return jsonEnd;
 		}
 		jsonEnd.put(Constants.ENDED, false);

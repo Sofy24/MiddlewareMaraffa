@@ -37,10 +37,8 @@ public class BusinessLogicController {
 	 */
 	public CompletableFuture<JsonObject> getShuffledDeck(final UUID gameID, final Integer numberOfPlayers) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-		System.out.println("Getting the shuffled deck");
 		final JsonObject startResponse = new JsonObject();
 		WebClient.create(this.vertx).get(PORT, LOCALHOST, "/games/startRound")
-				// .ssl(true)
 				.putHeader("Accept", "application/json") 
 				.as(BodyCodec.jsonObject()).send(handler -> {
 					if (handler.succeeded()) {
@@ -52,11 +50,9 @@ public class BusinessLogicController {
 						startResponse.put(Constants.START_ATTR, true);
 						this.gameService.getGames().get(gameID).setInitialTurn(firstPlayer);
 						LOGGER.info("Round started");
-
 						future.complete(handler.result().body());
 					} else {
-						System.out.println("Error in getting the shuffled deck");
-						System.out.println(handler.cause().getMessage());
+						LOGGER.error("Error in getting the shuffled deck " + handler.cause().getMessage());
 						future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
 					}
 				});
@@ -75,7 +71,6 @@ public class BusinessLogicController {
 			final UUID gameID = UUID.fromString(body.getString("gameID"));
         	final int numberOfPlayers = body.getInteger("numberOfPlayers");
             this.getShuffledDeck(gameID, numberOfPlayers).whenComplete((result, error) -> {
-				System.out.println(result);
 				if (!result.containsKey("error")) {
 					final JsonArray deck = result.getJsonArray("deck");
 					final Integer firstPlayer = result.getInteger("firstPlayer");
@@ -104,27 +99,17 @@ public class BusinessLogicController {
 	 */
 	public void trickCompleted() {
 		this.vertx.eventBus().consumer("game-trickCommpleted:onTrickCommpleted", message -> {
-			System.out.println("8 messaged from bus rcv");
 			LOGGER.info("Received message: " + message.body());
 			final JsonObject body = new JsonObject(message.body().toString());
-			System.out.println("8.5 in the meantime");
 			final UUID gameID = UUID.fromString(body.getString(Constants.GAME_ID));
-			System.out.println("8.6 tra id e trump");
 			final String trump = body.getString(Constants.TRUMP);
-			System.out.println("8.70 tra trump e mode");
 			final String mode = body.getString(Constants.GAME_MODE);
-			System.out.println("9 isSuitFinishedList"+this.gameService.getGames().get(gameID).getIsSuitFinished());
-			System.out.println("10 body"+body);
-			System.out.println("11 this is latest" + this.gameService.getGames().get(gameID).getLatestTrick());
 			this.computeScore(this.gameService.getGames().get(gameID).getLatestTrick(), trump, mode,
 			 this.gameService.getGames().get(gameID).getIsSuitFinished(), gameID).whenComplete((result, error) -> {
-				System.out.println(result);
                 if (error != null) {
-					System.out.println("error not null");
                     LOGGER.error("Error when computing the score");
                     message.fail(417, "Error when computing the score");
                 } else {
-					System.out.println("score computed_business_sibus");
                     LOGGER.info("Computed score");
                     message.reply(result);
                 }
@@ -145,7 +130,6 @@ public class BusinessLogicController {
 			final List<Boolean> isSuitFinishedList, final UUID gameID) {
 		this.gameService.getGames().get(gameID).incrementCurrentState();
 		final int[] cards = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
-                               
 		final boolean[] isSuitFinished = Booleans.toArray(isSuitFinishedList); 
 		final JsonObject requestBody = new JsonObject()
 				.put("trick", cards)
@@ -159,7 +143,6 @@ public class BusinessLogicController {
 				.as(BodyCodec.jsonObject())
 				.sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
-						System.out.println("RESULT_business_nobus:"+handler.result().body());
 						this.gameService.getGames().get(gameID)
 							.setTurn(handler.result().body().getInteger("winningPosition"));
 						this.gameService.getGames().get(gameID).setScore(handler.result().body().getInteger("score"),

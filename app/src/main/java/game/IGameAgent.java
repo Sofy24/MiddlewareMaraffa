@@ -1,8 +1,6 @@
 package game;
 
 import game.service.User;
-import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
 
 public interface IGameAgent {
 
@@ -10,7 +8,7 @@ public interface IGameAgent {
 
 	void onJoinGame(User user);
 
-	Future<JsonObject> onStartGame();
+	void onStartGame();
 
 	void onPlayCard();
 

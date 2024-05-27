@@ -184,7 +184,6 @@ public class GameServiceDecorator {
 			final Card<CardValue, CardSuit> card = new Card<>(CardValue.getName(cardValue), CardSuit.getName(cardSuit));
 			final String username = String.valueOf(context.body().asJsonObject().getValue(Constants.USERNAME));
 			final int userPosition = this.gameService.getGames().get(gameID).getPositionByUsername(username);
-			System.out.println("1 decorator playcard user:" + username);
 			if (userPosition == -1) {
 				response.put(Constants.MESSAGE, "Invalid user " + username);
 				context.response().setStatusCode(401).end(response.toBuffer());
@@ -194,8 +193,6 @@ public class GameServiceDecorator {
 				response.put(Constants.MESSAGE, "Invalid card " + card);
 				context.response().setStatusCode(401).end(response.toBuffer());
 			} else {
-				
-				System.out.println("Setted isSuitFinished nel decorator = " + isSuitFinishedByPlayer);
 				final JsonObject playCardResponse = this.gameService.playCard(gameID, username, card, isSuitFinishedByPlayer);
 				if (!playCardResponse.containsKey(Constants.NOT_FOUND)) {
 					if (!this.gameService.getGames().get(gameID).isUserIn(username)
@@ -205,37 +202,6 @@ public class GameServiceDecorator {
 						context.response().setStatusCode(417).end(response.toBuffer());
 					} else {
 						context.response().end(response.toBuffer());
-						// final Trick latestTrick = this.gameService.getGames().get(gameID).getLatestTrick();
-						// System.out.println("6 latest =" + latestTrick.toString());
-						// context.response().end(response.toBuffer());
-						// if (latestTrick.isCompleted()) {
-						// 	this.gameService.getGames().get(gameID).onTrickCommpleted(latestTrick);
-						// }
-
-						// 	System.out.println("completed");
-						// 	this.gameService.getGames().get(gameID).incrementCurrentState();
-						// 	this.businessLogicController
-						// 			.computeScore(latestTrick,
-						// 					this.gameService.getGames().get(gameID).getTrump().getValue().toString(),
-						// 					this.gameService.getGames().get(gameID).getGameMode().toString(),
-						// 					this.gameService.getGames().get(gameID).getIsSuitFinished())
-						// 			.whenComplete((result, err) -> {
-						// 				LOGGER.info("Got sample response");
-						// 				response.put("result", result);
-						// 				this.gameService.getGames().get(gameID)
-						// 						.setTurn(result.getInteger("winningPosition"));
-						// 				this.gameService.getGames().get(gameID).setScore(result.getInteger("score"),
-						// 						result.getBoolean("firstTeam"));// TODO i punti della businesslogic sono
-						// 														// moltiplicati per 3
-						// 				response.put("turn", this.gameService.getGames().get(gameID).getTurn());
-						// 				System.out
-						// 						.println("Turn: " + this.gameService.getGames().get(gameID).getTurn());
-						// 				context.response().end(response.toBuffer());
-						// 			});
-						// } else {
-						// 	System.out.println("everything good");
-						// 	context.response().end(response.toBuffer());
-						// }
 					}
 				} else {
 					response.put(Constants.MESSAGE, "Game " + gameID + " not found");

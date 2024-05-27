@@ -35,6 +35,8 @@ public class Controller implements IController {
 				.add(new RouteResponse(HttpMethod.POST, "/" + Constants.CHOOSE_TRUMP, this.entityService::chooseTrump));
 		this.routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.START_NEW_ROUND,
 				this.entityService::startNewRound));
+		this.routes.add(
+				new RouteResponse(HttpMethod.GET, "/" + Constants.PLAYER_CARDS, this.entityService::getPlayerCard));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.STATE, this.entityService::getState));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.END_ROUND, this.entityService::isRoundEnded));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.END_GAME, this.entityService::isGameEnded));

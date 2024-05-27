@@ -16,6 +16,13 @@ public enum CardSuit {
 		return this.value;
 	}
 
+	public static CardSuit fromValue(final int value) {
+		for (final CardSuit v : values())
+			if (v.value.equals(value))
+				return v;
+		throw new IllegalArgumentException();
+	}
+
 	public static CardSuit getName(final String value) {
 		for (final CardSuit v : values())
 			if (v.toString().equals(value))

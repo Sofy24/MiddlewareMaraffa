@@ -3,11 +3,14 @@ package game;
 import static java.lang.Math.floor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import game.service.User;
@@ -34,6 +37,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private CardSuit trump = CardSuit.NONE;
 	private Map<Integer, Trick> states = new ConcurrentHashMap<>();
 	private final List<User> users = new ArrayList<>();
+	private final Map<User, List<Card<CardValue, CardSuit>>> userAndCards = new ConcurrentHashMap<>();
 	private final GameSchema gameSchema;
 	private AbstractStatisticManager statisticManager;
 	private Trick currentTrick;
@@ -43,8 +47,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private String creatorName;
 	private Status status = Status.WAITING_PLAYERS;
 	private final GameMode gameMode;
-	private int turn = -1; 
-    private int initialTurn = -1; 
+	private int turn = -1;
+	private int initialTurn = -1;
 	private List<Boolean> isSuitFinished = new ArrayList<>();
 
 	public GameSchema getGameSchema() {
@@ -184,7 +188,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			this.currentTrick = this.states.getOrDefault(this.currentState.get(),
 					new TrickImpl(this.numberOfPlayers, this.trump));
 		}
-		if (this.users.stream().map(User::username).toList().get(turn).equals(username)) {
+		if (this.users.stream().map(User::username).toList().get(this.turn).equals(username)) {
 			this.currentTrick.setCall(call, username);
 		}
 		return !Call.NONE.equals(this.currentTrick.getCall());
@@ -214,13 +218,13 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.tricks.get(this.getCurrentState().get());
 	}
 
-    public int getInitialTurn() {
+	public int getInitialTurn() {
 		return this.initialTurn;
 	}
 
-    public void setInitialTurn(final int initialTurn) {
+	public void setInitialTurn(final int initialTurn) {
 		this.initialTurn = initialTurn % this.numberOfPlayers;
-        this.turn = this.initialTurn;
+		this.turn = this.initialTurn;
 	}
 
 	public int getTurn() {
@@ -236,7 +240,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	public int getPositionByUsername(final String username) {
-		return this.users.stream().map(u -> u.username()).toList().indexOf(username);
+		return this.users.stream().map((Function<? super User, ? extends String>) User::username).toList()
+				.indexOf(username);
 	}
 
 	public List<Boolean> getIsSuitFinished() {
@@ -274,6 +279,21 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	public Status getStatus() {
 		return this.status;
+	}
+
+	// public Map<User, Card<CardValue, CardSuit>[]> getUserAndCards() {
+	// return this.userAndCards;
+	// }
+
+	public List<Card<CardValue, CardSuit>> getUserCards(final String username) {
+		return this.userAndCards.entrySet().stream()
+				.filter(e -> e.getKey().username().equals(username))
+				.findFirst()
+				.map(Map.Entry::getValue)
+				.orElse(Collections.emptyList());
+		// return this.userAndCards.entrySet().stream().filter(e ->
+		// e.getKey().username().equals(username))
+		// .map(Map.Entry::getValue).toList().get(0);
 	}
 
 	/**
@@ -320,9 +340,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public boolean isRoundEnded() {
 		final double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
-        if (this.currentState.get() == numberOfTricksInRound) {
-            setInitialTurn(this.initialTurn++);
-        }
+		if (this.currentState.get() == numberOfTricksInRound) {
+			this.setInitialTurn(this.initialTurn++);
+		}
 		return this.currentState.get() == numberOfTricksInRound;
 	}
 
@@ -390,4 +410,14 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			this.vertx.eventBus().send("user-component", this.toJson().toString());
 	}
 
+	public void handOutCards(final List<Integer> list) {
+		final int chunkSize = (list.size() + this.numberOfPlayers - 1) / this.numberOfPlayers;
+		int index = 0;
+		for (final var integer : IntStream.range(0, this.numberOfPlayers)
+				.mapToObj(i -> list.subList(i * chunkSize, Math.min(list.size(), (i + 1) * chunkSize)))
+				.collect(Collectors.toList())) {
+			this.userAndCards.put(this.users.get(index++),
+					integer.stream().map(Card::fromInteger).toList());
+		}
+	}
 }

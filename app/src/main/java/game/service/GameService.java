@@ -140,10 +140,10 @@ public class GameService {
 						return jsonPlayCard;
 					}
 				}      
-		}else {
-						jsonPlayCard.put(Constants.NOT_FOUND, false);
-						return jsonPlayCard.put(Constants.PLAY, false);
-				}  
+		} else {
+			jsonPlayCard.put(Constants.NOT_FOUND, false);
+			return jsonPlayCard.put(Constants.PLAY, false); 
+		}  
 		return jsonPlayCard;
 	}
 
@@ -189,8 +189,7 @@ public class GameService {
 	public JsonObject getState(final UUID gameID) {
 		final JsonObject jsonState = new JsonObject();
 		if (this.games.get(gameID) != null) {
-			final int lastState = this.games.get(gameID).getCurrentState().get();
-			final Trick currentTrick = this.games.get(gameID).getStates().get(lastState);
+			final Trick currentTrick = this.games.get(gameID).getCurrentTrick();
 			if (currentTrick == null) {
 				jsonState.put(Constants.NOT_FOUND, false);
 				return jsonState.put(Constants.MESSAGE, "Trick not found");

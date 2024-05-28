@@ -114,11 +114,19 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 							new TrickImpl(this.numberOfPlayers, this.trump));
 					this.tricks.add(this.currentTrick);
 				}
+				
 				if (this.currentTrick.getCardsAndUsers().containsValue(username)) {
 					return false;
 				}
 				this.currentTrick.addCard(card, username);
 				this.turn = (this.turn + 1) % this.numberOfPlayers;
+				if (this.currentTrick.isCompleted()){
+					System.out.println("(game-verticle): state current: "+this.currentState.get());
+					this.getStates().put(this.getCurrentState().get(), this.getCurrentTrick());
+					this.setCurrentTrick(new TrickImpl(this.getMaxNumberOfPlayers(), this.getTrump()));
+					this.getTricks().add(this.getCurrentTrick());
+					this.incrementCurrentState();
+				}
 				return true;
 			}
 		}
@@ -209,6 +217,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	public Trick getLatestTrick() {
+		System.out.println("tricks"+tricks.toString());
+		System.out.println("currentState"+this.getCurrentState().get());
 		final Trick latestTrick = this.tricks.get(this.getCurrentState().get());
 		return latestTrick;
 	}
@@ -332,7 +342,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public boolean isRoundEnded() {
 		final double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
-        if (this.currentState.get() == numberOfTricksInRound) {
+        if (this.currentState.get()  == numberOfTricksInRound) {
             this.setInitialTurn(this.initialTurn++);
         }
 		return this.currentState.get() == numberOfTricksInRound;
@@ -408,11 +418,11 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.put(Constants.IS_SUIT_FINISHED, this.getIsSuitFinished().toString())
 				.put(Constants.TRUMP, this.trump.getValue()).toString(), reply -> {
 					if (reply.succeeded()) {
-						this.getStates().put(this.getCurrentState().get(), this.getCurrentTrick());
-						this.setCurrentTrick(new TrickImpl(this.getMaxNumberOfPlayers(), this.getTrump()));
-						this.getTricks().add(this.getCurrentTrick());
+						System.out.println("success sms");
+						
 						this.clearIsSuitFinished();
 					} else {
+						System.out.println("failed sms");
 						throw new UnsupportedOperationException("Failed to complete the trick");
 					}
 				});

@@ -106,6 +106,7 @@ public class BusinessLogicController {
 			final String mode = body.getString(Constants.GAME_MODE);
 			this.computeScore(this.gameService.getGames().get(gameID).getLatestTrick(), trump, mode,
 			 this.gameService.getGames().get(gameID).getIsSuitFinished(), gameID).whenComplete((result, error) -> {
+				System.out.println("rr"+result);
                 if (error != null) {
                     LOGGER.error("Error when computing the score");
                     message.fail(417, "Error when computing the score");
@@ -128,7 +129,7 @@ public class BusinessLogicController {
 	 */
 	public CompletableFuture<JsonObject> computeScore(final Trick trick, final String trump, final String mode,
 			final List<Boolean> isSuitFinishedList, final UUID gameID) {
-		this.gameService.getGames().get(gameID).incrementCurrentState();
+		// this.gameService.getGames().get(gameID).incrementCurrentState();
 		final int[] cards = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
 		final boolean[] isSuitFinished = Booleans.toArray(isSuitFinishedList); 
 		final JsonObject requestBody = new JsonObject()
@@ -142,6 +143,7 @@ public class BusinessLogicController {
 				.putHeader("Accept", "application/json")
 				.as(BodyCodec.jsonObject())
 				.sendJsonObject(requestBody, handler -> {
+					System.out.println(handler.result().body());
 					if (handler.succeeded()) {
 						this.gameService.getGames().get(gameID)
 							.setTurn(handler.result().body().getInteger("winningPosition"));

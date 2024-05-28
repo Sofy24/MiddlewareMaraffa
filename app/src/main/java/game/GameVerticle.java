@@ -20,6 +20,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import repository.AbstractStatisticManager;
+import server.WebSocketVertx;
 
 /***
  * This class models a game using a Verticle from vertx.
@@ -50,7 +51,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private int turn = -1;
 	private int initialTurn = -1;
 	private List<Boolean> isSuitFinished = new ArrayList<>();
-	
+	private WebSocketVertx webSocket;
 
 	public GameSchema getGameSchema() {
 		return this.gameSchema;
@@ -58,7 +59,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	public GameVerticle(final UUID id, final User user, final int numberOfPlayers, final int expectedScore,
 			final GameMode gameMode,
-			final AbstractStatisticManager statisticManager) {
+			final AbstractStatisticManager statisticManager, final WebSocketVertx webSocket) {
 		this.id = id;
 		this.gameMode = gameMode;
 		this.expectedScore = expectedScore;
@@ -69,6 +70,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.users.add(user);
 		this.gameSchema = new GameSchema(String.valueOf(id), CardSuit.NONE);
 		this.statisticManager = statisticManager;
+		this.webSocket = webSocket;
 		if (this.statisticManager != null)
 			this.statisticManager.createRecord(this.gameSchema); // TODO andrebbero usati gli UUID ma vediamo se mongo
 		// di aiuta con la questione _id
@@ -125,6 +127,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				}
 				this.currentTrick.addCard(card, username);
 				this.turn = (this.turn + 1) % this.numberOfPlayers;
+				this.onPlayCard();
 				if (this.currentTrick.isCompleted()) {
 					this.gameSchema.addTrick(this.currentTrick);
 					if (this.statisticManager != null)
@@ -360,6 +363,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public JsonObject toJson() {
 		final JsonObject json = new JsonObject();
 		json.put("gameID", this.id.toString())
+				.put("creator", this.creatorName)
 				.put("status", this.status.toString())
 				.put("gameMode", this.gameMode.toString());
 		return json;
@@ -395,8 +399,14 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	@Override
 	public void onPlayCard() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'onPlayCard'");
+		// Websocket
+		if (this.webSocket != null) {
+			this.webSocket.sendMessageToClient(this.users.get(this.turn).clientID(),
+					new JsonObject().put("gameID", this.id.toString())
+							.put("event", "userTurn")
+							.put("turn", this.turn)
+							.put("userTurn", this.users.get(this.turn).username()).toString());
+		}
 	}
 
 	@Override

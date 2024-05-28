@@ -33,6 +33,11 @@ public class GameService {
 
 	}
 
+	public GameService(final Vertx vertx, final AbstractStatisticManager statisticManager) {
+		this.vertx = vertx;
+		this.statisticManager = statisticManager;
+	}
+
 	public GameService(final Vertx vertx, final AbstractStatisticManager statisticManager,
 			final WebSocketVertx webSocket) {
 		this.vertx = vertx;
@@ -48,7 +53,7 @@ public class GameService {
 		try {
 			currentGame = new GameVerticle(newId, user, numberOfPlayers, expectedScore,
 					GameMode.valueOf(gameMode.toUpperCase()),
-					this.statisticManager);
+					this.statisticManager, this.webSocket);
 			// TODO migliore gestione qui perche e' terribile ma per testare OK
 		} catch (final IllegalArgumentException e) {
 			return jsonGame.put(Constants.INVALID, gameMode);
@@ -56,6 +61,12 @@ public class GameService {
 		this.games.put(newId, currentGame);
 		this.vertx.deployVerticle(currentGame);
 		currentGame.onCreateGame(user);
+		this.webSocket.addConnetedUser(user, newId);
+		this.vertx.setPeriodic(2000, id -> {
+			// Invia un messaggio a un client specifico (usa un ID di esempio qui)
+			this.webSocket.sendMessageToClient(user.clientID(), "Messaggio dal server");
+			System.out.println("Messaggio inviato");
+		});
 		jsonGame.put(Constants.GAME_ID, String.valueOf(newId));
 		return jsonGame;
 	}

@@ -61,12 +61,13 @@ public class GameService {
 		this.games.put(newId, currentGame);
 		this.vertx.deployVerticle(currentGame);
 		currentGame.onCreateGame(user);
-		this.webSocket.addConnetedUser(user, newId);
-		this.vertx.setPeriodic(2000, id -> {
-			// Invia un messaggio a un client specifico (usa un ID di esempio qui)
-			this.webSocket.sendMessageToClient(user.clientID(), "Messaggio dal server");
-			System.out.println("Messaggio inviato");
-		});
+		// this.webSocket.addConnetedUser(user, newId);
+		// this.vertx.setPeriodic(2000, id -> {
+		// 	// Invia un messaggio a un client specifico (usa un ID di esempio qui)
+		// 	this.webSocket.sendMessageToClient(user.clientID(),
+		// 			new JsonObject().put("message", "Messaggio dal server").toString());
+		// 	System.out.println("Messaggio inviato");
+		// });
 		jsonGame.put(Constants.GAME_ID, String.valueOf(newId));
 		return jsonGame;
 	}
@@ -77,7 +78,7 @@ public class GameService {
 			if (this.games.get(gameID).getNumberOfPlayersIn() < this.games.get(gameID).getMaxNumberOfPlayers()) {
 				if (this.games.get(gameID).addUser(user)) {
 					jsonJoin.put(Constants.JOIN_ATTR, true);
-					this.webSocket.addConnetedUser(user, gameID);
+					// this.webSocket.addConnetedUser(user, gameID);
 					return jsonJoin.put(Constants.MESSAGE, "Game " + gameID + " joined by " + user.username());
 				} else {
 					jsonJoin.put(Constants.ALREADY_JOINED, true);

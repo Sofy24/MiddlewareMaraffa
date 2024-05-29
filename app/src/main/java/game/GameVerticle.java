@@ -128,6 +128,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				this.currentTrick.addCard(card, username);
 				this.turn = (this.turn + 1) % this.numberOfPlayers;
 				this.onPlayCard();
+				this.removeFromHand(card, username);
 				if (this.currentTrick.isCompleted()) {
 					this.gameSchema.addTrick(this.currentTrick);
 					if (this.statisticManager != null)
@@ -141,6 +142,16 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			}
 		}
 		return false;
+	}
+
+	private void removeFromHand(final Card<CardValue, CardSuit> card, final String username) {
+		this.userAndCards.entrySet().stream()
+				.filter(e -> e.getKey().username().equals(username))
+				.findFirst()
+				.map(Map.Entry::getValue)
+				.ifPresent(cards -> cards.remove(card));
+		// .orElse(Collections.emptyList());
+
 	}
 
 	/**
@@ -401,11 +412,18 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public void onPlayCard() {
 		// Websocket
 		if (this.webSocket != null) {
-			this.webSocket.sendMessageToClient(this.users.get(this.turn).clientID(),
-					new JsonObject().put("gameID", this.id.toString())
-							.put("event", "userTurn")
-							.put("turn", this.turn)
-							.put("userTurn", this.users.get(this.turn).username()).toString());
+			for (final var user : this.users) {
+				this.webSocket.sendMessageToClient(user.clientID(),
+						new JsonObject().put("gameID", this.id.toString())
+								.put("event", "userTurn")
+								.put("turn", this.turn)
+								.put("userTurn", this.users.get(this.turn).username()).toString());
+			}
+			// this.webSocket.sendMessageToClient(this.users.get(this.turn).clientID(),
+			// new JsonObject().put("gameID", this.id.toString())
+			// .put("event", "userTurn")
+			// .put("turn", this.turn)
+			// .put("userTurn", this.users.get(this.turn).username()).toString());
 		}
 	}
 

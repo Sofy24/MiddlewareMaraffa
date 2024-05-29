@@ -3,6 +3,7 @@ package integration;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -15,6 +16,9 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import BLManagment.BusinessLogicController;
+import game.Card;
+import game.CardSuit;
+import game.CardValue;
 import game.GameMode;
 import game.service.GameService;
 import game.service.User;
@@ -95,6 +99,42 @@ public class BLIntegration {
 								.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 								.getUserCards(TEST_USER.username());
 						assertNotNull(userHand);
+						context.completeNow();
+					});
+				});
+	}
+
+	@Timeout(value = 10, unit = TimeUnit.HOURS)
+	@Test
+	public void testUserPlayedCardIsRemoved(final VertxTestContext context) {
+		final JsonObject gameResponse = this.gameService.createGame((Integer) 4, TEST_USER, 41,
+				GameMode.CLASSIC.toString());
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			this.gameService.joinGame(
+					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+		}
+
+		this.businessLogicController
+				.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), 4)
+				.whenComplete((res, err) -> {
+					context.verify(() -> {
+						assertNull(res.getString("error"));
+						final List<Card<CardValue, CardSuit>> userHand = this.gameService.getGames()
+								.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+								.getUserCards(TEST_USER.username());
+						assertNotNull(userHand);
+						final Card<CardValue, CardSuit> fakePlayedCard = userHand.stream().toList()
+								.get(MARAFFA_PLAYERS); // to not create another variable
+						// TODO devi finirlo perche deve prendere l utente che puo giocare in quel
+						// momento e non il primo a caso
+						this.gameService.getGames()
+								.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getTurn();
+						this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+								TEST_USER.username(), fakePlayedCard);
+						System.out.println(this.gameService.getGames()
+								.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+								.getUserCards(TEST_USER.username()).size());
 						context.completeNow();
 					});
 				});

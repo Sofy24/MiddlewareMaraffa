@@ -62,11 +62,14 @@ public class Constants {
     public static final String ALREADY_JOINED = "alreadyJoined";
     public static final String ILLEGAL_TRUMP = "illegalTrump";
     public static final String TRUMP = "trump";
+    public static final String SUIT = "suit";
     public static final String PLAY = "play";
+    public static final String DECK = "deck";
     public static final String INVALID = "invalid";
     public static final String NOT_ALLOWED = "notAllowed";
     public static final String RESULT = "result";
     public static final String ERROR = "error";
     // game constants
     public static final int NUMBER_OF_CARDS = 40;
+    public static final int MARAFFA_SCORE = 3;
 }

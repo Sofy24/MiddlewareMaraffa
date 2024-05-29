@@ -28,7 +28,7 @@ public class BusinessLogicController {
 		this.gameService = gameService;
 		this.startRound();
 		this.trickCompleted();
-
+		this.checkMaraffa();
 	}
 
 	/**
@@ -106,7 +106,6 @@ public class BusinessLogicController {
 			final String mode = body.getString(Constants.GAME_MODE);
 			this.computeScore(this.gameService.getGames().get(gameID).getLatestTrick(), trump, mode,
 			 this.gameService.getGames().get(gameID).getIsSuitFinished(), gameID).whenComplete((result, error) -> {
-				System.out.println("rr"+result);
                 if (error != null) {
                     LOGGER.error("Error when computing the score");
                     message.fail(417, "Error when computing the score");
@@ -156,6 +155,51 @@ public class BusinessLogicController {
 						future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
 					}
 				});
+		return future;
+	}
+
+	/* check if Maraffa is present 
+	 * @param 
+	 * @return a json object with a boolean. True if Maraffa is present*/
+	public void checkMaraffa(){
+		this.vertx.eventBus().consumer("game-maraffs:onCheckMaraffa", message -> {
+            LOGGER.info("Received message: " + message.body());
+			final JsonObject body = new JsonObject(message.body().toString());
+			final int suit = body.getInteger(Constants.SUIT);
+			final int username = body.getInteger(Constants.USERNAME);
+			final JsonArray deck = body.getJsonArray(Constants.DECK);
+            this.getMaraffa(deck, suit, username).whenComplete((result, error) -> {
+				if (!result.containsKey("error") && error != null) {
+					final Boolean maraffa = result.getBoolean("maraffa");
+					LOGGER.info(maraffa ? "Maraffa is present" : "Maraffa is not present");
+					message.reply(maraffa);
+				}
+                else {
+                    LOGGER.error("Error when checking Maraffa");
+                    message.fail(417, "Error when Error when checking Maraffa");
+                } 
+            });;
+        });
+		
+	}
+
+	public CompletableFuture<JsonObject> getMaraffa(final JsonArray deck, final int suit, final int username) {
+		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
+		final JsonObject requestBody = new JsonObject()
+				.put("deck", deck) //.stream().map(s -> Integer.parseInt(s)).toArray()
+				.put("suit", suit)
+				.put("user", username);
+		WebClient.create(this.vertx).get(PORT, LOCALHOST, "/games/checkMaraffa")
+				.putHeader("Accept", "application/json") 
+				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
+					if (handler.succeeded()) {
+						future.complete(handler.result().body());
+					} else {
+						LOGGER.error("Error in getting Maraffa " + handler.cause().getMessage());
+						future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
+					}
+				});
+
 		return future;
 	}
 

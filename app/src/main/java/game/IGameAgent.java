@@ -10,6 +10,8 @@ public interface IGameAgent {
 
 	void onStartGame();
 
+	void onCheckMaraffa();
+
 	void onPlayCard();
 
 	void onTrickCompleted(Trick latestTrick);

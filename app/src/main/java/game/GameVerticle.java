@@ -10,6 +10,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.IntStream;
+
+import org.checkerframework.checker.units.qual.A;
+
 import game.service.User;
 import game.utils.Constants;
 import game.utils.Pair;
@@ -43,6 +46,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private Team team1;
 	private Team team2;
 	private String creatorName;
+	private Boolean checkMaraffa = true;
 	private Status status = Status.WAITING_PLAYERS;
 	private final GameMode gameMode;
 	private int turn = -1; 
@@ -113,6 +117,12 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					this.currentTrick = this.states.getOrDefault(this.currentState.get(),
 							new TrickImpl(this.numberOfPlayers, this.trump));
 					this.tricks.add(this.currentTrick);
+				}
+
+				if(card.cardValue() == CardValue.ONE && this.checkMaraffa){
+					this.checkMaraffa = false;
+					List<Card<CardValue, CardSuit>> deck = new ArrayList<>(); //TODO change deck
+					this.onCheckMaraffa(card.cardSuit().value); //deck
 				}
 				
 				if (this.currentTrick.getCardsAndUsers().containsValue(username)) {
@@ -344,6 +354,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		final double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
         if (this.currentState.get()  == numberOfTricksInRound) {
             this.setInitialTurn(this.initialTurn++);
+			this.checkMaraffa = true;
         }
 		return this.currentState.get() == numberOfTricksInRound;
 	}
@@ -398,6 +409,28 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 									throw new UnsupportedOperationException("Failed to start");
 								}
 							});
+	}
+
+	@Override
+	public void onCheckMaraffa(int suit) {
+		final int user = turn;
+		if (this.getVertx() != null)
+			this.getVertx().eventBus().request("game-maraffs:onCheckMaraffa",
+					new JsonObject() 
+					.put(Constants.DECK, new ArrayList<>())//TODO change values
+					.put(Constants.SUIT, suit)
+					.put(Constants.USERNAME, turn)
+					.toString(), reply -> {
+						if (reply.succeeded()) {
+							System.out.println("on check maraffa result from bus:"+reply.result().body());
+							if ((Boolean)reply.result().body()) {
+								this.setScore(Constants.MARAFFA_SCORE, user % 2 == 0);
+							}
+							LOGGER.info("The game succeeded in checking Maraffa");
+						} else {
+							throw new UnsupportedOperationException("Failed to check Maraffa");
+						}
+					});
 	}
 
 	@Override

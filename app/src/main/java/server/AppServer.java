@@ -1,13 +1,14 @@
 package server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import chatModule.ChatController;
 import game.service.GameServiceDecorator;
 import httpRest.RouterConfig;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import repository.AbstractStatisticManager;
 import repository.MongoStatisticManager;
 import userModule.UserController;

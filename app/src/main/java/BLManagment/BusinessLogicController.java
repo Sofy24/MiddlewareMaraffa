@@ -15,7 +15,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
 
-
 public class BusinessLogicController {
 	private final Vertx vertx;
 	private static final int PORT = 3000;
@@ -49,6 +48,8 @@ public class BusinessLogicController {
 						LOGGER.info("The first player is: " + firstPlayer);
 						startResponse.put(Constants.START_ATTR, true);
 						this.gameService.getGames().get(gameID).setInitialTurn(firstPlayer);
+						this.gameService.getGames().get(gameID)
+								.handOutCards(deck.stream().map(el -> (Integer) el).toList());
 						LOGGER.info("Round started");
 						future.complete(handler.result().body());
 					} else {
@@ -60,10 +61,15 @@ public class BusinessLogicController {
 		return future;
 	}
 
-	/* start a new round 
+	/*
+	 * start a new round
+	 * 
 	 * @param gameID the game ID for which to
-	 * @return a json object with the deck and the first player if there weren't any errors*/
-	public void startRound(){
+	 * 
+	 * @return a json object with the deck and the first player if there weren't any
+	 * errors
+	 */
+	public void startRound() {
 		this.vertx.eventBus().consumer("game-startRound:onStartGame", message -> {
 			final JsonObject startResponse = new JsonObject();
             LOGGER.info("Received message: " + message.body());
@@ -87,8 +93,7 @@ public class BusinessLogicController {
                     LOGGER.info("Round started");
                     message.reply(startResponse);
                 }
-            });;
-        });
+            });});
 		
 	}
 
@@ -118,14 +123,6 @@ public class BusinessLogicController {
 		}
 
 
-	/**
-	 * perform a post request to business logic in order to compute the score, get
-	 * the winning team and position
-	 *
-	 * @param trick the completed trick with which it computes the score
-	 * @param trump used while computing the score
-	 * @return a completable future of the json response
-	 */
 	public CompletableFuture<JsonObject> computeScore(final Trick trick, final String trump, final String mode,
 			final List<Boolean> isSuitFinishedList, final UUID gameID) {
 		// this.gameService.getGames().get(gameID).incrementCurrentState();

@@ -6,8 +6,10 @@ RUN gradle assemble
 FROM openjdk:19
 
 RUN mkdir /app
+RUN mkdir /app/log
 
 COPY --from=build /home/gradle/src/app/build/libs/ /app/
+COPY --from=build /home/gradle/src/app/log /app/log
 
 ENTRYPOINT ["java","-jar","/app/Middleware.jar"]
 # Use an official OpenJDK runtime as a parent image

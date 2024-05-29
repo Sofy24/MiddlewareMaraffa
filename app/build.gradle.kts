@@ -59,8 +59,8 @@ implementation("com.diffplug.spotless:spotless-lib:2.45.0")
 
 
     // SLF4J logging
-    implementation("org.slf4j:slf4j-simple:${slf4jVersion}")
-    implementation ("org.slf4j:slf4j-api:${slf4jVersion}") // SLF4J API
+    // implementation("org.slf4j:slf4j-simple:${slf4jVersion}")
+    // implementation ("org.slf4j:slf4j-api:${slf4jVersion}") // SLF4J API
     implementation ("ch.qos.logback:logback-classic:1.4.11") // SLF4J binding for Logback
 
     // Swagger integration (optional)

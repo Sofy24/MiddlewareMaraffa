@@ -119,10 +119,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					this.tricks.add(this.currentTrick);
 				}
 
-				// if(card.cardValue() == CardValue.ONE && this.checkMaraffa){
-				// 	this.checkMaraffa = false;
-				// 	this.onCheckMaraffa(card.cardSuit().value, username);
-				// }
+				if(card.cardValue() == CardValue.ONE && this.checkMaraffa){
+					this.checkMaraffa = false;
+					this.onCheckMaraffa(card.cardSuit().value, username);
+				}
 				
 				if (this.currentTrick.getCardsAndUsers().containsValue(username)) {
 					return false;
@@ -130,7 +130,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				this.currentTrick.addCard(card, username);
 				this.turn = (this.turn + 1) % this.numberOfPlayers;
 				if (this.currentTrick.isCompleted()){
-					System.out.println("(game-verticle): state current: "+this.currentState.get());
 					this.getStates().put(this.getCurrentState().get(), this.getCurrentTrick());
 					this.setCurrentTrick(new TrickImpl(this.getMaxNumberOfPlayers(), this.getTrump()));
 					this.getTricks().add(this.getCurrentTrick());
@@ -226,8 +225,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	public Trick getLatestTrick() {
-		System.out.println("tricks"+tricks.toString());
-		System.out.println("currentState"+this.getCurrentState().get());
 		final Trick latestTrick = this.tricks.get(this.getCurrentState().get());
 		return latestTrick;
 	}
@@ -437,7 +434,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					.put(Constants.USERNAME, username)
 					.toString(), reply -> {
 						if (reply.succeeded()) {
-							System.out.println("on check maraffa result from bus:"+reply.result().body());
 							if ((Boolean)reply.result().body()) {
 								this.setScore(Constants.MARAFFA_SCORE, user % 2 == 0);
 								LOGGER.info("You have Maraffa");
@@ -467,11 +463,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.put(Constants.IS_SUIT_FINISHED, this.getIsSuitFinished().toString())
 				.put(Constants.TRUMP, this.trump.getValue()).toString(), reply -> {
 					if (reply.succeeded()) {
-						System.out.println("success sms");
-						
 						this.clearIsSuitFinished();
 					} else {
-						System.out.println("failed sms");
 						throw new UnsupportedOperationException("Failed to complete the trick");
 					}
 				});

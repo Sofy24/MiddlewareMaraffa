@@ -48,6 +48,7 @@ public class BusinessLogicController {
 						final JsonArray deck = handler.result().body().getJsonArray("deck");
 						final Integer firstPlayer = handler.result().body().getInteger("firstPlayer");
 						startResponse.put("deck", deck);
+						LOGGER.info("The deck is: " + deck);
 						startResponse.put("firstPlayer", firstPlayer);
 						LOGGER.info("The first player is: " + firstPlayer);
 						startResponse.put(Constants.START_ATTR, true);
@@ -171,14 +172,14 @@ public class BusinessLogicController {
 			final UUID gameID = UUID.fromString(body.getString(Constants.GAME_ID));
 			final int[] userCards = this.gameService.getGames().get(gameID).getUserCards(username).stream().mapToInt(card -> card.getCardValue().intValue()).toArray();
             this.getMaraffa(userCards, suit).whenComplete((result, error) -> {
-				if (!result.containsKey("error") && error != null) {
+				if (error != null) {
+					LOGGER.error("Error when checking Maraffa");
+					message.fail(417, "Error when Error when checking Maraffa");
+				}
+                else {
 					final Boolean maraffa = result.getBoolean("maraffa");
 					LOGGER.info(maraffa ? "Maraffa is present" : "Maraffa is not present");
 					message.reply(maraffa);
-				}
-                else {
-                    LOGGER.error("Error when checking Maraffa");
-                    message.fail(417, "Error when Error when checking Maraffa");
                 } 
             });;
         });

@@ -4,6 +4,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import com.google.common.primitives.Booleans;
+
+import game.Card;
+import game.CardSuit;
+import game.CardValue;
 import game.Trick;
 import game.service.GameService;
 import game.utils.Constants;
@@ -163,9 +167,10 @@ public class BusinessLogicController {
             LOGGER.info("Received message: " + message.body());
 			final JsonObject body = new JsonObject(message.body().toString());
 			final int suit = body.getInteger(Constants.SUIT);
-			final int username = body.getInteger(Constants.USERNAME);
-			final JsonArray deck = body.getJsonArray(Constants.DECK);
-            this.getMaraffa(deck, suit, username).whenComplete((result, error) -> {
+			final String username = body.getString(Constants.USERNAME);
+			final UUID gameID = UUID.fromString(body.getString(Constants.GAME_ID));
+			final int[] userCards = this.gameService.getGames().get(gameID).getUserCards(username).stream().mapToInt(card -> card.getCardValue().intValue()).toArray();
+            this.getMaraffa(userCards, suit).whenComplete((result, error) -> {
 				if (!result.containsKey("error") && error != null) {
 					final Boolean maraffa = result.getBoolean("maraffa");
 					LOGGER.info(maraffa ? "Maraffa is present" : "Maraffa is not present");
@@ -180,13 +185,12 @@ public class BusinessLogicController {
 		
 	}
 
-	public CompletableFuture<JsonObject> getMaraffa(final JsonArray deck, final int suit, final int username) {
+	public CompletableFuture<JsonObject> getMaraffa(final int[] deck, final int suit) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		final JsonObject requestBody = new JsonObject()
-				.put("deck", deck) //.stream().map(s -> Integer.parseInt(s)).toArray()
-				.put("suit", suit)
-				.put("user", username);
-		WebClient.create(this.vertx).get(PORT, LOCALHOST, "/games/checkMaraffa")
+				.put("deck", deck)
+				.put("suit", suit);
+		WebClient.create(this.vertx).post(PORT, LOCALHOST, "/games/checkMaraffa")
 				.putHeader("Accept", "application/json") 
 				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {

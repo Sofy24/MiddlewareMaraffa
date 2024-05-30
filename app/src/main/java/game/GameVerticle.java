@@ -12,9 +12,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import org.checkerframework.checker.units.qual.A;
-
 import game.service.User;
 import game.utils.Constants;
 import game.utils.Pair;
@@ -122,11 +119,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					this.tricks.add(this.currentTrick);
 				}
 
-				if(card.cardValue() == CardValue.ONE && this.checkMaraffa){
-					this.checkMaraffa = false;
-					List<Card<CardValue, CardSuit>> deck = new ArrayList<>(); //TODO change deck
-					this.onCheckMaraffa(card.cardSuit().value); //deck
-				}
+				// if(card.cardValue() == CardValue.ONE && this.checkMaraffa){
+				// 	this.checkMaraffa = false;
+				// 	this.onCheckMaraffa(card.cardSuit().value, username);
+				// }
 				
 				if (this.currentTrick.getCardsAndUsers().containsValue(username)) {
 					return false;
@@ -431,19 +427,20 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	@Override
-	public void onCheckMaraffa(int suit) {
+	public void onCheckMaraffa(final int suit, final String username) {
 		final int user = turn;
 		if (this.getVertx() != null)
 			this.getVertx().eventBus().request("game-maraffs:onCheckMaraffa",
 					new JsonObject() 
-					.put(Constants.DECK, new ArrayList<>())//TODO change values
 					.put(Constants.SUIT, suit)
-					.put(Constants.USERNAME, turn)
+					.put(Constants.GAME_ID, this.id.toString())
+					.put(Constants.USERNAME, username)
 					.toString(), reply -> {
 						if (reply.succeeded()) {
 							System.out.println("on check maraffa result from bus:"+reply.result().body());
 							if ((Boolean)reply.result().body()) {
 								this.setScore(Constants.MARAFFA_SCORE, user % 2 == 0);
+								LOGGER.info("You have Maraffa");
 							}
 							LOGGER.info("The game succeeded in checking Maraffa");
 						} else {

@@ -178,17 +178,17 @@ public class GameServiceDecorator {
 	}
 
 	@Operation(summary = "A player plays a card in a specific game", method = Constants.PLAY_CARD_METHOD, operationId = Constants.PLAY_CARD, tags = {
-			Constants.ROUND_TAG }, requestBody = @RequestBody(description = "username, card and id of the game are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = PlayCardBody.class, example = "{\n"
-					+ "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
-					"  \"" + Constants.USERNAME + "\": \"sofi\",\n" +
-					"  \"" + Constants.CARD_VALUE + "\": \"ONE\",\n" +
-					"  \"" + Constants.IS_SUIT_FINISHED + "\": \"true\",\n" +
-					"  \"" + Constants.CARD_SUIT + "\": \"COINS\"\n" + "}"))), responses = {
-							@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = PlayCardBody.class))),
-							@ApiResponse(responseCode = "404", description = "Game or username not found."),
-							@ApiResponse(responseCode = "417", description = "Is not the turn of this player."),
-							@ApiResponse(responseCode = "401", description = "Invalid username or card."),
-							@ApiResponse(responseCode = "500", description = "Internal Server Error.") })
+		Constants.ROUND_TAG }, requestBody = @RequestBody(description = "username, card and id of the game are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = PlayCardBody.class, example = "{\n"
+				+ "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
+				"  \"" + Constants.USERNAME + "\": \"sofi\",\n" +
+				"  \"" + Constants.CARD_VALUE + "\": \"ONE\",\n" +
+				"  \"" + Constants.IS_SUIT_FINISHED + "\": \"true\",\n" +
+				"  \"" + Constants.CARD_SUIT + "\": \"COINS\"\n" + "}"))), responses = {
+						@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = PlayCardBody.class))),
+						@ApiResponse(responseCode = "404", description = "Game or username not found."),
+						@ApiResponse(responseCode = "417", description = "Is not the turn of this player."),
+						@ApiResponse(responseCode = "401", description = "Invalid username or card."),
+						@ApiResponse(responseCode = "500", description = "Internal Server Error.") })
 	public void playCard(final RoutingContext context) {
 		final JsonObject response = new JsonObject();
 		final String uuidAsString = context.body().asJsonObject().getString(Constants.GAME_ID);

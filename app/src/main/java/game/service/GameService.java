@@ -61,12 +61,18 @@ public class GameService {
 		this.games.put(newId, currentGame);
 		this.vertx.deployVerticle(currentGame);
 		currentGame.onCreateGame(user);
+		// TODO molto poco bello..... ma per ora funziona
+		this.webSocket
+				.broadcastToEveryone(new JsonObject()
+						.put("event", "gameList")
+						.put(Constants.GAME, this.games.values().stream().map(GameVerticle::toJson).toList())
+						.toString());
 		// this.webSocket.addConnetedUser(user, newId);
 		// this.vertx.setPeriodic(2000, id -> {
-		// 	// Invia un messaggio a un client specifico (usa un ID di esempio qui)
-		// 	this.webSocket.sendMessageToClient(user.clientID(),
-		// 			new JsonObject().put("message", "Messaggio dal server").toString());
-		// 	System.out.println("Messaggio inviato");
+		// // Invia un messaggio a un client specifico (usa un ID di esempio qui)
+		// this.webSocket.sendMessageToClient(user.clientID(),
+		// new JsonObject().put("message", "Messaggio dal server").toString());
+		// System.out.println("Messaggio inviato");
 		// });
 		jsonGame.put(Constants.GAME_ID, String.valueOf(newId));
 		return jsonGame;

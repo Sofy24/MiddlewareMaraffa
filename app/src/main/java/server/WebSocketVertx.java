@@ -112,6 +112,19 @@ public class WebSocketVertx {
         }
     }
 
+    public void broadcastToEveryone(final String message) {
+        System.out.println("Sending message to everyone: ");
+        for (final ServerWebSocket webSocket : this.activeConnections.values()) {
+            if (webSocket != null) {
+                // for (final ServerWebSocket serverWebSocket : webSocket) {
+                webSocket.writeTextMessage(message);
+                // }
+            } else {
+                System.out.println("No active connection with ID: " + webSocket.path().toString());
+            }
+        }
+    }
+
     // public void sendMessageToClient(final UUID clientID, final String message) {
     // final List<ServerWebSocket> webSocket =
     // this.findWebSocketsByClientID(clientID);

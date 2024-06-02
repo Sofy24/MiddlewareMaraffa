@@ -144,36 +144,64 @@ public class GameServiceDecorator {
 	}
 
 	@Operation(summary = "User change team in a specific game", method = Constants.CHANGE_TEAM_METHOD, operationId = Constants.CHANGE_TEAM, tags = {
-		Constants.GAME_TAG }, requestBody = @RequestBody(description = "id of the game is required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = ChangeTeamBody.class, example = "{\n"
-				+ "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\"\n" 
-				+ "  \"" + Constants.USERNAME + "\": \"sofi\",\n" 
-				+ "  \"" + Constants.TEAM + "\": \"teamA\",\n"
-				+ "  \"" + Constants.POSITION + "\": \"0\" \n"
+		Constants.GAME_TAG }, requestBody = @RequestBody(description = "id of the game, username, team and position are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = ChangeTeamBody.class, example = "{\n"
+				+ "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n"
+				+ "  \"" + Constants.TEAM + "\": \"A\",\n"
+				+ "  \"" + Constants.POSITION + "\": 0,\n"
+				+ "  \"" + Constants.USERNAME + "\": \"sofi\"\n"
 				+ "}"))), responses = {
-						@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = ChangeTeamBody.class))),
-						@ApiResponse(responseCode = "404", description = "Game not found."),
-						@ApiResponse(responseCode = "417", description = "Game already started."),
-						@ApiResponse(responseCode = "500", description = "Internal Server Error.") })
-public void changeTeam(final RoutingContext context) {
-	final String uuidAsString = context.body().asJsonObject().getString(Constants.GAME_ID);
-	final UUID gameID = UUID.fromString(uuidAsString);
-	final String username = context.body().asJsonObject().getString(Constants.USERNAME);
-	final String team = context.body().asJsonObject().getString(Constants.TEAM);
-	final Integer position = context.body().asJsonObject().getInteger(Constants.POSITION);
-	JsonObject teamResponse = this.gameService.changeTeam(gameID, username, team, position);
-	if (!teamResponse.containsKey(Constants.NOT_FOUND)) {
-		if(teamResponse.getBoolean(Constants.TEAM)){
-			context.response().end("Team changed");
+					@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = ChangeTeamBody.class))),
+					@ApiResponse(responseCode = "404", description = "Game not found."),
+					@ApiResponse(responseCode = "417", description = "Game already started."),
+					@ApiResponse(responseCode = "500", description = "Internal Server Error.") })
+	public void changeTeam(final RoutingContext context) {
+		final String uuidAsString = context.body().asJsonObject().getString(Constants.GAME_ID);
+		final UUID gameID = UUID.fromString(uuidAsString);
+		final String username = context.body().asJsonObject().getString(Constants.USERNAME);
+		final String team = context.body().asJsonObject().getString(Constants.TEAM);
+		final Integer position = context.body().asJsonObject().getInteger(Constants.POSITION);
+		JsonObject teamResponse = this.gameService.changeTeam(gameID, username, team, position);
+		if (!teamResponse.containsKey(Constants.NOT_FOUND)) {
+			if(teamResponse.getBoolean(Constants.TEAM)){
+				context.response().end(new JsonObject().put(Constants.MESSAGE, "Team changed").toBuffer());
+			} else {
+				context.response().setStatusCode(417).end(new JsonObject().put(Constants.MESSAGE, "The game is already started").toBuffer());
+			}
 		} else {
-		 	context.response().setStatusCode(417).end("The game is already started");
+			context.response().setStatusCode(404).end(new JsonObject().put(Constants.MESSAGE, "Game " + gameID + " not found").toBuffer());
 		}
-		
-		
-		
-	} else {
-		context.response().setStatusCode(404).end("Game " + gameID + " not found");
 	}
-}
+
+
+
+
+	// @Operation(summary = "User change team in a specific game", method = Constants.CHANGE_TEAM_METHOD, operationId = Constants.CHANGE_TEAM, tags = {
+	// 	Constants.GAME_TAG }, requestBody = @RequestBody(description = "id of the game, username, team and position are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = ChangeTeamBody.class, example = "{\n"
+	// 			+ "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
+	// 			"  \"" + Constants.USERNAME + "\": \"sofi\",\n" +
+	// 			"  \"" + Constants.TEAM + "\": \"A\",\n" +
+	// 			"  \"" + Constants.POSITION + "\": 0\n" + "}"))), responses = {
+	// 					@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = ChangeTeamBody.class))),
+	// 					@ApiResponse(responseCode = "404", description = "Game not found."),
+	// 					@ApiResponse(responseCode = "417", description = "Game already started."),
+	// 					@ApiResponse(responseCode = "500", description = "Internal Server Error.") })
+	// public void changeTeam(final RoutingContext context) {
+	// 	final String uuidAsString = context.body().asJsonObject().getString(Constants.GAME_ID);
+	// 	final UUID gameID = UUID.fromString(uuidAsString);
+	// 	final String username = context.body().asJsonObject().getString(Constants.USERNAME);
+	// 	final String team = context.body().asJsonObject().getString(Constants.TEAM);
+	// 	final Integer position = context.body().asJsonObject().getInteger(Constants.POSITION);
+	// 	JsonObject teamResponse = this.gameService.changeTeam(gameID, username, team, position);
+	// 	if (!teamResponse.containsKey(Constants.NOT_FOUND)) {
+	// 		if(teamResponse.getBoolean(Constants.TEAM)){
+	// 			context.response().end("Team changed");
+	// 		} else {
+	// 			context.response().setStatusCode(417).end("The game is already started");
+	// 		}
+	// 	} else {
+	// 		context.response().setStatusCode(404).end("Game " + gameID + " not found");
+	// 	}
+	// }
 
 	@Operation(summary = "Get player card", method = Constants.GET_PLAYER_CARD_METHOD, operationId = Constants.PLAYER_CARDS, tags = {
 			Constants.GAME_TAG }, parameters = {

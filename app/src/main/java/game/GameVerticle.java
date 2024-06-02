@@ -102,6 +102,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public boolean addUser(final User user) {
 		if (!this.users.stream().map(User::username).toList().contains(user.username())) {
 			this.users.add(user);
+			this.onJoinGame(user);
 			this.status = this.canStart() ? Status.STARTING : Status.WAITING_PLAYERS;
 			return true;
 		}
@@ -376,6 +377,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		json.put("gameID", this.id.toString())
 				.put("creator", this.creatorName)
 				.put("status", this.status.toString())
+				.put("score", this.expectedScore)
+				.put("mode", this.gameMode.toString())
 				.put("gameMode", this.gameMode.toString());
 		return json;
 	}
@@ -398,6 +401,14 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			this.getVertx().eventBus().send("chat-component:onJoinGame",
 					new JsonObject().put("gameID", this.id.toString()).put("username", user.username())
 							.put("clientID", user.clientID()).toString());
+		for (final var player : this.users) {
+			this.webSocket.sendMessageToClient(player.clientID(),
+					new JsonObject().put("gameID", this.id.toString())
+							.put("event", "userJoin")
+							.put("username", user.username())
+							.put("status", this.status.toString()).toString());
+		}
+
 	}
 
 	@Override

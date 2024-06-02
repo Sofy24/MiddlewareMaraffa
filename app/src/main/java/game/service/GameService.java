@@ -125,6 +125,11 @@ public class GameService {
         if (this.games.get(gameID) != null && this.games.get(gameID).canStart()) {
 			final GameVerticle game = this.games.get(gameID);
 			game.setIsSuitFinished(isSuitFinishedByPlayer);
+			if (game.getTrump().equals(CardSuit.NONE)){
+				jsonPlayCard.put(Constants.PLAY, false);
+				jsonPlayCard.put(Constants.MESSAGE, "Trump not setted");
+				return jsonPlayCard;
+			}
 			final Boolean play = game.addCard(card, username);
 			jsonPlayCard.put(Constants.PLAY, play);
 				if (play && game.getLatestTrick().isCompleted()) {

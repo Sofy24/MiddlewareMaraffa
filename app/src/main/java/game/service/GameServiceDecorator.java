@@ -275,7 +275,7 @@ public class GameServiceDecorator {
 					if (!this.gameService.getGames().get(gameID).isUserIn(username)
 							|| !playCardResponse.getBoolean(Constants.PLAY)) {
 						response.put(Constants.MESSAGE, "Is not the turn of " + username
-								+ " or the system doesn't know who has the 4 of coins");
+								+ " or the trump is not setted or the system doesn't know who has the 4 of coins");
 						context.response().setStatusCode(417).end(response.toBuffer());
 					} else {
 						context.response().end(response.toBuffer());

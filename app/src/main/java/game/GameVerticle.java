@@ -377,6 +377,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				List<String> updatedPlayers = new ArrayList<>(selectedteam.players());
 				updatedPlayers.add(pos, username);
 				this.teams.set(teamIndex, new Team(updatedPlayers, selectedteam.nameOfTeam(), selectedteam.score()));
+				LOGGER.info("The team has been changed" + this.teams.toString());
 				return true;
 			} catch (IndexOutOfBoundsException e){
 				throw new IndexOutOfBoundsException("Cannot add a user, the team is too small");

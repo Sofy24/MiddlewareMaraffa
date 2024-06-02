@@ -185,6 +185,16 @@ public class GameService {
 		return false;
 	}
 
+	public JsonObject changeTeam(final UUID gameID, final String username, final String team, final Integer pos){
+		final JsonObject jsonTeam = new JsonObject();
+		if (this.games.get(gameID) != null) {
+			jsonTeam.put(Constants.TEAM, this.games.get(gameID).changeTeam(username, team, pos));
+			return jsonTeam;
+		}
+		jsonTeam.put(Constants.NOT_FOUND, false);
+		return jsonTeam.put(Constants.MESSAGE, "Game " + gameID + " not found");
+	}
+
 	public JsonObject getState(final UUID gameID) {
 		final JsonObject jsonState = new JsonObject();
 		if (this.games.get(gameID) != null) {

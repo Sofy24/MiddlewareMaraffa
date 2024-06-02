@@ -2,6 +2,7 @@ package game;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -44,6 +45,7 @@ public class GameTest {
 	private static final int MARAFFA_PLAYERS = 4;
 	private static final int UUID_SIZE = 36;
 	private static final int EXPECTED_SCORE = 11;
+	private static final int EXPECTED_POS = 1;
 	private static final UUID FAKE_UUID = UUID.randomUUID();
 	private static final Boolean IS_SUIT_FINISHED = true;
 	private static final Card<CardValue, CardSuit> TEST_CARD = new Card<>(CardValue.HORSE, CardSuit.CLUBS);
@@ -918,63 +920,67 @@ public class GameTest {
 		context.completeNow();
 	}
 
-	// TODO increment current state could be done two times
-	//TODO move this
-	/*
-	@Test
-	public void computeScoreTest(final VertxTestContext context) {
-		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS,
-				new User(TEST_USER.username() + "0", TEST_USER.clientID()), EXPECTED_SCORE, GAME_MODE.toString());
+	@Test 
+	public void changeTeamTest(final VertxTestContext context){
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
+				GAME_MODE.toString());
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
-		for (int i = 1; i < MARAFFA_PLAYERS; i++) {
-			final JsonObject joinResponse = this.gameService.joinGame(
-					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					new User(TEST_USER.username() + i, TEST_USER.clientID()));
-			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+				new User(TEST_USER.username() + i, TEST_USER.clientID()));
 		}
-
-		// final CompletableFuture<JsonObject> future =
-		// this.businessLogicController.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-		// MARAFFA_PLAYERS);
-		try {
-			// final int firstPlayer = 1;// future.get().getInteger("firstPlayer");
-		this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-				.setInitialTurn(FIRST_PLAYER);
-			final int initialTurn = this.gameService.getGames()
-					.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
-			// assertEquals(firstPlayer, initialTurn);
-			final JsonObject chooseTrumpResponse = this.gameService
-					.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(),
-							this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-									.getUsers().get(initialTurn).username());
-			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-			assertTrue(this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-					.startGame());
-			for (int i = 0; i < MARAFFA_PLAYERS; i++) {
-				assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-						this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-								.getUsers().get((initialTurn + i) % MARAFFA_PLAYERS).username(),
-						TEST_CARDS.get(i % MARAFFA_PLAYERS), IS_SUIT_FINISHED)
-						.getBoolean(Constants.PLAY));
-			}
-			final CompletableFuture<JsonObject> futureCompScore = this.businessLogicController.computeScore(
-					this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-							.getLatestTrick(),
-					TRUMP.value.toString(), GAME_MODE.name(), this.gameService.getGames()
-							.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getIsSuitFinished(),
-					UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
-			final JsonObject compScoreJson = futureCompScore.get();
-			assertEquals(3, compScoreJson.getInteger("score")); // TODO lo score è moltiplicato * 3, lo dobbiamo
-																// modificare nella BL
-			assertEquals(1, compScoreJson.getInteger("winningPosition"));
-			assertFalse(compScoreJson.getBoolean("firstTeam"));
-
-		} catch (final InterruptedException e) {
-			e.printStackTrace();
-		} catch (final ExecutionException e) {
-			e.printStackTrace();
-		}
+		JsonObject changeResponse = this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+		TEST_USER.username(), "A", EXPECTED_POS);
+		assertTrue(changeResponse.getBoolean(Constants.TEAM));
 		context.completeNow();
 	}
-	*/
+
+	@Test 
+	public void ChangeNotAllowedWhilePlayingTest(final VertxTestContext context){
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
+				GAME_MODE.toString());
+		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+				new User(TEST_USER.username() + i, TEST_USER.clientID()));
+		}
+		JsonObject changeResponse = this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+		TEST_USER.username(), "A", EXPECTED_POS);
+		assertTrue(changeResponse.getBoolean(Constants.TEAM));
+		this.gameService
+				.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
+		changeResponse = this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+		TEST_USER.username(), "A", EXPECTED_POS - 1);
+		assertFalse(changeResponse.getBoolean(Constants.TEAM));
+		context.completeNow();
+	}
+
+	@Test 
+	public void WrongPositionTest(final VertxTestContext context){
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
+				GAME_MODE.toString());
+		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+		assertThrows(IndexOutOfBoundsException.class, () -> {
+			this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					TEST_USER.username(), "A", EXPECTED_POS);
+		});
+		context.completeNow();
+	}
+
+	@Test 
+	public void ChangePositionSameTeamTest(final VertxTestContext context){
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
+				GAME_MODE.toString());
+		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+				new User(TEST_USER.username() + i, TEST_USER.clientID()));
+		}
+		JsonObject changeResponse = this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+		TEST_USER.username(), "A", EXPECTED_POS);
+		changeResponse = this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+		TEST_USER.username(), "A", EXPECTED_POS - 1);
+		assertTrue(changeResponse.getBoolean(Constants.TEAM));
+		context.completeNow();
+	}
 }

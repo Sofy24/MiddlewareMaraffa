@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import game.service.User;
 import game.utils.Constants;
 import game.utils.Pair;
@@ -37,14 +39,15 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private final int expectedScore;
 	private CardSuit trump = CardSuit.NONE;
 	private Map<Integer, Trick> states = new ConcurrentHashMap<>();
-	private final List<User> users = new ArrayList<>();
+	private List<User> users = new ArrayList<>();
 	private final Map<User, List<Card<CardValue, CardSuit>>> userAndCards = new ConcurrentHashMap<>();
 	private final GameSchema gameSchema;
 	private AbstractStatisticManager statisticManager;
 	private Trick currentTrick;
 	private final List<Trick> tricks = new ArrayList<>();
-	private Team team1;
-	private Team team2;
+	private List<Team> teams = new ArrayList<>();
+	// private Team team1;
+	// private Team team2;
 	private String creatorName;
 	private Boolean checkMaraffa = true;
 	private Status status = Status.WAITING_PLAYERS;
@@ -64,6 +67,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.currentState = new AtomicInteger(0);
 		this.numberOfPlayers = numberOfPlayers;
 		this.creatorName = user.username();
+		this.teams.add(new Team(List.of(this.creatorName), "A", 0));
+		this.teams.add(new Team(List.of(), "B", 0));
 		this.users.add(user);
 		this.gameSchema = new GameSchema(String.valueOf(id), CardSuit.NONE);
 		this.statisticManager = statisticManager;
@@ -79,7 +84,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.expectedScore = expectedScore;
 		this.currentScore = new Pair<>(0, 0);
 		this.currentState = new AtomicInteger(0);
+		this.creatorName = user.username();
 		this.numberOfPlayers = numberOfPlayers;
+		this.teams.add(new Team(List.of(this.creatorName), "A", 0));
+		this.teams.add(new Team(List.of(), "B", 0));
 		this.users.add(user);
 		this.gameSchema = new GameSchema(String.valueOf(id), CardSuit.NONE);
 	}
@@ -97,8 +105,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public boolean addUser(final User user) {
 		if (!this.users.stream().map(User::username).toList().contains(user.username())) {
-			this.users.add(user);
-			this.status = this.canStart() ? Status.STARTING : Status.WAITING_PLAYERS;
+			this.users.add(user); 
+			List<String> updatePlayers = new ArrayList<>(this.teams.get(0).players());
+			updatePlayers.add(user.username());
+			this.teams.set(0, new Team(updatePlayers, "A", this.teams.get(0).score()));
 			return true;
 		}
 		return false;
@@ -145,7 +155,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * @return true if all players have joined the game
 	 */
 	public boolean canStart() {
-		return this.users.size() == this.numberOfPlayers;
+		return this.users.size() == this.numberOfPlayers; 
 	}
 
 	/**
@@ -163,10 +173,28 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public boolean startGame() {
 		if (this.canStart()) {
-			this.team1 = new Team(IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 == 0)
-					.mapToObj(this.users::get).map(User::username).toList(), "A", 0);
-			this.team2 = new Team(IntStream.range(0, this.numberOfPlayers).filter(n -> n % 2 != 0)
-					.mapToObj(this.users::get).map(User::username).toList(), "B", 0);
+			//get number of players
+			int maxPlayers = teams.stream()
+                .mapToInt(team -> team.players().size())
+                .max()
+                .orElse(0);
+			//get an ordered list of Usernames 
+			List<String> playerNames = IntStream.range(0, maxPlayers)
+			.mapToObj(i -> teams.stream()
+					.filter(team -> team.players().size() > i)
+					.map(team -> team.players().get(i)))
+			.flatMap(Stream::distinct) 
+			.collect(Collectors.toList());
+
+			//create a map to perform look up between Users and their usernames
+			Map<String, User> userMap = users.stream()
+                .collect(Collectors.toMap(user -> user.username(), user -> user));
+
+			//ordering users
+			this.users = playerNames.stream()
+			.map(userMap::get)
+			.collect(Collectors.toList());
+
 			this.status = Status.PLAYING;
 			return true;
 		}
@@ -291,10 +319,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * @param isTeamA true if team A won the trick
 	 */
 	public void setScore(final int score, final boolean isTeamA) {
-		if (isTeamA)
-			this.team1 = new Team(this.team1.players(), this.team1.nameOfTeam(), this.team1.score() + (score / 3));
-		else
-			this.team2 = new Team(this.team2.players(), this.team2.nameOfTeam(), this.team2.score() + (score / 3));
+		int index = isTeamA ? 0 : 1;
+		Team currentTeam = this.teams.get(index);
+		this.teams.set(index, new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + (score / 3)));
 	}
 
 	public CardSuit getTrump() {
@@ -304,10 +331,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public Status getStatus() {
 		return this.status;
 	}
-
-	// public Map<User, Card<CardValue, CardSuit>[]> getUserAndCards() {
-	// return this.userAndCards;
-	// }
 
 	public List<Card<CardValue, CardSuit>> getUserCards(final String username) {
 		return this.userAndCards.entrySet().stream()
@@ -336,6 +359,30 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public void incrementCurrentState() {
 		this.currentState.incrementAndGet();
+	}
+
+	/**
+	 * a player change a team
+	 */
+	public boolean changeTeam(final String username, final String team, final Integer pos) {
+		if (this.status == Status.WAITING_PLAYERS){
+			this.teams = teams.stream().map(t -> {
+                List<String> updatedPlayers = new ArrayList<>(t.players());
+                updatedPlayers.remove(username);
+                return new Team(updatedPlayers, t.nameOfTeam(), t.score());
+            }).collect(Collectors.toList());
+			final Team selectedteam = this.teams.stream().filter(t -> t.nameOfTeam().equals(team)).findFirst().orElseThrow();
+			try {
+				int teamIndex = this.teams.indexOf(selectedteam);
+				List<String> updatedPlayers = new ArrayList<>(selectedteam.players());
+				updatedPlayers.add(pos, username);
+				this.teams.set(teamIndex, new Team(updatedPlayers, selectedteam.nameOfTeam(), selectedteam.score()));
+				return true;
+			} catch (IndexOutOfBoundsException e){
+				throw new IndexOutOfBoundsException("Cannot add a user, the team is too small");
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -375,7 +422,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * @return true if the game is ended
 	 */
 	public boolean isGameEnded() {
-		return this.team1.score() >= this.expectedScore || this.team2.score() >= this.expectedScore;
+		return this.teams.get(0).score() >= this.expectedScore || this.teams.get(1).score() >= this.expectedScore;
 	}
 
 	/**

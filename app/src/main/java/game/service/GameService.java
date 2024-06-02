@@ -97,7 +97,7 @@ public class GameService {
 				return jsonStartGame;
 			} else {
 				jsonStartGame.put(Constants.START_ATTR, false);
-				return jsonStartGame.put(Constants.MESSAGE, "Not all the players are in");
+				return jsonStartGame.put(Constants.MESSAGE, "Not all the players are in or the team are not balanced");
 			}
 		}
 		jsonStartGame.put(Constants.NOT_FOUND, false);

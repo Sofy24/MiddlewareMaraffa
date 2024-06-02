@@ -46,8 +46,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private Trick currentTrick;
 	private final List<Trick> tricks = new ArrayList<>();
 	private List<Team> teams = new ArrayList<>();
-	// private Team team1;
-	// private Team team2;
 	private String creatorName;
 	private Boolean checkMaraffa = true;
 	private Status status = Status.WAITING_PLAYERS;
@@ -152,10 +150,21 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	/**
-	 * @return true if all players have joined the game
+	 * @return true if the teams are balanced: have the same number of players
+	 
+	 */
+	public boolean balancedTeams() {
+		return teams.stream()
+			.mapToInt(team -> team.players().size())
+			.distinct()
+			.count() == 1;
+	}
+
+	/**
+	 * @return true if all players have joined the game and if the teams are balanced
 	 */
 	public boolean canStart() {
-		return this.users.size() == this.numberOfPlayers; 
+		return this.users.size() == this.numberOfPlayers && this.balancedTeams(); 
 	}
 
 	/**

@@ -1,11 +1,10 @@
 package integration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import BLManagment.BusinessLogicController;
 import game.GameMode;
 import game.service.GameService;
@@ -24,16 +22,16 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
+
 @TestInstance(Lifecycle.PER_CLASS)
 @ExtendWith(VertxExtension.class)
-public class BLIntegration {
+public class BusinessLogicTestIntegration {
 
 	private static final User TEST_USER = new User("testUser", UUID.randomUUID());
 	private static final int MARAFFA_PLAYERS = 4;
-	private Vertx vertx;
 	private GameService gameService;
+	private Vertx vertx;
 	private BusinessLogicController businessLogicController;
-	// private ChatService chatService;
 
 	@BeforeAll
 	public void setUp() {
@@ -50,15 +48,6 @@ public class BLIntegration {
 	public void tearDown() {
 		this.vertx.close();
 	}
-
-	// private CompletableFuture<JsonObject> createAGame() {
-	// return this.chatService.createGameChatHandler("genericGameID");
-	// }
-
-	// private CompletableFuture<JsonObject> joinTheGame(final String gameID, final
-	// User user) {
-	// return this.chatService.joinGameHandler(gameID, user);
-	// }
 
 	@Timeout(value = 10, unit = TimeUnit.SECONDS)
 	@Test
@@ -99,19 +88,33 @@ public class BLIntegration {
 					});
 				});
 	}
-	// @Timeout(value = 10, unit = TimeUnit.SECONDS)
-	// @Test
-	// public void testJoin(final VertxTestContext context) {
-	// this.createAGame().join();
-	// for (int i = 0; i < 3; i++) {
-	// this.joinTheGame("genericGameID", new User(TEST_USER.username() + i,
-	// TEST_USER.clientID()))
-	// .whenComplete((res, err) -> {
-	// context.verify(() -> {
-	// assertNull(res.getString("error"));
-	// });
-	// });
-	// }
-	// context.completeNow();
-	// }
+
+	/*Test if Maraffa is present */
+	@Timeout(value = 10, unit = TimeUnit.SECONDS)
+	@Test
+	public void MaraffaIsPresentTest(final VertxTestContext context) {
+		int[] deck = new int[]{7,8,9,1,2,3,4,5,6,0}; 
+		this.businessLogicController.getMaraffa(deck, 0).whenComplete((res, err) ->{
+			context.verify(() -> {
+				assertNull(res.getString("error"));
+				assertEquals(res.getBoolean("maraffa"), true);
+				context.completeNow();
+			});
+	});	
+	}
+
+	/*Test if Maraffa is not present */
+	@Timeout(value = 10, unit = TimeUnit.SECONDS)
+	@Test
+	public void MaraffaIsNotPresentTest(final VertxTestContext context) {
+		int[] deck = new int[]{21,22,23,1,2,3,4,5,6,0}; 
+		this.businessLogicController.getMaraffa(deck, 0).whenComplete((res, err) ->{
+			context.verify(() -> {
+				assertNull(res.getString("error"));
+				assertEquals(res.getBoolean("maraffa"), false);
+				context.completeNow();
+			});
+	});	
+	}
+
 }

@@ -1,6 +1,7 @@
 package game;
 
 import game.service.User;
+import java.util.List;
 
 public interface IGameAgent {
 
@@ -10,7 +11,11 @@ public interface IGameAgent {
 
 	void onStartGame();
 
+	void onCheckMaraffa(int suit, String username);
+
 	void onPlayCard();
+
+	void onTrickCompleted(Trick latestTrick);
 
 	void onMessage();
 

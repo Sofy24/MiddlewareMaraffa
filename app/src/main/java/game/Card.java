@@ -17,7 +17,7 @@ public record Card<X, Y>(CardValue cardValue, CardSuit cardSuit) {
     }
 
     public Integer getCardValue() {
-        return this.cardSuit.value * 10 + this.cardValue.value;
+    return this.cardSuit.value * 10 + this.cardValue.value;
     }
 
     static Card<CardValue, CardSuit> fromInteger(final int value) {

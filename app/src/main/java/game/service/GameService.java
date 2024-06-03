@@ -16,8 +16,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import repository.AbstractStatisticManager;
-
-
+import server.WebSocketVertx;
 
 /**
  * TODO javadoc
@@ -25,6 +24,7 @@ import repository.AbstractStatisticManager;
 public class GameService {
 	private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
 	private final Vertx vertx;
+	private WebSocketVertx webSocket;
 
 	private AbstractStatisticManager statisticManager;
 
@@ -38,6 +38,13 @@ public class GameService {
 		this.statisticManager = statisticManager;
 	}
 
+	public GameService(final Vertx vertx, final AbstractStatisticManager statisticManager,
+			final WebSocketVertx webSocket) {
+		this.vertx = vertx;
+		this.statisticManager = statisticManager;
+		this.webSocket = webSocket;
+	}
+
 	public JsonObject createGame(final Integer numberOfPlayers, final User user, final int expectedScore,
 			final String gameMode) {
 		final JsonObject jsonGame = new JsonObject();
@@ -46,7 +53,7 @@ public class GameService {
 		try {
 			currentGame = new GameVerticle(newId, user, numberOfPlayers, expectedScore,
 					GameMode.valueOf(gameMode.toUpperCase()),
-					this.statisticManager);
+					this.statisticManager, this.webSocket);
 			// TODO migliore gestione qui perche e' terribile ma per testare OK
 		} catch (final IllegalArgumentException e) {
 			return jsonGame.put(Constants.INVALID, gameMode);
@@ -54,6 +61,20 @@ public class GameService {
 		this.games.put(newId, currentGame);
 		this.vertx.deployVerticle(currentGame);
 		currentGame.onCreateGame(user);
+		// TODO molto poco bello..... ma per ora funziona
+		if (this.webSocket != null)
+			this.webSocket
+					.broadcastToEveryone(new JsonObject()
+							.put("event", "gameList")
+							.put(Constants.GAME, this.games.values().stream().map(GameVerticle::toJson).toList())
+							.toString());
+		// this.webSocket.addConnetedUser(user, newId);
+		// this.vertx.setPeriodic(2000, id -> {
+		// // Invia un messaggio a un client specifico (usa un ID di esempio qui)
+		// this.webSocket.sendMessageToClient(user.clientID(),
+		// new JsonObject().put("message", "Messaggio dal server").toString());
+		// System.out.println("Messaggio inviato");
+		// });
 		jsonGame.put(Constants.GAME_ID, String.valueOf(newId));
 		return jsonGame;
 	}
@@ -64,6 +85,7 @@ public class GameService {
 			if (this.games.get(gameID).getNumberOfPlayersIn() < this.games.get(gameID).getMaxNumberOfPlayers()) {
 				if (this.games.get(gameID).addUser(user)) {
 					jsonJoin.put(Constants.JOIN_ATTR, true);
+					// this.webSocket.addConnetedUser(user, gameID);
 					return jsonJoin.put(Constants.MESSAGE, "Game " + gameID + " joined by " + user.username());
 				} else {
 					jsonJoin.put(Constants.ALREADY_JOINED, true);
@@ -86,11 +108,11 @@ public class GameService {
 		final JsonObject jsonStartGame = new JsonObject();
 		if (this.games.get(gameID) != null) {
 			if (this.games.get(gameID).startGame()) {
-				try{
+				try {
 					this.games.get(gameID).onStartGame();
 					jsonStartGame.put(Constants.START_ATTR, true);
 					jsonStartGame.put(Constants.MESSAGE, "The game " + gameID + " can start");
-				} catch (final Exception e){
+				} catch (final Exception e) {
 					jsonStartGame.put(Constants.START_ATTR, false);
 					jsonStartGame.put(Constants.MESSAGE, "Error in starting the game");
 				}
@@ -120,34 +142,35 @@ public class GameService {
 		return jsonCanStart.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
-    public JsonObject playCard(final UUID gameID, final String username, final Card<CardValue, CardSuit> card, final Boolean isSuitFinishedByPlayer) {
-        final JsonObject jsonPlayCard = new JsonObject();
-        if (this.games.get(gameID) != null && this.games.get(gameID).canStart()) {
+	public JsonObject playCard(final UUID gameID, final String username, final Card<CardValue, CardSuit> card,
+			final Boolean isSuitFinishedByPlayer) {
+		final JsonObject jsonPlayCard = new JsonObject();
+		if (this.games.get(gameID) != null && this.games.get(gameID).canStart()) {
 			final GameVerticle game = this.games.get(gameID);
 			game.setIsSuitFinished(isSuitFinishedByPlayer);
-			if (game.getTrump().equals(CardSuit.NONE)){
+			if (CardSuit.NONE.equals(game.getTrump())) {
 				jsonPlayCard.put(Constants.PLAY, false);
 				jsonPlayCard.put(Constants.MESSAGE, "Trump not setted");
 				return jsonPlayCard;
 			}
 			final Boolean play = game.addCard(card, username);
 			jsonPlayCard.put(Constants.PLAY, play);
-				if (play && game.getLatestTrick().isCompleted()) {
-					game.getGameSchema().addTrick(game.getCurrentTrick());
-					if (this.statisticManager != null)
-						this.statisticManager.updateRecordWithTrick(String.valueOf(gameID), game.getCurrentTrick());
-					try {
-						game.onTrickCompleted(game.getCurrentTrick());
-					} catch (final Exception e) {
-						jsonPlayCard.put(Constants.PLAY, false);
-						jsonPlayCard.put(Constants.MESSAGE, "Failed to complete the trick");
-						return jsonPlayCard;
-					}
-				}      
+			if (play && game.getLatestTrick().isCompleted()) {
+				game.getGameSchema().addTrick(game.getCurrentTrick());
+				if (this.statisticManager != null)
+					this.statisticManager.updateRecordWithTrick(String.valueOf(gameID), game.getCurrentTrick());
+				try {
+					game.onTrickCompleted(game.getCurrentTrick());
+				} catch (final Exception e) {
+					jsonPlayCard.put(Constants.PLAY, false);
+					jsonPlayCard.put(Constants.MESSAGE, "Failed to complete the trick");
+					return jsonPlayCard;
+				}
+			}
 		} else {
 			jsonPlayCard.put(Constants.NOT_FOUND, false);
-			return jsonPlayCard.put(Constants.PLAY, false); 
-		}  
+			return jsonPlayCard.put(Constants.PLAY, false);
+		}
 		return jsonPlayCard;
 	}
 
@@ -190,7 +213,7 @@ public class GameService {
 		return false;
 	}
 
-	public JsonObject changeTeam(final UUID gameID, final String username, final String team, final Integer pos){
+	public JsonObject changeTeam(final UUID gameID, final String username, final String team, final Integer pos) {
 		final JsonObject jsonTeam = new JsonObject();
 		if (this.games.get(gameID) != null) {
 			jsonTeam.put(Constants.TEAM, this.games.get(gameID).changeTeam(username, team, pos));

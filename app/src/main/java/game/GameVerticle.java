@@ -23,6 +23,7 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import repository.AbstractStatisticManager;
+import server.WebSocketVertx;
 
 /***
  * This class models a game using a Verticle from vertx.
@@ -46,18 +47,23 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private Trick currentTrick;
 	private final List<Trick> tricks = new ArrayList<>();
 	private List<Team> teams = new ArrayList<>();
-	private String creatorName;
+	private final String creatorName;
 	private Boolean checkMaraffa = true;
 	private Status status = Status.WAITING_PLAYERS;
 	private final GameMode gameMode;
 	private int turn = -1;
 	private int initialTurn = -1;
 	private List<Boolean> isSuitFinished = new ArrayList<>();
+	private WebSocketVertx webSocket;
+
+	// public GameSchema getGameSchema() {
+	// return this.gameSchema;
+	// }
 	private static final Logger LOGGER = LoggerFactory.getLogger(GameVerticle.class);
 
 	public GameVerticle(final UUID id, final User user, final int numberOfPlayers, final int expectedScore,
 			final GameMode gameMode,
-			final AbstractStatisticManager statisticManager) {
+			final AbstractStatisticManager statisticManager, final WebSocketVertx webSocket) {
 		this.id = id;
 		this.gameMode = gameMode;
 		this.expectedScore = expectedScore;
@@ -70,6 +76,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.users.add(user);
 		this.gameSchema = new GameSchema(String.valueOf(id), CardSuit.NONE);
 		this.statisticManager = statisticManager;
+		this.webSocket = webSocket;
 		if (this.statisticManager != null)
 			this.statisticManager.createRecord(this.gameSchema); // TODO andrebbero usati gli UUID ma vediamo se mongo
 		// di aiuta con la questione _id
@@ -103,8 +110,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public boolean addUser(final User user) {
 		if (!this.users.stream().map(User::username).toList().contains(user.username())) {
-			this.users.add(user); 
-			List<String> updatePlayers = new ArrayList<>(this.teams.get(0).players());
+			this.status = this.canStart() ? Status.STARTING : Status.WAITING_PLAYERS;
+			this.users.add(user);
+			this.onJoinGame(user);
+			final List<String> updatePlayers = new ArrayList<>(this.teams.get(0).players());
 			updatePlayers.add(user.username());
 			this.teams.set(0, new Team(updatePlayers, "A", this.teams.get(0).score()));
 			return true;
@@ -127,17 +136,19 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					this.tricks.add(this.currentTrick);
 				}
 
-				if(card.cardValue() == CardValue.ONE && this.checkMaraffa){
+				if (card.cardValue() == CardValue.ONE && this.checkMaraffa) {
 					this.checkMaraffa = false;
 					this.onCheckMaraffa(card.cardSuit().value, username);
 				}
-				
+
 				if (this.currentTrick.getCardsAndUsers().containsValue(username)) {
 					return false;
 				}
 				this.currentTrick.addCard(card, username);
 				this.turn = (this.turn + 1) % this.numberOfPlayers;
-				if (this.currentTrick.isCompleted()){
+				this.onPlayCard();
+				this.removeFromHand(card, username);
+				if (this.currentTrick.isCompleted()) {
 					this.getStates().put(this.getCurrentState().get(), this.getCurrentTrick());
 					this.setCurrentTrick(new TrickImpl(this.getMaxNumberOfPlayers(), this.getTrump()));
 					this.getTricks().add(this.getCurrentTrick());
@@ -149,22 +160,33 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return false;
 	}
 
-	/**
-	 * @return true if the teams are balanced: have the same number of players
-	 
-	 */
-	public boolean balancedTeams() {
-		return teams.stream()
-			.mapToInt(team -> team.players().size())
-			.distinct()
-			.count() == 1;
+	private void removeFromHand(final Card<CardValue, CardSuit> card, final String username) {
+		this.userAndCards.entrySet().stream()
+				.filter(e -> e.getKey().username().equals(username))
+				.findFirst()
+				.map(Map.Entry::getValue)
+				.ifPresent(cards -> cards.remove(card));
+		// .orElse(Collections.emptyList());
+
 	}
 
 	/**
-	 * @return true if all players have joined the game and if the teams are balanced
+	 * @return true if the teams are balanced: have the same number of players
+	 * 
+	 */
+	public boolean balancedTeams() {
+		return this.teams.stream()
+				.mapToInt(team -> team.players().size())
+				.distinct()
+				.count() == 1;
+	}
+
+	/**
+	 * @return true if all players have joined the game and if the teams are
+	 *         balanced
 	 */
 	public boolean canStart() {
-		return this.users.size() == this.numberOfPlayers && this.balancedTeams(); 
+		return this.users.size() == this.numberOfPlayers && this.balancedTeams();
 	}
 
 	/**
@@ -182,27 +204,27 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public boolean startGame() {
 		if (this.canStart()) {
-			//get number of players
-			int maxPlayers = teams.stream()
-                .mapToInt(team -> team.players().size())
-                .max()
-                .orElse(0);
-			//get an ordered list of Usernames 
-			List<String> playerNames = IntStream.range(0, maxPlayers)
-			.mapToObj(i -> teams.stream()
-					.filter(team -> team.players().size() > i)
-					.map(team -> team.players().get(i)))
-			.flatMap(Stream::distinct) 
-			.collect(Collectors.toList());
+			// get number of players
+			final int maxPlayers = this.teams.stream()
+					.mapToInt(team -> team.players().size())
+					.max()
+					.orElse(0);
+			// get an ordered list of Usernames
+			final List<String> playerNames = IntStream.range(0, maxPlayers)
+					.mapToObj(i -> this.teams.stream()
+							.filter(team -> team.players().size() > i)
+							.map(team -> team.players().get(i)))
+					.flatMap(Stream::distinct)
+					.collect(Collectors.toList());
 
-			//create a map to perform look up between Users and their usernames
-			Map<String, User> userMap = users.stream()
-                .collect(Collectors.toMap(user -> user.username(), user -> user));
+			// create a map to perform look up between Users and their usernames
+			final Map<String, User> userMap = this.users.stream()
+					.collect(Collectors.toMap((Function<? super User, ? extends String>) User::username, user -> user));
 
-			//ordering users
+			// ordering users
 			this.users = playerNames.stream()
-			.map(userMap::get)
-			.collect(Collectors.toList());
+					.map(userMap::get)
+					.collect(Collectors.toList());
 
 			this.status = Status.PLAYING;
 			return true;
@@ -304,9 +326,11 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.isSuitFinished = new ArrayList<>();
 	}
 
-	/*@param value: true if the user has finished the suit
-	 * the values in isSuitFinished are order by playCard 
+	/*
+	 * @param value: true if the user has finished the suit
+	 * the values in isSuitFinished are order by playCard
 	 * (if Fede plays first, then the first value in the list is the one of Fede)
+	 * 
 	 * @return true if the value is setted
 	 */
 	public boolean setIsSuitFinished(final Boolean value) {
@@ -328,9 +352,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * @param isTeamA true if team A won the trick
 	 */
 	public void setScore(final int score, final boolean isTeamA) {
-		int index = isTeamA ? 0 : 1;
-		Team currentTeam = this.teams.get(index);
-		this.teams.set(index, new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + (score / 3)));
+		final int index = isTeamA ? 0 : 1;
+		final Team currentTeam = this.teams.get(index);
+		this.teams.set(index,
+				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + (score / 3)));
 	}
 
 	public CardSuit getTrump() {
@@ -374,21 +399,22 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * a player change a team
 	 */
 	public boolean changeTeam(final String username, final String team, final Integer pos) {
-		if (this.status == Status.WAITING_PLAYERS){
-			this.teams = teams.stream().map(t -> {
-                List<String> updatedPlayers = new ArrayList<>(t.players());
-                updatedPlayers.remove(username);
-                return new Team(updatedPlayers, t.nameOfTeam(), t.score());
-            }).collect(Collectors.toList());
-			final Team selectedteam = this.teams.stream().filter(t -> t.nameOfTeam().equals(team)).findFirst().orElseThrow();
+		if (this.status == Status.WAITING_PLAYERS) {
+			this.teams = this.teams.stream().map(t -> {
+				final List<String> updatedPlayers = new ArrayList<>(t.players());
+				updatedPlayers.remove(username);
+				return new Team(updatedPlayers, t.nameOfTeam(), t.score());
+			}).collect(Collectors.toList());
+			final Team selectedteam = this.teams.stream().filter(t -> t.nameOfTeam().equals(team)).findFirst()
+					.orElseThrow();
 			try {
-				int teamIndex = this.teams.indexOf(selectedteam);
-				List<String> updatedPlayers = new ArrayList<>(selectedteam.players());
+				final int teamIndex = this.teams.indexOf(selectedteam);
+				final List<String> updatedPlayers = new ArrayList<>(selectedteam.players());
 				updatedPlayers.add(pos, username);
 				this.teams.set(teamIndex, new Team(updatedPlayers, selectedteam.nameOfTeam(), selectedteam.score()));
 				LOGGER.info("The team has been changed" + this.teams.toString());
 				return true;
-			} catch (IndexOutOfBoundsException e){
+			} catch (final IndexOutOfBoundsException e) {
 				throw new IndexOutOfBoundsException("Cannot add a user, the team is too small");
 			}
 		}
@@ -421,10 +447,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public boolean isRoundEnded() {
 		final double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
-        if (this.currentState.get()  == numberOfTricksInRound) {
-            this.setInitialTurn(this.initialTurn++);
+		if (this.currentState.get() == numberOfTricksInRound) {
+			this.setInitialTurn(this.initialTurn++);
 			this.checkMaraffa = true;
-        }
+		}
 		return this.currentState.get() == numberOfTricksInRound;
 	}
 
@@ -441,7 +467,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public JsonObject toJson() {
 		final JsonObject json = new JsonObject();
 		json.put("gameID", this.id.toString())
+				.put("creator", this.creatorName)
 				.put("status", this.status.toString())
+				.put("score", this.expectedScore)
+				.put("mode", this.gameMode.toString())
 				.put("gameMode", this.gameMode.toString());
 		return json;
 	}
@@ -464,6 +493,16 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			this.getVertx().eventBus().send("chat-component:onJoinGame",
 					new JsonObject().put("gameID", this.id.toString()).put("username", user.username())
 							.put("clientID", user.clientID()).toString());
+		if (this.webSocket != null) {
+			for (final var player : this.users) {
+				this.webSocket.sendMessageToClient(player.clientID(),
+						new JsonObject().put("gameID", this.id.toString())
+								.put("event", "userJoin")
+								.put("username", user.username())
+								.put("status", this.status.toString()).toString());
+			}
+		}
+
 	}
 
 	@Override
@@ -471,27 +510,29 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		if (this.getVertx() != null)
 			this.getVertx().eventBus().request("game-startRound:onStartGame",
 					new JsonObject().put(Constants.GAME_ID, this.id.toString())
-							.put(Constants.NUMBER_OF_PLAYERS, this.numberOfPlayers).toString(), reply -> {
-								if (reply.succeeded()) {
-									LOGGER.info("The game succeeded in starting");
-								} else {
-									throw new UnsupportedOperationException("Failed to start");
-								}
-							});
+							.put(Constants.NUMBER_OF_PLAYERS, this.numberOfPlayers).toString(),
+					reply -> {
+						if (reply.succeeded()) {
+							LOGGER.info("The game succeeded in starting");
+						} else {
+							throw new UnsupportedOperationException("Failed to start");
+						}
+					});
 	}
 
 	@Override
 	public void onCheckMaraffa(final int suit, final String username) {
-		final int user = turn;
+		final int user = this.turn;
 		if (this.getVertx() != null)
 			this.getVertx().eventBus().request("game-maraffs:onCheckMaraffa",
-					new JsonObject() 
-					.put(Constants.SUIT, suit)
-					.put(Constants.GAME_ID, this.id.toString())
-					.put(Constants.USERNAME, username)
-					.toString(), reply -> {
+					new JsonObject()
+							.put(Constants.SUIT, suit)
+							.put(Constants.GAME_ID, this.id.toString())
+							.put(Constants.USERNAME, username)
+							.toString(),
+					reply -> {
 						if (reply.succeeded()) {
-							if ((Boolean)reply.result().body()) {
+							if ((Boolean) reply.result().body()) {
 								this.setScore(Constants.MARAFFA_SCORE, user % 2 == 0);
 								LOGGER.info("You have Maraffa");
 							}
@@ -504,29 +545,40 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	@Override
 	public void onPlayCard() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'onPlayCard'");
+		// Websocket
+		if (this.webSocket != null) {
+			for (final var user : this.users) {
+				this.webSocket.sendMessageToClient(user.clientID(),
+						new JsonObject().put("gameID", this.id.toString())
+								.put("event", "userTurn")
+								.put("turn", this.turn)
+								.put("userTurn", this.users.get(this.turn).username()).toString());
+			}
+			// this.webSocket.sendMessageToClient(this.users.get(this.turn).clientID(),
+			// new JsonObject().put("gameID", this.id.toString())
+			// .put("event", "userTurn")
+			// .put("turn", this.turn)
+			// .put("userTurn", this.users.get(this.turn).username()).toString());
+		}
 	}
 
-
-	
 	@Override
 	public void onTrickCompleted(final Trick latestTrick) {
 		if (this.getVertx() != null)
 			this.getVertx().eventBus().request("game-trickCommpleted:onTrickCommpleted", new JsonObject()
-				.put(Constants.GAME_ID, this.id.toString())
-				.put(Constants.TRICK, latestTrick.getCards().stream().mapToInt(Integer::parseInt).toArray().toString())
-				.put(Constants.GAME_MODE, this.gameMode.toString())
-				.put(Constants.IS_SUIT_FINISHED, this.getIsSuitFinished().toString())
-				.put(Constants.TRUMP, this.trump.getValue()).toString(), reply -> {
-					if (reply.succeeded()) {
-						this.clearIsSuitFinished();
-					} else {
-						throw new UnsupportedOperationException("Failed to complete the trick");
-					}
-				});
+					.put(Constants.GAME_ID, this.id.toString())
+					.put(Constants.TRICK,
+							latestTrick.getCards().stream().mapToInt(Integer::parseInt).toArray().toString())
+					.put(Constants.GAME_MODE, this.gameMode.toString())
+					.put(Constants.IS_SUIT_FINISHED, this.getIsSuitFinished().toString())
+					.put(Constants.TRUMP, this.trump.getValue()).toString(), reply -> {
+						if (reply.succeeded()) {
+							this.clearIsSuitFinished();
+						} else {
+							throw new UnsupportedOperationException("Failed to complete the trick");
+						}
+					});
 	}
-
 
 	@Override
 	public void onMessage() {

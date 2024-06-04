@@ -215,6 +215,7 @@ public class GameService {
 
 	public JsonObject changeTeam(final UUID gameID, final String username, final String team, final Integer pos) {
 		final JsonObject jsonTeam = new JsonObject();
+		System.out.println("Service The team is " + team + " and the position is " + pos);
 		if (this.games.get(gameID) != null) {
 			jsonTeam.put(Constants.TEAM, this.games.get(gameID).changeTeam(username, team, pos));
 			return jsonTeam;

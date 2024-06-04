@@ -110,8 +110,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public boolean addUser(final User user) {
 		if (!this.users.stream().map(User::username).toList().contains(user.username())) {
-			this.status = this.canStart() ? Status.STARTING : Status.WAITING_PLAYERS;
 			this.users.add(user);
+			this.status = this.canStart() ? Status.STARTING : Status.WAITING_PLAYERS;
 			this.onJoinGame(user);
 			final List<String> updatePlayers = new ArrayList<>(this.teams.get(0).players());
 			updatePlayers.add(user.username());
@@ -186,7 +186,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 *         balanced
 	 */
 	public boolean canStart() {
-		return this.users.size() == this.numberOfPlayers && this.balancedTeams();
+		return this.users.size() == this.numberOfPlayers;
 	}
 
 	/**
@@ -203,7 +203,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * @return true if all the players are in
 	 */
 	public boolean startGame() {
-		if (this.canStart()) {
+		if (this.canStart() && this.balancedTeams()) {
 			// get number of players
 			final int maxPlayers = this.teams.stream()
 					.mapToInt(team -> team.players().size())
@@ -399,7 +399,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * a player change a team
 	 */
 	public boolean changeTeam(final String username, final String team, final Integer pos) {
-		if (this.status == Status.WAITING_PLAYERS) {
+		System.out.println("Change team: The team is " + team + " and the position is " + pos);
+		if (this.status == Status.WAITING_PLAYERS || this.status == Status.STARTING) {
 			this.teams = this.teams.stream().map(t -> {
 				final List<String> updatedPlayers = new ArrayList<>(t.players());
 				updatedPlayers.remove(username);
@@ -413,6 +414,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				updatedPlayers.add(pos, username);
 				this.teams.set(teamIndex, new Team(updatedPlayers, selectedteam.nameOfTeam(), selectedteam.score()));
 				LOGGER.info("The team has been changed" + this.teams.toString());
+				this.onChangeTeam();
 				return true;
 			} catch (final IndexOutOfBoundsException e) {
 				throw new IndexOutOfBoundsException("Cannot add a user, the team is too small");
@@ -470,8 +472,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.put("creator", this.creatorName)
 				.put("status", this.status.toString())
 				.put("score", this.expectedScore)
-				.put("mode", this.gameMode.toString())
-				.put("gameMode", this.gameMode.toString());
+				.put("teamA", this.teams.get(0).players())
+				.put("teamB", this.teams.get(1).players())
+				.put("mode", this.gameMode.toString());
 		return json;
 	}
 
@@ -499,6 +502,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 						new JsonObject().put("gameID", this.id.toString())
 								.put("event", "userJoin")
 								.put("username", user.username())
+								.put("status", this.status.toString())
+								.put("teamA", this.teams.get(0).players())
+								.put("teamB", this.teams.get(1).players())
 								.put("status", this.status.toString()).toString());
 			}
 		}
@@ -541,6 +547,19 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 							throw new UnsupportedOperationException("Failed to check Maraffa");
 						}
 					});
+	}
+
+	@Override
+	public void onChangeTeam() {
+		if (this.webSocket != null) {
+			for (final var user : this.users) {
+				this.webSocket.sendMessageToClient(user.clientID(),
+						new JsonObject().put("gameID", this.id.toString())
+								.put("teamA", this.teams.get(0).players())
+								.put("teamB", this.teams.get(1).players())
+								.put("event", "changeTeam").toString());
+			}
+		}
 	}
 
 	@Override
@@ -602,4 +621,5 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					integer.stream().map(Card::fromInteger).toList());
 		}
 	}
+
 }

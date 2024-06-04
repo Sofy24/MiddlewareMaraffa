@@ -20,4 +20,6 @@ public interface IGameAgent {
 	void onMessage();
 
 	void onEndRound();
+
+	void onChangeTeam();
 }

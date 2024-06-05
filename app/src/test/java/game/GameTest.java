@@ -841,12 +841,6 @@ public class GameTest {
 								.getUsers().get((initialTurn + i) % MARAFFA_PLAYERS).username(),
 						TEST_CARDS.get(i % MARAFFA_PLAYERS), IS_SUIT_FINISHED)
 						.getBoolean(Constants.PLAY));
-				// if
-				// (this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-				// .getLatestTrick().isCompleted()) {
-				// this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-				// .incrementCurrentState();
-				// }
 			}
 			assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 					.getBoolean(Constants.ENDED));
@@ -858,11 +852,6 @@ public class GameTest {
 					this.gameService.getGames()
 							.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getUsers().get(turn)
 							.username());
-		// } catch (final InterruptedException e) {
-		// 	this.e.printStackTrace();
-		// } catch (final ExecutionException e) {
-		// 	this.e.printStackTrace();
-		// }
 		context.completeNow();
 	}
 
@@ -976,4 +965,8 @@ public class GameTest {
 		assertTrue(this.gameService.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.START_ATTR));
 		context.completeNow();
 	}
+
+
+
+
 }

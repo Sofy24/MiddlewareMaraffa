@@ -1,5 +1,7 @@
 package BLManagment;
 
+import static java.lang.Math.E;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -120,7 +122,6 @@ public class BusinessLogicController {
                     LOGGER.error("Error when computing the score");
                     message.fail(417, "Error when computing the score");
                 } else {
-                    LOGGER.info("Computed score");
                     message.reply(result);
                 }
             	});;
@@ -130,7 +131,6 @@ public class BusinessLogicController {
 
 	public CompletableFuture<JsonObject> computeScore(final Trick trick, final String trump, final String mode,
 			final List<Boolean> isSuitFinishedList, final UUID gameID) {
-		// this.gameService.getGames().get(gameID).incrementCurrentState();
 		final int[] cards = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
 		final boolean[] isSuitFinished = Booleans.toArray(isSuitFinishedList); 
 		final JsonObject requestBody = new JsonObject()
@@ -146,10 +146,19 @@ public class BusinessLogicController {
 				.sendJsonObject(requestBody, handler -> {
 					System.out.println(handler.result().body());
 					if (handler.succeeded()) {
-						this.gameService.getGames().get(gameID)
-							.setTurn(handler.result().body().getInteger("winningPosition"));
-						this.gameService.getGames().get(gameID).setScore(handler.result().body().getInteger("score"),
-							handler.result().body().getBoolean("firstTeam"));
+						final int winningPosition = handler.result().body().getInteger("winningPosition");
+						final boolean firstTeam = handler.result().body().getBoolean("firstTeam");
+						if (winningPosition == -1){
+							LOGGER.info("ELeven zero because of mistake by team " + (firstTeam ? "1" : "2"));
+							this.gameService.getGames().get(gameID).endRoundByMistake(firstTeam);
+							this.gameService.getGames().get(gameID).setScore(firstTeam);
+						} else {
+							this.gameService.getGames().get(gameID)
+								.setTurn(winningPosition);
+							this.gameService.getGames().get(gameID).setScore(handler.result().body().getInteger("score"),
+							firstTeam);
+								LOGGER.info("Score computed");
+							}
 						future.complete(handler.result().body());
 					} else {
 						LOGGER.info("Error in computing the score");

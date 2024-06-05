@@ -3,6 +3,7 @@ package integration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +25,8 @@ import game.GameMode;
 import game.service.GameService;
 import game.service.User;
 import game.utils.Constants;
+import game.Trick;
+import game.TrickImpl;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
@@ -38,6 +41,9 @@ public class BusinessLogicTestIntegration {
 	private GameService gameService;
 	private Vertx vertx;
 	private BusinessLogicController businessLogicController;
+	private static final List<Card<CardValue, CardSuit>> TEST_CARDS = List.of(new Card<>(CardValue.KING, CardSuit.CUPS),
+			new Card<>(CardValue.KNAVE, CardSuit.COINS), new Card<>(CardValue.SEVEN, CardSuit.SWORDS), new Card<>(CardValue.HORSE, CardSuit.CLUBS));
+	
 
 	@BeforeAll
 	public void setUp() {
@@ -169,6 +175,68 @@ public class BusinessLogicTestIntegration {
 			context.verify(() -> {
 				assertNull(res.getString("error"));
 				assertEquals(res.getBoolean("maraffa"), false);
+				context.completeNow();
+			});
+		});
+	}
+
+	/* Test Team A committed a mistake */
+	@Timeout(value = 10, unit = TimeUnit.SECONDS)
+	@Test
+	public void TeamACommitMistake(final VertxTestContext context){
+		final CardSuit trump = CardSuit.COINS;
+		final Trick trick = new TrickImpl(4, trump);
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, 41,
+				GameMode.CLASSIC.toString());
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			this.gameService.joinGame(
+					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+		}
+
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			trick.addCard(TEST_CARDS.get(i), TEST_USER.username() + i);
+
+		}
+		final List<Boolean> isSuitFinishedList = List.of(true, true, false, true);
+		this.businessLogicController.computeScore(trick, trump.value.toString(), GameMode.ELEVEN2ZERO.name(),
+		 isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID))).whenComplete((res, err) -> {
+			context.verify(() -> {
+				assertNull(res.getString("error"));
+				assertEquals(res.getInteger("winningPosition"), -1);
+				assertEquals(res.getBoolean("firstTeam"), true);
+				assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
+				context.completeNow();
+			});
+		});
+	}
+
+	/* Test Team B committed a mistake */
+	@Timeout(value = 10, unit = TimeUnit.SECONDS)
+	@Test
+	public void TeamBCommitMistake(final VertxTestContext context){
+		final CardSuit trump = CardSuit.COINS;
+		final Trick trick = new TrickImpl(4, trump);
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, 41,
+				GameMode.CLASSIC.toString());
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			this.gameService.joinGame(
+					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+		}
+
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			trick.addCard(TEST_CARDS.get(i), TEST_USER.username() + i);
+
+		}
+		final List<Boolean> isSuitFinishedList = List.of(true, true, true, false );
+		this.businessLogicController.computeScore(trick, trump.value.toString(), GameMode.ELEVEN2ZERO.name(),
+		 isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID))).whenComplete((res, err) -> {
+			context.verify(() -> {
+				assertNull(res.getString("error"));
+				assertEquals(res.getInteger("winningPosition"), -1);
+				assertEquals(res.getBoolean("firstTeam"), false);
+				assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
 				context.completeNow();
 			});
 		});

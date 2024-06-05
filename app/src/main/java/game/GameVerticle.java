@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.google.common.util.concurrent.AtomicDouble;
+
 import game.service.User;
 import game.utils.Constants;
 import game.utils.Pair;
@@ -34,7 +36,7 @@ import server.WebSocketVertx;
  */
 public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private final UUID id;
-	private final AtomicInteger currentState;
+	private AtomicInteger currentState;
 	private final int numberOfPlayers;
 	private final Pair<Integer, Integer> currentScore;
 	private final int expectedScore;
@@ -55,6 +57,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private int initialTurn = -1;
 	private List<Boolean> isSuitFinished = new ArrayList<>();
 	private WebSocketVertx webSocket;
+	private int elevenZeroTeam = -1;
 
 	// public GameSchema getGameSchema() {
 	// return this.gameSchema;
@@ -164,11 +167,13 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.userAndCards.entrySet().stream()
 				.filter(e -> e.getKey().username().equals(username))
 				.findFirst()
-				.map(Map.Entry::getValue)
-				.ifPresent(cards -> cards.remove(card));
-		// .orElse(Collections.emptyList());
-
+				.ifPresent(e -> {
+					List<Card<CardValue, CardSuit>> updateCards = new ArrayList<>(e.getValue());
+					updateCards.remove(card);
+					this.userAndCards.put(e.getKey(), Collections.unmodifiableList(updateCards));
+				});
 	}
+	
 
 	/**
 	 * @return true if the teams are balanced: have the same number of players
@@ -237,6 +242,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public void startNewRound() {
 		this.chooseTrump(CardSuit.NONE);
+		this.elevenZeroTeam = -1;
 	}
 
 	/**
@@ -273,6 +279,14 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	public AtomicInteger getCurrentState() {
 		return this.currentState;
+	}
+
+	/**
+	 * @param value
+	 */
+	public void setCurrentState(int value) {
+		this.currentState = new AtomicInteger(value);
+
 	}
 
 	public Trick getCurrentTrick() {
@@ -356,6 +370,24 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		final Team currentTeam = this.teams.get(index);
 		this.teams.set(index,
 				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + (score / 3)));
+	}
+
+	/**
+	 * update the score of the teams for 11-0 mode
+	 *
+	 * @param isTeamA true if team A committed the mistake
+	 */
+	public void setScore(final boolean isTeamA) {
+		int index11 = 1;
+		int index0 = 0;
+		if (!isTeamA) {
+			index11 = 0;
+			index0 = 1;
+		}
+		this.teams.set(index0,
+				new Team(this.teams.get(index0).players(), this.teams.get(index0).nameOfTeam(), 0));
+				this.teams.set(index11,
+				new Team(this.teams.get(index11).players(), this.teams.get(index11).nameOfTeam(), Constants.ELEVEN_ZERO_SCORE));
 	}
 
 	public CardSuit getTrump() {
@@ -443,10 +475,20 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	/**
+	 * Set the team who lose the game because of a mistake
+	 */
+	public void endRoundByMistake(boolean firstTeam){
+		this.elevenZeroTeam = firstTeam ?  0 : 1;
+	}
+
+	/**
 	 * @return true if the round is ended
 	 */
 	public boolean isRoundEnded() {
 		final double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
+		if (this.elevenZeroTeam != -1) {
+			this.setCurrentState((int) numberOfTricksInRound);
+		}
 		if (this.currentState.get() == numberOfTricksInRound) {
 			this.setInitialTurn(this.initialTurn++);
 			this.checkMaraffa = true;

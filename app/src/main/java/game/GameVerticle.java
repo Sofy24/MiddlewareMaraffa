@@ -164,10 +164,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				this.onPlayCard();
 				this.removeFromHand(card, username);
 				if (this.currentTrick.isCompleted()) {
-					System.out.println("Tirck completed");
+					System.out.println("(verticle)Tirck completed");
 					this.getStates().put(this.getCurrentState().get(), this.getCurrentTrick());
 					
-					this.getTricks().add(this.getCurrentTrick());
+					
 					
 				}
 				return true;
@@ -393,7 +393,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * @param isTeamA true if team A committed the mistake
 	 */
 	public void setScore(final boolean isTeamA) {
-		System.out.println("setScore 11-0");
 		int index11 = 1;
 		int index0 = 0;
 		if (!isTeamA) {
@@ -440,6 +439,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * increment the current state
 	 */
 	public void incrementCurrentState() {
+		System.out.println("(verticle) did increment");
 		this.currentState.incrementAndGet();
 	}
 

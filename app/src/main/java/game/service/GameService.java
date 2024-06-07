@@ -167,7 +167,6 @@ public class GameService {
 			final Boolean play = game.addCard(card, username);
 			jsonPlayCard.put(Constants.PLAY, play);
 			System.out.println("(service), play"+ play);
-			System.out.println("(service), is completed"+ game.getLatestTrick().isCompleted());
 			if (play && game.getLatestTrick().isCompleted()) {
 				System.out.println("inside");
 				game.getGameSchema().addTrick(game.getCurrentTrick());
@@ -176,7 +175,9 @@ public class GameService {
 					try {
 						game.onTrickCompleted(game.getCurrentTrick());
 						game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
+						game.getTricks().add(game.getCurrentTrick());
 						game.incrementCurrentState();
+						System.out.println("incremeted game service"+game.getCurrentState());
 				} catch (final Exception e) {
 					jsonPlayCard.put(Constants.PLAY, false);
 					jsonPlayCard.put(Constants.ERROR, "Failed to complete the trick");

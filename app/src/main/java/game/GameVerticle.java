@@ -149,26 +149,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				System.out.println("card"+card.toString());
 				System.out.println(currentTrick.toString());
 				this.turn = (this.turn + 1) % this.numberOfPlayers;
-				if (this.webSocket != null) {
-					for (final var user : this.users) {
-					this.webSocket.sendMessageToClient(user.clientID(),
-					new JsonObject()
-									.put("event", "playCard")
-									.put(Constants.GAME_ID, id)
-									.put(Constants.USERNAME, username)
-									.put(Constants.CARD_VALUE, card.getCardValue())
-									.put(Constants.CARD_SUIT, card.cardSuit())
-									.toString());
-					}
-				}
 				this.onPlayCard();
 				this.removeFromHand(card, username);
 				if (this.currentTrick.isCompleted()) {
-					System.out.println("(verticle)Tirck completed");
 					this.getStates().put(this.getCurrentState().get(), this.getCurrentTrick());
-					
-					
-					
 				}
 				return true;
 			}
@@ -439,7 +423,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * increment the current state
 	 */
 	public void incrementCurrentState() {
-		System.out.println("(verticle) did increment");
 		this.currentState.incrementAndGet();
 	}
 
@@ -494,7 +477,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * Set the team who lose the game because of a mistake
 	 */
 	public void endRoundByMistake(boolean firstTeam){
-		System.out.println("endRoundByMistake");
 		this.elevenZeroTeam = firstTeam ?  0 : 1;
 	}
 

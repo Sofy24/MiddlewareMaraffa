@@ -3,6 +3,7 @@ package game;
 import static java.lang.Math.floor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -13,9 +14,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import com.google.common.util.concurrent.AtomicDouble;
-
 import game.service.User;
 import game.utils.Constants;
 import game.utils.Pair;
@@ -140,22 +138,37 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				}
 
 				if (card.cardValue() == CardValue.ONE && this.checkMaraffa) {
-					this.checkMaraffa = false;
 					this.onCheckMaraffa(card.cardSuit().value, username);
 				}
+				this.checkMaraffa = false;
 
 				if (this.currentTrick.getCardsAndUsers().containsValue(username)) {
 					return false;
 				}
 				this.currentTrick.addCard(card, username);
+				System.out.println("card"+card.toString());
+				System.out.println(currentTrick.toString());
 				this.turn = (this.turn + 1) % this.numberOfPlayers;
+				if (this.webSocket != null) {
+					for (final var user : this.users) {
+					this.webSocket.sendMessageToClient(user.clientID(),
+					new JsonObject()
+									.put("event", "playCard")
+									.put(Constants.GAME_ID, id)
+									.put(Constants.USERNAME, username)
+									.put(Constants.CARD_VALUE, card.getCardValue())
+									.put(Constants.CARD_SUIT, card.cardSuit())
+									.toString());
+					}
+				}
 				this.onPlayCard();
 				this.removeFromHand(card, username);
 				if (this.currentTrick.isCompleted()) {
+					System.out.println("Tirck completed");
 					this.getStates().put(this.getCurrentState().get(), this.getCurrentTrick());
-					this.setCurrentTrick(new TrickImpl(this.getMaxNumberOfPlayers(), this.getTrump()));
+					
 					this.getTricks().add(this.getCurrentTrick());
-					this.incrementCurrentState();
+					
 				}
 				return true;
 			}
@@ -298,6 +311,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	public Trick getLatestTrick() {
+		System.out.println("tricks"+tricks);
+		System.out.println("currentState"+this.getCurrentState().get());
 		final Trick latestTrick = this.tricks.get(this.getCurrentState().get());
 		return latestTrick;
 	}
@@ -378,6 +393,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * @param isTeamA true if team A committed the mistake
 	 */
 	public void setScore(final boolean isTeamA) {
+		System.out.println("setScore 11-0");
 		int index11 = 1;
 		int index0 = 0;
 		if (!isTeamA) {
@@ -478,6 +494,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * Set the team who lose the game because of a mistake
 	 */
 	public void endRoundByMistake(boolean firstTeam){
+		System.out.println("endRoundByMistake");
 		this.elevenZeroTeam = firstTeam ?  0 : 1;
 	}
 
@@ -595,7 +612,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.put("event", "userTurn")
 								.put("turn", this.turn)
 								.put("userTurn", this.users.get(this.turn).username()).toString());
+				
 			}
+
 			// this.webSocket.sendMessageToClient(this.users.get(this.turn).clientID(),
 			// new JsonObject().put("gameID", this.id.toString())
 			// .put("event", "userTurn")
@@ -606,14 +625,17 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	@Override
 	public void onTrickCompleted(final Trick latestTrick) {
+		int [] cardArray = latestTrick.getCards().stream().mapToInt(Integer::parseInt).toArray();
+		System.out.println("the result i want, on trick"+ Arrays.toString(cardArray));
 		if (this.getVertx() != null)
 			this.getVertx().eventBus().request("game-trickCommpleted:onTrickCommpleted", new JsonObject()
 					.put(Constants.GAME_ID, this.id.toString())
-					.put(Constants.TRICK,
-							latestTrick.getCards().stream().mapToInt(Integer::parseInt).toArray().toString())
+					.put(Constants.TRICK, Arrays.toString(cardArray))
 					.put(Constants.GAME_MODE, this.gameMode.toString())
 					.put(Constants.IS_SUIT_FINISHED, this.getIsSuitFinished().toString())
 					.put(Constants.TRUMP, this.trump.getValue()).toString(), reply -> {
+					System.out.println("succe"+reply.succeeded());
+					System.out.println("reply"+reply.toString());
 						if (reply.succeeded()) {
 							this.clearIsSuitFinished();
 						} else {

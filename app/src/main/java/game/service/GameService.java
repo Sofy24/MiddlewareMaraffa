@@ -11,6 +11,7 @@ import game.CardValue;
 import game.GameMode;
 import game.GameVerticle;
 import game.Trick;
+import game.TrickImpl;
 import game.utils.Constants;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -56,6 +57,7 @@ public class GameService {
 					this.statisticManager, this.webSocket);
 			// TODO migliore gestione qui perche e' terribile ma per testare OK
 		} catch (final IllegalArgumentException e) {
+			jsonGame.put(Constants.ERROR, "invalid game mode" + gameMode);
 			return jsonGame.put(Constants.INVALID, gameMode);
 		}
 		this.games.put(newId, currentGame);
@@ -89,13 +91,16 @@ public class GameService {
 					return jsonJoin.put(Constants.MESSAGE, "Game " + gameID + " joined by " + user.username());
 				} else {
 					jsonJoin.put(Constants.ALREADY_JOINED, true);
+					jsonJoin.put(Constants.ERROR, "Game " + gameID + " already joined by " + user.username());
 					return jsonJoin.put(Constants.MESSAGE, "Game " + gameID + " already joined by " + user.username());
 				}
 			}
 			jsonJoin.put(Constants.FULL, true);
+			jsonJoin.put(Constants.ERROR, "Reached the limit of maximum players in the game " + gameID);
 			return jsonJoin.put(Constants.MESSAGE, "Reached the limit of maximum players in the game " + gameID);
 		}
 		jsonJoin.put(Constants.NOT_FOUND, false);
+		jsonJoin.put(Constants.ERROR, "Game " + gameID + " not found ");
 		jsonJoin.put(Constants.MESSAGE, "Game " + gameID + " not found ");
 		return jsonJoin;
 	}
@@ -114,16 +119,19 @@ public class GameService {
 					jsonStartGame.put(Constants.MESSAGE, "The game " + gameID + " can start");
 				} catch (final Exception e) {
 					jsonStartGame.put(Constants.START_ATTR, false);
+					jsonStartGame.put(Constants.ERROR, "Error in starting the game. No futher information");
 					jsonStartGame.put(Constants.MESSAGE, "Error in starting the game");
 				}
 				return jsonStartGame;
 			} else {
 				jsonStartGame.put(Constants.START_ATTR, false);
-				return jsonStartGame.put(Constants.MESSAGE, "Not all the players are in or the team are not balanced");
+				jsonStartGame.put(Constants.ERROR, "Not all the players are in or the teams are not balanced");
+				return jsonStartGame.put(Constants.MESSAGE, "Not all the players are in or the teams are not balanced");
 			}
 		}
 		jsonStartGame.put(Constants.NOT_FOUND, false);
 		jsonStartGame.put(Constants.START_ATTR, false);
+		jsonStartGame.put(Constants.ERROR, "Game " + gameID + " not found");
 		return jsonStartGame.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
@@ -135,10 +143,12 @@ public class GameService {
 				return jsonCanStart.put(Constants.MESSAGE, "The game " + gameID + " can start");
 			} else {
 				jsonCanStart.put(Constants.START_ATTR, false);
+				jsonCanStart.put(Constants.ERROR, "The game " + gameID + " can't start");
 				return jsonCanStart.put(Constants.MESSAGE, "The game " + gameID + " can't start");
 			}
 		}
 		jsonCanStart.put(Constants.NOT_FOUND, false);
+		jsonCanStart.put(Constants.ERROR, "Game " + gameID + " not found");
 		return jsonCanStart.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
@@ -150,25 +160,33 @@ public class GameService {
 			game.setIsSuitFinished(isSuitFinishedByPlayer);
 			if (CardSuit.NONE.equals(game.getTrump())) {
 				jsonPlayCard.put(Constants.PLAY, false);
+				jsonPlayCard.put(Constants.ERROR, "Trump not setted");
 				jsonPlayCard.put(Constants.MESSAGE, "Trump not setted");
 				return jsonPlayCard;
 			}
 			final Boolean play = game.addCard(card, username);
 			jsonPlayCard.put(Constants.PLAY, play);
+			System.out.println("(service), play"+ play);
+			System.out.println("(service), is completed"+ game.getLatestTrick().isCompleted());
 			if (play && game.getLatestTrick().isCompleted()) {
+				System.out.println("inside");
 				game.getGameSchema().addTrick(game.getCurrentTrick());
 				if (this.statisticManager != null)
 					this.statisticManager.updateRecordWithTrick(String.valueOf(gameID), game.getCurrentTrick());
-				try {
-					game.onTrickCompleted(game.getCurrentTrick());
+					try {
+						game.onTrickCompleted(game.getCurrentTrick());
+						game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
+						game.incrementCurrentState();
 				} catch (final Exception e) {
 					jsonPlayCard.put(Constants.PLAY, false);
+					jsonPlayCard.put(Constants.ERROR, "Failed to complete the trick");
 					jsonPlayCard.put(Constants.MESSAGE, "Failed to complete the trick");
 					return jsonPlayCard;
 				}
 			}
 		} else {
 			jsonPlayCard.put(Constants.NOT_FOUND, false);
+			jsonPlayCard.put(Constants.ERROR, "Game " + gameID + " not found");
 			return jsonPlayCard.put(Constants.PLAY, false);
 		}
 		return jsonPlayCard;
@@ -188,6 +206,7 @@ public class GameService {
 				jsonTrump.put(Constants.MESSAGE, trump + " setted as trump");
 				if (CardSuit.NONE.equals(trump)) {
 					jsonTrump.put(Constants.TRUMP, false);
+					jsonTrump.put(Constants.ERROR, "Illegal trump: " + trump);
 					jsonTrump.put(Constants.ILLEGAL_TRUMP, true);
 					return jsonTrump;
 				}
@@ -196,11 +215,13 @@ public class GameService {
 			} else {
 				jsonTrump.put(Constants.TRUMP, false);
 				jsonTrump.put(Constants.NOT_ALLOWED, true);
+				jsonTrump.put(Constants.ERROR, "The user " + username + " is not allowed to choose the trump");
 				return jsonTrump.put(Constants.MESSAGE, "The user " + username + " is not allowed to choose the trump");
 			}
 		} else {
 			jsonTrump.put(Constants.TRUMP, false);
 			jsonTrump.put(Constants.NOT_FOUND, false);
+			jsonTrump.put(Constants.ERROR, "Game " + gameID + " not found");
 			return jsonTrump.put(Constants.MESSAGE, "Game " + gameID + " not found");
 		}
 	}
@@ -220,6 +241,7 @@ public class GameService {
 			return jsonTeam;
 		}
 		jsonTeam.put(Constants.NOT_FOUND, false);
+		jsonTeam.put(Constants.ERROR, "Game " + gameID + " not found");
 		return jsonTeam.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
@@ -229,12 +251,14 @@ public class GameService {
 			final Trick currentTrick = this.games.get(gameID).getCurrentTrick();
 			if (currentTrick == null) {
 				jsonState.put(Constants.NOT_FOUND, false);
+				jsonState.put(Constants.ERROR, "Error in getting the state: trick not found");
 				return jsonState.put(Constants.MESSAGE, "Trick not found");
 			}
 			jsonState.put(Constants.MESSAGE, currentTrick.toString());
 			return jsonState;
 		}
 		jsonState.put(Constants.NOT_FOUND, false);
+		jsonState.put(Constants.ERROR, "Game " + gameID + " not found");
 		return jsonState.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
@@ -246,9 +270,11 @@ public class GameService {
 				this.games.get(gameID).onEndRound();
 			jsonEnd.put(Constants.ENDED, isEnded);
 			jsonEnd.put(Constants.MESSAGE, isEnded);
+			if (!isEnded) jsonEnd.put(Constants.ERROR, "Round " + gameID + " not ended");
 			return jsonEnd;
 		}
 		jsonEnd.put(Constants.ENDED, false);
+		jsonEnd.put(Constants.ERROR, "Game " + gameID + " not found");
 		return jsonEnd.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
@@ -257,9 +283,11 @@ public class GameService {
 		if (this.games.get(gameID) != null) {
 			final Boolean isEnded = this.games.get(gameID).isGameEnded();
 			jsonEnd.put(Constants.ENDED, isEnded);
+			if (!isEnded) jsonEnd.put(Constants.ERROR, "Game " + gameID + " not ended");
 			return jsonEnd;
 		}
 		jsonEnd.put(Constants.ENDED, false);
+		jsonEnd.put(Constants.ERROR, "Game " + gameID + " not found");
 		return jsonEnd.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
@@ -268,9 +296,11 @@ public class GameService {
 		if (this.games.get(gameID) != null) {
 			final boolean success = this.games.get(gameID).makeCall(Call.fromUppercaseString(call.toUpperCase()),
 					username);
+			if (!success) jsonCall.put(Constants.ERROR, "Call " + call + " didn't succeed");
 			return jsonCall.put(Constants.MESSAGE, success);
 		}
 		jsonCall.put(Constants.NOT_FOUND, false);
+		jsonCall.put(Constants.ERROR, "Game " + gameID + " not found");
 		return jsonCall.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 

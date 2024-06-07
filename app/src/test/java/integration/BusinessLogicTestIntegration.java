@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +17,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import com.google.gson.Gson;
 
 import BLManagment.BusinessLogicController;
 import game.Card;
@@ -50,6 +53,7 @@ public class BusinessLogicTestIntegration {
 		this.vertx = Vertx.vertx();
 		this.gameService = new GameService(this.vertx);
 		this.businessLogicController = new BusinessLogicController(this.vertx, this.gameService);
+
 	}
 
 	/**
@@ -198,8 +202,16 @@ public class BusinessLogicTestIntegration {
 			trick.addCard(TEST_CARDS.get(i), TEST_USER.username() + i);
 
 		}
+		int [] cardArray = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
+		System.out.println("the result i want"+ Arrays.toString(cardArray));
+		JsonObject json = new JsonObject()
+					.put(Constants.TRICK,
+					Arrays.toString(cardArray));
+		System.out.println("json"+json);
+		final int[] cards = new Gson().fromJson(json.getString(Constants.TRICK), int[].class);
+		System.out.println(Arrays.toString(cards));
 		final List<Boolean> isSuitFinishedList = List.of(true, true, false, true);
-		this.businessLogicController.computeScore(trick, trump.value.toString(), GameMode.ELEVEN2ZERO.name(),
+		this.businessLogicController.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trump.value.toString(), GameMode.ELEVEN2ZERO.name(),
 		 isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID))).whenComplete((res, err) -> {
 			context.verify(() -> {
 				assertNull(res.getString("error"));
@@ -230,7 +242,7 @@ public class BusinessLogicTestIntegration {
 
 		}
 		final List<Boolean> isSuitFinishedList = List.of(true, true, true, false );
-		this.businessLogicController.computeScore(trick, trump.value.toString(), GameMode.ELEVEN2ZERO.name(),
+		this.businessLogicController.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trump.value.toString(), GameMode.ELEVEN2ZERO.name(),
 		 isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID))).whenComplete((res, err) -> {
 			context.verify(() -> {
 				assertNull(res.getString("error"));

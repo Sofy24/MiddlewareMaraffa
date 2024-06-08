@@ -371,10 +371,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.filter(e -> e.getKey().username().equals(username))
 				.findFirst()
 				.map(Map.Entry::getValue)
+				.map(cards -> cards.stream().sorted((o1, o2) -> o1.getCardValue().compareTo(o2.getCardValue()))
+						.collect(Collectors.toList()))
 				.orElse(Collections.emptyList());
-		// return this.userAndCards.entrySet().stream().filter(e ->
-		// e.getKey().username().equals(username))
-		// .map(Map.Entry::getValue).toList().get(0);
 	}
 
 	/**

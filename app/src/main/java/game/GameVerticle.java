@@ -475,8 +475,15 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.put("creator", this.creatorName)
 				.put("status", this.status.toString())
 				.put("score", this.expectedScore)
+				.put("firstPlayer", this.users.get(this.turn >= 0 ? this.turn : 0).username())
+				.put("playerTurn", this.users.get(this.turn >= 0 ? this.turn : 0).username())
+				.put("state", this.currentState.get())
+				.put("trumpSelected", this.trump.toString())
+				.put("trumpSelectorUsername", this.users.get(this.initialTurn >= 0 ? this.initialTurn : 0).username())
 				.put("teamA", this.teams.get(0).players())
 				.put("teamB", this.teams.get(1).players())
+				.put("teamAScore", this.teams.get(0).score())
+				.put("teamBScore", this.teams.get(1).score())
 				.put("mode", this.gameMode.toString());
 		return json;
 	}
@@ -523,25 +530,26 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					reply -> {
 						if (reply.succeeded()) {
 							LOGGER.info("The game succeeded in starting");
+							if (this.webSocket != null) {
+								for (final var user : this.users) {
+									this.webSocket.sendMessageToClient(user.clientID(),
+											new JsonObject()
+													.put("event", "startGame")
+													.put("firstPlayer", this.users.get(this.turn).username())
+													.put("gameID", this.id.toString())
+													.toString());
+								}
+								// this.webSocket.sendMessageToClient(this.users.get(this.turn).clientID(),
+								// new JsonObject().put("gameID", this.id.toString())
+								// .put("event", "userTurn")
+								// .put("turn", this.turn)
+								// .put("userTurn", this.users.get(this.turn).username()).toString());
+							}
 						} else {
 							throw new UnsupportedOperationException("Failed to start");
 						}
 					});
-		if (this.webSocket != null) {
-			for (final var user : this.users) {
-				this.webSocket.sendMessageToClient(user.clientID(),
-						new JsonObject()
-								.put("event", "startGame")
-								.put("firstPlayer", this.users.get(this.turn).username())
-								.put("gameID", this.id.toString())
-								.toString());
-			}
-			// this.webSocket.sendMessageToClient(this.users.get(this.turn).clientID(),
-			// new JsonObject().put("gameID", this.id.toString())
-			// .put("event", "userTurn")
-			// .put("turn", this.turn)
-			// .put("userTurn", this.users.get(this.turn).username()).toString());
-		}
+
 	}
 
 	@Override

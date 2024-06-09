@@ -36,6 +36,7 @@ public class Constants {
     public static final String END_GAME = "game/end/:" + GAME_ID;
     public static final String MAKE_CALL = "round/makeCall";
     public static final String GAMES = "game/getGames";
+    public static final String GETGAME = "game/:" + GAME_ID;
     public static final String COINS_4 = "game/4Coins/:" + GAME_ID + "/username:" + COINS_4_USERNAME;
 
     // methods

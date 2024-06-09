@@ -121,7 +121,7 @@ public class BusinessLogicController {
                     LOGGER.error("Error when computing the score");
                     message.fail(417, "Error when computing the score");
                 } else {
-                    LOGGER.info("Computed score");
+							LOGGER.info("Computed score");
                     message.reply(result);
                 }
             	});;
@@ -151,6 +151,7 @@ public class BusinessLogicController {
 							.setTurn(handler.result().body().getInteger("winningPosition"));
 						this.gameService.getGames().get(gameID).setScore(handler.result().body().getInteger("score"),
 							handler.result().body().getBoolean("firstTeam"));
+						
 						future.complete(handler.result().body());
 					} else {
 						LOGGER.info("Error in computing the score");

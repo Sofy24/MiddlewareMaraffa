@@ -449,6 +449,25 @@ public class GameServiceDecorator {
 		}
 	}
 
+	@Operation(summary = "Get a specific game", method = Constants.GAMES_METHOD, operationId = Constants.GETGAME, // !
+			tags = { Constants.GAME_TAG }, parameters = {
+					@Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID, required = true, description = "The unique ID belonging to the game", schema = @Schema(type = "string")) }, responses = {
+							@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json; charset=utf-8", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = GetGamesResponse.class))),
+							@ApiResponse(responseCode = "404", description = "Game not found."),
+							@ApiResponse(responseCode = "500", description = "Internal Server Error.") })
+	public void getGame(final RoutingContext context) {
+		final UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
+		final JsonObject jsonGetGames = this.gameService.getGames().get(gameID).toJson();
+		if (!jsonGetGames.isEmpty()) {
+			context.response().end(jsonGetGames.toBuffer());
+		} else {
+			// jsonGetGames.add(Constants.NOT_FOUND);
+			context.response().setStatusCode(404).end(jsonGetGames.toBuffer());
+			// context.response().setStatusCode(404).end(new
+			// JsonObject().put(Constants.MESSAGE, Constants.NOT_FOUND).toBuffer());
+		}
+	}
+
 	@Operation(summary = "Get the cards on the hands of a specific player", method = Constants.CARDS_ON_HAND_METHOD, operationId = Constants.CARDS_ON_HAND, // !
 			// operationId
 			// must

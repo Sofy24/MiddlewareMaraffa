@@ -109,7 +109,6 @@ public class GameService {
 		if (this.games.get(gameID) != null) {
 			if (this.games.get(gameID).startGame()) {
 				try {
-					this.games.get(gameID).onStartGame();
 					jsonStartGame.put(Constants.START_ATTR, true);
 					jsonStartGame.put(Constants.MESSAGE, "The game " + gameID + " can start");
 				} catch (final Exception e) {

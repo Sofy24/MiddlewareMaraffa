@@ -56,6 +56,7 @@ public class BusinessLogicController {
 						this.gameService.getGames().get(gameID)
 								.handOutCards(deck.stream().map(el -> (Integer) el).toList());
 						LOGGER.info("Round started");
+						this.gameService.getGames().get(gameID).onNewRound();
 						future.complete(handler.result().body());
 					} else {
 						LOGGER.error("Error in getting the shuffled deck " + handler.cause().getMessage());

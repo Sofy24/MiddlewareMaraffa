@@ -164,8 +164,11 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.userAndCards.entrySet().stream()
 				.filter(e -> e.getKey().username().equals(username))
 				.findFirst()
-				.map(Map.Entry::getValue)
-				.ifPresent(cards -> cards.remove(card));
+				.ifPresent(e -> {
+					final List<Card<CardValue, CardSuit>> updateCards = new ArrayList<>(e.getValue());
+					updateCards.remove(card);
+					this.userAndCards.put(e.getKey(), Collections.unmodifiableList(updateCards));
+				});
 		// .orElse(Collections.emptyList());
 
 	}
@@ -227,6 +230,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					.collect(Collectors.toList());
 
 			this.status = Status.PLAYING;
+			this.onStartGame();
 			return true;
 		}
 		return false;
@@ -523,6 +527,21 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 							throw new UnsupportedOperationException("Failed to start");
 						}
 					});
+		if (this.webSocket != null) {
+			for (final var user : this.users) {
+				this.webSocket.sendMessageToClient(user.clientID(),
+						new JsonObject()
+								.put("event", "startGame")
+								.put("firstPlayer", this.users.get(this.turn).username())
+								.put("gameID", this.id.toString())
+								.toString());
+			}
+			// this.webSocket.sendMessageToClient(this.users.get(this.turn).clientID(),
+			// new JsonObject().put("gameID", this.id.toString())
+			// .put("event", "userTurn")
+			// .put("turn", this.turn)
+			// .put("userTurn", this.users.get(this.turn).username()).toString());
+		}
 	}
 
 	@Override
@@ -618,6 +637,24 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.collect(Collectors.toList())) {
 			this.userAndCards.put(this.users.get(index++),
 					integer.stream().map(Card::fromInteger).toList());
+		}
+	}
+
+	@Override
+	public void onNewRound() {
+		if (this.webSocket != null) {
+			for (final var user : this.users) {
+				this.webSocket.sendMessageToClient(user.clientID(),
+						new JsonObject()
+								.put("event", "trumpEvent")
+								.put("username", this.users.get(this.initialTurn).username())
+								.toString());
+			}
+			// this.webSocket.sendMessageToClient(this.users.get(this.turn).clientID(),
+			// new JsonObject().put("gameID", this.id.toString())
+			// .put("event", "userTurn")
+			// .put("turn", this.turn)
+			// .put("userTurn", this.users.get(this.turn).username()).toString());
 		}
 	}
 

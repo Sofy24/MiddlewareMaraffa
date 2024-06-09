@@ -7,6 +7,8 @@ public interface IGameAgent {
 
 	void onCreateGame(User user);
 
+	void onNewRound();
+
 	void onJoinGame(User user);
 
 	void onStartGame();

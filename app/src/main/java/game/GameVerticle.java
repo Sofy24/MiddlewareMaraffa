@@ -3,8 +3,8 @@ package game;
 import static java.lang.Math.floor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -589,6 +589,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 						new JsonObject().put("gameID", this.id.toString())
 								.put("event", "userTurn")
 								.put("turn", this.turn)
+								.put("trick", this.currentTrick)
 								.put("userTurn", this.users.get(this.turn).username()).toString());
 			}
 			// this.webSocket.sendMessageToClient(this.users.get(this.turn).clientID(),

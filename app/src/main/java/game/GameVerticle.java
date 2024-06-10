@@ -3,6 +3,7 @@ package game;
 import static java.lang.Math.floor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +14,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
 import game.service.User;
 import game.utils.Constants;
 import game.utils.Pair;
@@ -34,7 +34,7 @@ import server.WebSocketVertx;
  */
 public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private final UUID id;
-	private final AtomicInteger currentState;
+	private AtomicInteger currentState;
 	private final int numberOfPlayers;
 	private final Pair<Integer, Integer> currentScore;
 	private final int expectedScore;
@@ -55,6 +55,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private int initialTurn = -1;
 	private List<Boolean> isSuitFinished = new ArrayList<>();
 	private WebSocketVertx webSocket;
+	private int elevenZeroTeam = -1;
 
 	// public GameSchema getGameSchema() {
 	// return this.gameSchema;
@@ -137,22 +138,21 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				}
 
 				if (card.cardValue() == CardValue.ONE && this.checkMaraffa) {
-					this.checkMaraffa = false;
 					this.onCheckMaraffa(card.cardSuit().value, username);
 				}
+				this.checkMaraffa = false;
 
 				if (this.currentTrick.getCardsAndUsers().containsValue(username)) {
 					return false;
 				}
 				this.currentTrick.addCard(card, username);
+				System.out.println("card"+card.toString());
+				System.out.println(currentTrick.toString());
 				this.turn = (this.turn + 1) % this.numberOfPlayers;
 				this.onPlayCard();
 				this.removeFromHand(card, username);
 				if (this.currentTrick.isCompleted()) {
 					this.getStates().put(this.getCurrentState().get(), this.getCurrentTrick());
-					this.setCurrentTrick(new TrickImpl(this.getMaxNumberOfPlayers(), this.getTrump()));
-					this.getTricks().add(this.getCurrentTrick());
-					this.incrementCurrentState();
 				}
 				return true;
 			}
@@ -165,13 +165,13 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.filter(e -> e.getKey().username().equals(username))
 				.findFirst()
 				.ifPresent(e -> {
-					final List<Card<CardValue, CardSuit>> updateCards = new ArrayList<>(e.getValue());
+					List<Card<CardValue, CardSuit>> updateCards = new ArrayList<>(e.getValue());
 					updateCards.remove(card);
 					this.userAndCards.put(e.getKey(), Collections.unmodifiableList(updateCards));
 				});
-		// .orElse(Collections.emptyList());
 
 	}
+	
 
 	/**
 	 * @return true if the teams are balanced: have the same number of players
@@ -241,6 +241,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public void startNewRound() {
 		this.chooseTrump(CardSuit.NONE);
+		this.elevenZeroTeam = -1;
 	}
 
 	/**
@@ -279,6 +280,14 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.currentState;
 	}
 
+	/**
+	 * @param value
+	 */
+	public void setCurrentState(int value) {
+		this.currentState = new AtomicInteger(value);
+
+	}
+
 	public Trick getCurrentTrick() {
 		return this.currentTrick;
 	}
@@ -288,6 +297,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	public Trick getLatestTrick() {
+		System.out.println("tricks"+tricks);
+		System.out.println("currentState"+this.getCurrentState().get());
 		final Trick latestTrick = this.tricks.get(this.getCurrentState().get());
 		return latestTrick;
 	}
@@ -360,6 +371,24 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		final Team currentTeam = this.teams.get(index);
 		this.teams.set(index,
 				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + (score / 3)));
+	}
+
+	/**
+	 * update the score of the teams for 11-0 mode
+	 *
+	 * @param isTeamA true if team A committed the mistake
+	 */
+	public void setScore(final boolean isTeamA) {
+		int index11 = 1;
+		int index0 = 0;
+		if (!isTeamA) {
+			index11 = 0;
+			index0 = 1;
+		}
+		this.teams.set(index0,
+				new Team(this.teams.get(index0).players(), this.teams.get(index0).nameOfTeam(), 0));
+				this.teams.set(index11,
+				new Team(this.teams.get(index11).players(), this.teams.get(index11).nameOfTeam(), Constants.ELEVEN_ZERO_SCORE));
 	}
 
 	public CardSuit getTrump() {
@@ -448,10 +477,20 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	/**
+	 * Set the team who lose the game because of a mistake
+	 */
+	public void endRoundByMistake(boolean firstTeam){
+		this.elevenZeroTeam = firstTeam ?  0 : 1;
+	}
+
+	/**
 	 * @return true if the round is ended
 	 */
 	public boolean isRoundEnded() {
 		final double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
+		if (this.elevenZeroTeam != -1) {
+			this.setCurrentState((int) numberOfTricksInRound);
+		}
 		if (this.currentState.get() == numberOfTricksInRound) {
 			this.setInitialTurn(this.initialTurn++);
 			this.checkMaraffa = true;
@@ -602,7 +641,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.put("teamAScore", this.teams.get(0).score())
 								.put("teamBScore", this.teams.get(1).score())
 								.put("userTurn", this.users.get(this.turn).username()).toString());
+				
 			}
+
 			// this.webSocket.sendMessageToClient(this.users.get(this.turn).clientID(),
 			// new JsonObject().put("gameID", this.id.toString())
 			// .put("event", "userTurn")
@@ -613,14 +654,17 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	@Override
 	public void onTrickCompleted(final Trick latestTrick) {
+		int [] cardArray = latestTrick.getCards().stream().mapToInt(Integer::parseInt).toArray();
+		System.out.println("the result i want, on trick"+ Arrays.toString(cardArray));
 		if (this.getVertx() != null)
 			this.getVertx().eventBus().request("game-trickCommpleted:onTrickCommpleted", new JsonObject()
 					.put(Constants.GAME_ID, this.id.toString())
-					.put(Constants.TRICK,
-							latestTrick.getCards().stream().mapToInt(Integer::parseInt).toArray().toString())
+					.put(Constants.TRICK, Arrays.toString(cardArray))
 					.put(Constants.GAME_MODE, this.gameMode.toString())
 					.put(Constants.IS_SUIT_FINISHED, this.getIsSuitFinished().toString())
 					.put(Constants.TRUMP, this.trump.getValue()).toString(), reply -> {
+					System.out.println("succe"+reply.succeeded());
+					System.out.println("reply"+reply.toString());
 						if (reply.succeeded()) {
 							this.clearIsSuitFinished();
 						} else {

@@ -1,16 +1,14 @@
 package BLManagment;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import com.google.common.primitives.Booleans;
-
-import game.Card;
-import game.CardSuit;
-import game.CardValue;
-import game.Trick;
+import com.google.gson.Gson;
 import game.service.GameService;
 import game.utils.Constants;
+import io.github.cdimascio.dotenv.Dotenv;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -21,8 +19,8 @@ import io.vertx.ext.web.codec.BodyCodec;
 
 public class BusinessLogicController {
 	private final Vertx vertx;
-	private static final int PORT = 3000;
-	private static final String LOCALHOST = "127.0.0.1";
+	private int port = Integer.parseInt(Dotenv.load().get("BUSINESS_LOGIC_PORT", "3000"));
+	private String host = Dotenv.load().get("BUSINESS_LOGIC_HOST", "localhost");
 	private static final Logger LOGGER = LoggerFactory.getLogger(BusinessLogicController.class);
 	private final GameService gameService;
 
@@ -41,7 +39,7 @@ public class BusinessLogicController {
 	public CompletableFuture<JsonObject> getShuffledDeck(final UUID gameID, final Integer numberOfPlayers) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		final JsonObject startResponse = new JsonObject();
-		WebClient.create(this.vertx).get(PORT, LOCALHOST, "/games/startRound")
+		WebClient.create(this.vertx).get(port, host, "/games/startRound")
 				.putHeader("Accept", "application/json") 
 				.as(BodyCodec.jsonObject()).send(handler -> {
 					if (handler.succeeded()) {
@@ -115,13 +113,15 @@ public class BusinessLogicController {
 			final UUID gameID = UUID.fromString(body.getString(Constants.GAME_ID));
 			final String trump = body.getString(Constants.TRUMP);
 			final String mode = body.getString(Constants.GAME_MODE);
-			this.computeScore(this.gameService.getGames().get(gameID).getLatestTrick(), trump, mode,
+			final int[] cards = new Gson().fromJson(body.getString(Constants.TRICK), int[].class);
+			System.out.println("int crads"+Arrays.toString(cards));
+			
+			this.computeScore(cards, trump, mode,
 			 this.gameService.getGames().get(gameID).getIsSuitFinished(), gameID).whenComplete((result, error) -> {
                 if (error != null) {
                     LOGGER.error("Error when computing the score");
                     message.fail(417, "Error when computing the score");
                 } else {
-							LOGGER.info("Computed score");
                     message.reply(result);
                 }
             	});;
@@ -129,10 +129,8 @@ public class BusinessLogicController {
 		}
 
 
-	public CompletableFuture<JsonObject> computeScore(final Trick trick, final String trump, final String mode,
+	public CompletableFuture<JsonObject> computeScore(final int[] cards, final String trump, final String mode,
 			final List<Boolean> isSuitFinishedList, final UUID gameID) {
-		// this.gameService.getGames().get(gameID).incrementCurrentState();
-		final int[] cards = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
 		final boolean[] isSuitFinished = Booleans.toArray(isSuitFinishedList); 
 		final JsonObject requestBody = new JsonObject()
 				.put("trick", cards)
@@ -141,17 +139,26 @@ public class BusinessLogicController {
 				.put("isSuitFinished", isSuitFinished);
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		LOGGER.info("Computing the score");
-		WebClient.create(this.vertx).post(PORT, LOCALHOST, "/games/computeScore")
+		WebClient.create(this.vertx).post(port, host, "/games/computeScore")
 				.putHeader("Accept", "application/json")
 				.as(BodyCodec.jsonObject())
 				.sendJsonObject(requestBody, handler -> {
 					System.out.println(handler.result().body());
 					if (handler.succeeded()) {
-						this.gameService.getGames().get(gameID)
-							.setTurn(handler.result().body().getInteger("winningPosition"));
-						this.gameService.getGames().get(gameID).setScore(handler.result().body().getInteger("score"),
-							handler.result().body().getBoolean("firstTeam"));
-						
+						final int winningPosition = handler.result().body().getInteger("winningPosition");
+						final boolean firstTeam = handler.result().body().getBoolean("firstTeam");
+						if (winningPosition == -1){
+							LOGGER.info("ELeven zero because of mistake by team " + (firstTeam ? "1" : "2"));
+							this.gameService.getGames().get(gameID).endRoundByMistake(firstTeam);
+							this.gameService.getGames().get(gameID).setScore(firstTeam);
+						} else {
+							this.gameService.getGames().get(gameID)
+								.setTurn(winningPosition);
+							this.gameService.getGames().get(gameID).setScore(handler.result().body().getInteger("score"),
+							firstTeam);
+								LOGGER.info("Score computed");
+							}
+
 						future.complete(handler.result().body());
 					} else {
 						LOGGER.info("Error in computing the score");
@@ -193,7 +200,7 @@ public class BusinessLogicController {
 		final JsonObject requestBody = new JsonObject()
 				.put("deck", deck)
 				.put("suit", suit);
-		WebClient.create(this.vertx).post(PORT, LOCALHOST, "/games/checkMaraffa")
+		WebClient.create(this.vertx).post(port, host, "/games/checkMaraffa")
 				.putHeader("Accept", "application/json") 
 				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {

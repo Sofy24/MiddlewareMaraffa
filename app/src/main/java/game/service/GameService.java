@@ -114,7 +114,6 @@ public class GameService {
 		if (this.games.get(gameID) != null) {
 			if (this.games.get(gameID).startGame()) {
 				try {
-					this.games.get(gameID).onStartGame();
 					jsonStartGame.put(Constants.START_ATTR, true);
 					jsonStartGame.put(Constants.MESSAGE, "The game " + gameID + " can start");
 				} catch (final Exception e) {
@@ -205,6 +204,7 @@ public class GameService {
 				}
 				this.games.get(gameID).chooseTrump(trump);
 				jsonTrump.put(Constants.MESSAGE, trump + " setted as trump");
+				jsonTrump.put(Constants.VALUE, trump);
 				if (CardSuit.NONE.equals(trump)) {
 					jsonTrump.put(Constants.TRUMP, false);
 					jsonTrump.put(Constants.ERROR, "Illegal trump: " + trump);
@@ -237,6 +237,7 @@ public class GameService {
 
 	public JsonObject changeTeam(final UUID gameID, final String username, final String team, final Integer pos) {
 		final JsonObject jsonTeam = new JsonObject();
+		System.out.println("Service The team is " + team + " and the position is " + pos);
 		if (this.games.get(gameID) != null) {
 			jsonTeam.put(Constants.TEAM, this.games.get(gameID).changeTeam(username, team, pos));
 			return jsonTeam;

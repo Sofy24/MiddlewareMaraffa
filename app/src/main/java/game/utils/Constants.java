@@ -76,6 +76,7 @@ public class Constants {
     public static final String NOT_ALLOWED = "notAllowed";
     public static final String TURN = "turn";
     public static final String RESULT = "result";
+    public static final String VALUE = "value";
     public static final String ERROR = "error";
     // game constants
     public static final int NUMBER_OF_CARDS = 40;

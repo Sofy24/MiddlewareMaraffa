@@ -185,6 +185,7 @@ public class GameService {
 				}
 				this.games.get(gameID).chooseTrump(trump);
 				jsonTrump.put(Constants.MESSAGE, trump + " setted as trump");
+				jsonTrump.put(Constants.VALUE, trump);
 				if (CardSuit.NONE.equals(trump)) {
 					jsonTrump.put(Constants.TRUMP, false);
 					jsonTrump.put(Constants.ILLEGAL_TRUMP, true);

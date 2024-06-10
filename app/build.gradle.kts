@@ -66,7 +66,8 @@ implementation("com.diffplug.spotless:spotless-lib:2.45.0")
     // Swagger integration (optional)
     implementation ("io.swagger.core.v3:swagger-core:${swaggerCoreVersion}")
     implementation ("com.github.phiz71:vertx-swagger-router:${vertxSwaggerRouterVersion}")
-
+    // dotenv to read .env file
+    implementation("io.github.cdimascio:dotenv-java:3.0.0")
     // Gson (optional)
     implementation("com.google.code.gson:gson:${gsonVersion}")
 }

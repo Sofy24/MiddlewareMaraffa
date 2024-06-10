@@ -3,8 +3,8 @@ package game;
 import static java.lang.Math.floor;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -482,6 +482,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.put("trumpSelectorUsername", this.users.get(this.initialTurn >= 0 ? this.initialTurn : 0).username())
 				.put("teamA", this.teams.get(0).players())
 				.put("teamB", this.teams.get(1).players())
+				.put("trick", this.currentTrick)
 				.put("teamAScore", this.teams.get(0).score())
 				.put("teamBScore", this.teams.get(1).score())
 				.put("mode", this.gameMode.toString());
@@ -598,6 +599,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.put("event", "userTurn")
 								.put("turn", this.turn)
 								.put("trick", this.currentTrick)
+								.put("teamAScore", this.teams.get(0).score())
+								.put("teamBScore", this.teams.get(1).score())
 								.put("userTurn", this.users.get(this.turn).username()).toString());
 			}
 			// this.webSocket.sendMessageToClient(this.users.get(this.turn).clientID(),
@@ -657,6 +660,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 						new JsonObject()
 								.put("event", "trumpEvent")
 								.put("username", this.users.get(this.initialTurn).username())
+								.put("trumpSelected", this.trump.toString())
 								.toString());
 			}
 			// this.webSocket.sendMessageToClient(this.users.get(this.turn).clientID(),

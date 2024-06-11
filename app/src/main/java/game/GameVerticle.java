@@ -527,6 +527,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.put("score", this.expectedScore)
 				.put("firstPlayer", this.users.get(this.turn >= 0 ? this.turn : 0).username())
 				.put("playerTurn", this.users.get(this.turn >= 0 ? this.turn : 0).username())
+				.put("turn", this.turn)
 				.put("state", this.currentState.get())
 				.put("trumpSelected", this.trump.toString())
 				.put("trumpSelectorUsername", this.users.get(this.initialTurn >= 0 ? this.initialTurn : 0).username())

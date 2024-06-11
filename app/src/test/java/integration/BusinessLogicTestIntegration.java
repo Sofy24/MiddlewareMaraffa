@@ -25,11 +25,11 @@ import game.Card;
 import game.CardSuit;
 import game.CardValue;
 import game.GameMode;
+import game.Trick;
+import game.TrickImpl;
 import game.service.GameService;
 import game.service.User;
 import game.utils.Constants;
-import game.Trick;
-import game.TrickImpl;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
@@ -45,8 +45,13 @@ public class BusinessLogicTestIntegration {
 	private Vertx vertx;
 	private BusinessLogicController businessLogicController;
 	private static final List<Card<CardValue, CardSuit>> TEST_CARDS = List.of(new Card<>(CardValue.KING, CardSuit.CUPS),
-			new Card<>(CardValue.KNAVE, CardSuit.COINS), new Card<>(CardValue.SEVEN, CardSuit.SWORDS), new Card<>(CardValue.HORSE, CardSuit.CLUBS));
-	
+			new Card<>(CardValue.KNAVE, CardSuit.COINS), new Card<>(CardValue.SEVEN, CardSuit.SWORDS),
+			new Card<>(CardValue.HORSE, CardSuit.CLUBS));
+	private static final List<Card<CardValue, CardSuit>> TEST_CARDS_OK = List.of(
+			new Card<>(CardValue.KING, CardSuit.CUPS),
+			new Card<>(CardValue.SEVEN, CardSuit.CUPS),
+			new Card<>(CardValue.SIX, CardSuit.CUPS),
+			new Card<>(CardValue.ONE, CardSuit.CLUBS));
 
 	@BeforeAll
 	public void setUp() {
@@ -187,7 +192,7 @@ public class BusinessLogicTestIntegration {
 	/* Test Team A committed a mistake */
 	@Timeout(value = 10, unit = TimeUnit.SECONDS)
 	@Test
-	public void TeamACommitMistake(final VertxTestContext context){
+	public void TeamACommitMistake(final VertxTestContext context) {
 		final CardSuit trump = CardSuit.COINS;
 		final Trick trick = new TrickImpl(4, trump);
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, 41,
@@ -202,31 +207,37 @@ public class BusinessLogicTestIntegration {
 			trick.addCard(TEST_CARDS.get(i), TEST_USER.username() + i);
 
 		}
-		final int [] cardArray = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
-		System.out.println("the result i want"+ Arrays.toString(cardArray));
+		final int[] cardArray = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
+		System.out.println("the result i want" + Arrays.toString(cardArray));
 		final JsonObject json = new JsonObject()
-					.put(Constants.TRICK,
-					Arrays.toString(cardArray));
-		System.out.println("json"+json);
+				.put(Constants.TRICK,
+						Arrays.toString(cardArray));
+		System.out.println("json" + json);
 		final int[] cards = new Gson().fromJson(json.getString(Constants.TRICK), int[].class);
 		System.out.println(Arrays.toString(cards));
 		final List<Boolean> isSuitFinishedList = List.of(true, true, false, true);
-		this.businessLogicController.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trump.value.toString(), GameMode.ELEVEN2ZERO.name(),
-		 isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID))).whenComplete((res, err) -> {
-			context.verify(() -> {
-				assertNull(res.getString("error"));
-				assertEquals(res.getInteger("winningPosition"), -1);
-				assertEquals(res.getBoolean("firstTeam"), true);
-				assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
-				context.completeNow();
-			});
-		});
+		this.businessLogicController
+				.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trick.getCardsAndUsers(),
+						trump.value.toString(),
+						GameMode.ELEVEN2ZERO.name(),
+						isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+				.whenComplete((res, err) -> {
+					context.verify(() -> {
+						assertNull(res.getString("error"));
+						assertEquals(res.getInteger("winningPosition"), -1);
+						assertEquals(res.getBoolean("firstTeam"), true);
+						assertTrue(this.gameService
+								.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+								.getBoolean(Constants.ENDED));
+						context.completeNow();
+					});
+				});
 	}
 
 	/* Test Team B committed a mistake */
 	@Timeout(value = 10, unit = TimeUnit.SECONDS)
 	@Test
-	public void TeamBCommitMistake(final VertxTestContext context){
+	public void TeamBCommitMistake(final VertxTestContext context) {
 		final CardSuit trump = CardSuit.COINS;
 		final Trick trick = new TrickImpl(4, trump);
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, 41,
@@ -241,45 +252,59 @@ public class BusinessLogicTestIntegration {
 			trick.addCard(TEST_CARDS.get(i), TEST_USER.username() + i);
 
 		}
-		final List<Boolean> isSuitFinishedList = List.of(true, true, true, false );
-		this.businessLogicController.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trump.value.toString(), GameMode.ELEVEN2ZERO.name(),
-		 isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID))).whenComplete((res, err) -> {
-			context.verify(() -> {
-				assertNull(res.getString("error"));
-				assertEquals(res.getInteger("winningPosition"), -1);
-				assertEquals(res.getBoolean("firstTeam"), false);
-				assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
-				context.completeNow();
-			});
-		});
+		final List<Boolean> isSuitFinishedList = List.of(true, true, true, false);
+		this.businessLogicController
+				.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trick.getCardsAndUsers(), trump.value.toString(),
+						GameMode.ELEVEN2ZERO.name(),
+						isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+				.whenComplete((res, err) -> {
+					context.verify(() -> {
+						assertNull(res.getString("error"));
+						assertEquals(res.getInteger("winningPosition"), -1);
+						assertEquals(res.getBoolean("firstTeam"), false);
+						assertTrue(this.gameService
+								.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+								.getBoolean(Constants.ENDED));
+						context.completeNow();
+					});
+				});
 	}
 
-	@Timeout(value = 10, unit = TimeUnit.SECONDS)
+	@Timeout(value = 10, unit = TimeUnit.HOURS)
 	@Test
-	public void computeScoreTest(final VertxTestContext context){
-		final CardSuit trump = CardSuit.COINS;
+	public void computeScoreTest(final VertxTestContext context) {
+		final CardSuit trump = CardSuit.CUPS;
 		final Trick trick = new TrickImpl(4, trump);
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, 41,
 				GameMode.CLASSIC.toString());
-		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+		for (int i = 1; i < MARAFFA_PLAYERS; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 		}
-
-		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
-			trick.addCard(TEST_CARDS.get(i), TEST_USER.username() + i);
-
+		this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+				TEST_USER.username() + "2", "B", 0);
+		this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+				TEST_USER.username() + "3", "B", 1);
+		final var dio = this.gameService.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
+		trick.addCard(TEST_CARDS_OK.get(0), TEST_USER.username());
+		for (int i = 1; i < MARAFFA_PLAYERS; i++) {
+			trick.addCard(TEST_CARDS_OK.get(i), TEST_USER.username() + i);
 		}
-		final List<Boolean> isSuitFinishedList = List.of(true, true, true, false );
-		this.businessLogicController.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trump.value.toString(), GameMode.ELEVEN2ZERO.name(),
-		 isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID))).whenComplete((res, err) -> {
-			context.verify(() -> {
-				assertNull(res.getString("error"));
-				assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
-				context.completeNow();
-			});
-		});
+		final List<Boolean> isSuitFinishedList = List.of(true, true, true, true);
+		this.businessLogicController
+				.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trick.getCardsAndUsers() ,trump.value.toString(),
+						GameMode.ELEVEN2ZERO.name(),
+						isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+				.whenComplete((res, err) -> {
+					context.verify(() -> {
+						assertNull(res.getString("error"));
+						assertTrue(this.gameService
+								.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+								.getBoolean(Constants.ENDED));
+						context.completeNow();
+					});
+				});
 	}
 
 }

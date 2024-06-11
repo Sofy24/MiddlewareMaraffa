@@ -176,6 +176,7 @@ public class GameService {
 						game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
 						game.getTricks().add(game.getCurrentTrick());
 						game.incrementCurrentState();
+						game.onPlayCard();
 						System.out.println("incremeted game service"+game.getCurrentState());
 				} catch (final Exception e) {
 					jsonPlayCard.put(Constants.PLAY, false);

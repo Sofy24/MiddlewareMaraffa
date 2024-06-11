@@ -283,6 +283,8 @@ public class GameServiceDecorator {
 				if (!playCardResponse.containsKey(Constants.NOT_FOUND)) {
 					if (!this.gameService.getGames().get(gameID).isUserIn(username)
 							|| !playCardResponse.getBoolean(Constants.PLAY)) {
+						response.put(Constants.ERROR, "Is not the turn of " + username
+								+ " or the trump is not setted or the teams are not balanced or the system doesn't know who has the 4 of coins");
 						response.put(Constants.MESSAGE, "Is not the turn of " + username
 								+ " or the trump is not setted or the teams are not balanced or the system doesn't know who has the 4 of coins");
 						context.response().setStatusCode(417).end(response.toBuffer());
@@ -290,6 +292,7 @@ public class GameServiceDecorator {
 						context.response().end(response.toBuffer());
 					}
 				} else {
+					response.put(Constants.ERROR, "Game " + gameID + " not found");
 					response.put(Constants.MESSAGE, "Game " + gameID + " not found");
 					context.response().setStatusCode(404).end(response.toBuffer());
 				}

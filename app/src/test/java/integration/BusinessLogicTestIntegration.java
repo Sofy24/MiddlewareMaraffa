@@ -202,9 +202,9 @@ public class BusinessLogicTestIntegration {
 			trick.addCard(TEST_CARDS.get(i), TEST_USER.username() + i);
 
 		}
-		int [] cardArray = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
+		final int [] cardArray = trick.getCards().stream().mapToInt(Integer::parseInt).toArray();
 		System.out.println("the result i want"+ Arrays.toString(cardArray));
-		JsonObject json = new JsonObject()
+		final JsonObject json = new JsonObject()
 					.put(Constants.TRICK,
 					Arrays.toString(cardArray));
 		System.out.println("json"+json);
@@ -248,6 +248,34 @@ public class BusinessLogicTestIntegration {
 				assertNull(res.getString("error"));
 				assertEquals(res.getInteger("winningPosition"), -1);
 				assertEquals(res.getBoolean("firstTeam"), false);
+				assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
+				context.completeNow();
+			});
+		});
+	}
+
+	@Timeout(value = 10, unit = TimeUnit.SECONDS)
+	@Test
+	public void computeScoreTest(final VertxTestContext context){
+		final CardSuit trump = CardSuit.COINS;
+		final Trick trick = new TrickImpl(4, trump);
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, 41,
+				GameMode.CLASSIC.toString());
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			this.gameService.joinGame(
+					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+		}
+
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			trick.addCard(TEST_CARDS.get(i), TEST_USER.username() + i);
+
+		}
+		final List<Boolean> isSuitFinishedList = List.of(true, true, true, false );
+		this.businessLogicController.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trump.value.toString(), GameMode.ELEVEN2ZERO.name(),
+		 isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID))).whenComplete((res, err) -> {
+			context.verify(() -> {
+				assertNull(res.getString("error"));
 				assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.ENDED));
 				context.completeNow();
 			});

@@ -169,16 +169,8 @@ public class BusinessLogicController {
 							this.gameService.getGames().get(gameID).endRoundByMistake(firstTeam);
 							this.gameService.getGames().get(gameID).setScore(firstTeam);
 						} else {
-							System.out.println(this.gameService.getGames().get(gameID).getUsers());
-							System.out.println(
-									"TOJSON BEFORE =" + this.gameService.getGames().get(gameID).toJson().toString());
-							System.out.println("winning card: " + cards[winningPosition]);
-							System.out.println("winning user: " + users.get(String.valueOf(cards[winningPosition])));
 							this.gameService.getGames().get(gameID)
-									// .setTurn(winningPosition);
 									.setTurnWithUser(users.get(String.valueOf(cards[winningPosition])));
-							System.out.println(
-									"TOJSON AFTER =" + this.gameService.getGames().get(gameID).toJson().toString());
 							this.gameService.getGames().get(gameID).setScore(
 									handler.result().body().getInteger("score"),
 									firstTeam);

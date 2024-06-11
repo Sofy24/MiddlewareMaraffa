@@ -59,6 +59,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private List<Boolean> isSuitFinished = new ArrayList<>();
 	private WebSocketVertx webSocket;
 	private int elevenZeroTeam = -1;
+	private double numberOfTricksInRound;
 
 	// public GameSchema getGameSchema() {
 	// return this.gameSchema;
@@ -74,6 +75,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.currentScore = new Pair<>(0, 0);
 		this.currentState = new AtomicInteger(0);
 		this.numberOfPlayers = numberOfPlayers;
+		this.numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
 		this.creatorName = user.username();
 		this.teams.add(new Team(List.of(this.creatorName), "A", 0));
 		this.teams.add(new Team(List.of(), "B", 0));
@@ -95,6 +97,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.currentState = new AtomicInteger(0);
 		this.creatorName = user.username();
 		this.numberOfPlayers = numberOfPlayers;
+		this.numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
 		this.teams.add(new Team(List.of(this.creatorName), "A", 0));
 		this.teams.add(new Team(List.of(), "B", 0));
 		this.users.add(user);
@@ -374,6 +377,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		final Team currentTeam = this.teams.get(index);
 		this.teams.set(index,
 				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + (score / 3)));
+		if (this.currentState.get() == numberOfTricksInRound) {
+			this.teams.set(index,
+				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + 1));
+		}
 	}
 
 	/**
@@ -491,7 +498,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * @return true if the round is ended
 	 */
 	public boolean isRoundEnded() {
-		final double numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
+		
 		if (this.elevenZeroTeam != -1) {
 			this.setCurrentState((int) numberOfTricksInRound);
 		}

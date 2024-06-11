@@ -666,6 +666,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					System.out.println("succe"+reply.succeeded());
 					System.out.println("reply"+reply.toString());
 						if (reply.succeeded()) {
+							this.onPlayCard();
 							this.clearIsSuitFinished();
 						} else {
 							throw new UnsupportedOperationException("Failed to complete the trick");

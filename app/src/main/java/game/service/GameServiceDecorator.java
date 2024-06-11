@@ -287,6 +287,9 @@ public class GameServiceDecorator {
 								+ " or the trump is not setted or the teams are not balanced or the system doesn't know who has the 4 of coins");
 						context.response().setStatusCode(417).end(response.toBuffer());
 					} else {
+						System.out.println("answer by decorator = current state " + this.gameService.getGames().get(gameID).getCurrentState());
+						System.out.println("answer by decorator = turn " + this.gameService.getGames().get(gameID).getTurn() );
+						System.out.println("answer by decorator = currenttrick " + this.gameService.getGames().get(gameID).getCurrentTrick());
 						context.response().end(response.toBuffer());
 					}
 				} else {

@@ -147,13 +147,16 @@ public class BusinessLogicController {
 					if (handler.succeeded()) {
 						final int winningPosition = handler.result().body().getInteger("winningPosition");
 						final boolean firstTeam = handler.result().body().getBoolean("firstTeam");
+						System.out.println("before if winningPosition = " + winningPosition);
 						if (winningPosition == -1){
 							LOGGER.info("ELeven zero because of mistake by team " + (firstTeam ? "1" : "2"));
 							this.gameService.getGames().get(gameID).endRoundByMistake(firstTeam);
 							this.gameService.getGames().get(gameID).setScore(firstTeam);
 						} else {
+							System.out.println("TOJSON BEFORE =" + this.gameService.getGames().get(gameID).toJson().toString());
 							this.gameService.getGames().get(gameID)
 								.setTurn(winningPosition);
+							System.out.println("TOJSON AFTER =" + this.gameService.getGames().get(gameID).toJson().toString());
 							this.gameService.getGames().get(gameID).setScore(handler.result().body().getInteger("score"),
 							firstTeam);
 								LOGGER.info("Score computed");

@@ -537,6 +537,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.put("teamAScore", this.teams.get(0).score())
 				.put("teamBScore", this.teams.get(1).score())
 				.put("mode", this.gameMode.toString());
+		System.out.println("json" + json.toString());
 		return json;
 	}
 
@@ -650,6 +651,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.put("event", "userTurn")
 								.put("turn", this.turn)
 								.put("trick", this.currentTrick)
+								.put("latestTrick", this.getCurrentState().get() - 1 < this.tricks.size() && this.getCurrentState().get() - 1 >= 0 ? this.tricks.get(this.getCurrentState().get() - 1) : null) 
 								.put("teamAScore", this.teams.get(0).score())
 								.put("teamBScore", this.teams.get(1).score())
 								.put("userTurn", this.users.get(this.turn).username()).toString());

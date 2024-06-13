@@ -262,6 +262,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		}
 		if (this.users.stream().map(User::username).toList().get(this.turn).equals(username)) {
 			this.currentTrick.setCall(call, username);
+			this.onMakeCall(call);
 		}
 		return !Call.NONE.equals(this.currentTrick.getCall());
 	}
@@ -712,6 +713,22 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.collect(Collectors.toList())) {
 			this.userAndCards.put(this.users.get(index++),
 					integer.stream().map(Card::fromInteger).toList());
+		}
+	}
+
+	@Override
+	public void onMakeCall(final Call call) {
+		if (this.webSocket != null) {
+			for (final var player : this.users) {
+				if (player != this.getUsers().get(this.turn)){
+					this.webSocket.sendMessageToClient(player.clientID(),
+							new JsonObject().put("gameID", this.id.toString())
+									.put("event", "call")
+									.put("username", this.getUsers().get(this.turn).username())
+									.put("call", call.toString()).toString());
+
+				}
+			}
 		}
 	}
 

@@ -46,10 +46,12 @@ public class GameServiceDecorator {
 	private final GameService gameService;
 	private final BusinessLogicController businessLogicController;
 	private static final Logger LOGGER = LoggerFactory.getLogger(GameServiceDecorator.class);
+	private final WebSocketVertx webSocket;
 
 	public GameServiceDecorator(final Vertx vertx, final AbstractStatisticManager statisticManager,
 			final WebSocketVertx webSocket) {
 		this.gameService = new GameService(vertx, statisticManager, webSocket);
+		this.webSocket = webSocket;
 		this.businessLogicController = new BusinessLogicController(vertx, this.gameService);
 	}
 

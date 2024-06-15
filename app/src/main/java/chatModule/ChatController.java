@@ -1,9 +1,14 @@
 package chatModule;
 
+import java.util.Optional;
+import java.util.UUID;
+
+import game.utils.Constants;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.RoutingContext;
+import server.WebSocketVertx;
 
 /**
  * TODO javadoc
@@ -12,8 +17,9 @@ import io.vertx.ext.web.RoutingContext;
 public class ChatController {
 	private final ChatService service;
 
-	public ChatController(final Vertx vertx) {
-		this.service = new ChatService(vertx);
+	public ChatController(final Vertx vertx, final WebSocketVertx webSocketVertx) {
+		this.service = new ChatService(vertx, webSocketVertx);
+
 	}
 
 	/**
@@ -29,7 +35,9 @@ public class ChatController {
 	// }
 	)
 	public void messageReceived(final RoutingContext context) {
-		final String gameID = context.body().asJsonObject().getString("gameID");
+		final Optional<UUID> gameID = context.pathParam(Constants.GAME_ID) != null
+				? Optional.of(UUID.fromString(context.pathParam(Constants.GAME_ID)))
+				: Optional.empty();
 		final String author = context.body().asJsonObject().getString("author");
 		final String msg = context.body().asJsonObject().getString("message");
 		this.service.messageReceived(msg, gameID, author);

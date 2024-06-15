@@ -59,7 +59,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private List<Boolean> isSuitFinished = new ArrayList<>();
 	private WebSocketVertx webSocket;
 	private int elevenZeroTeam = -1;
-	private double numberOfTricksInRound;
+	private final double numberOfTricksInRound;
 
 	// public GameSchema getGameSchema() {
 	// return this.gameSchema;
@@ -378,9 +378,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		final Team currentTeam = this.teams.get(index);
 		this.teams.set(index,
 				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + (score / 3)));
-		if (this.currentState.get() == numberOfTricksInRound) {
+		if (this.currentState.get() == this.numberOfTricksInRound) {
 			this.teams.set(index,
-				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + 1));
+					new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + 1));
 		}
 	}
 
@@ -499,15 +499,15 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * @return true if the round is ended
 	 */
 	public boolean isRoundEnded() {
-		
+
 		if (this.elevenZeroTeam != -1) {
-			this.setCurrentState((int) numberOfTricksInRound);
+			this.setCurrentState((int) this.numberOfTricksInRound);
 		}
-		if (this.currentState.get() == numberOfTricksInRound) {
+		if (this.currentState.get() == this.numberOfTricksInRound) {
 			this.setInitialTurn(this.initialTurn++);
 			this.checkMaraffa = true;
 		}
-		return this.currentState.get() == numberOfTricksInRound;
+		return this.currentState.get() == this.numberOfTricksInRound;
 	}
 
 	/**
@@ -652,7 +652,11 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.put("event", "userTurn")
 								.put("turn", this.turn)
 								.put("trick", this.currentTrick)
-								.put("latestTrick", this.getCurrentState().get() - 1 < this.tricks.size() && this.getCurrentState().get() - 1 >= 0 ? this.tricks.get(this.getCurrentState().get() - 1) : null) 
+								.put("latestTrick",
+										this.getCurrentState().get() - 1 < this.tricks.size()
+												&& this.getCurrentState().get() - 1 >= 0
+														? this.tricks.get(this.getCurrentState().get() - 1)
+														: null)
 								.put("teamAScore", this.teams.get(0).score())
 								.put("teamBScore", this.teams.get(1).score())
 								.put("userTurn", this.users.get(this.turn).username()).toString());
@@ -720,7 +724,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public void onMakeCall(final Call call) {
 		if (this.webSocket != null) {
 			for (final var player : this.users) {
-				if (player != this.getUsers().get(this.turn)){
+				if (player != this.getUsers().get(this.turn)) {
 					this.webSocket.sendMessageToClient(player.clientID(),
 							new JsonObject().put("gameID", this.id.toString())
 									.put("event", "call")
@@ -753,6 +757,19 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	public void setTurnWithUser(final String username) {
 		this.turn = this.users.stream().map(User::username).toList().indexOf(username);
+	}
+
+	public void messageReceived(final String msg, final String type, final UUID gameID, final String author) {
+		if (this.webSocket != null) {
+			for (final var user : this.users) {
+				this.webSocket.sendMessageToClient(user.clientID(),
+						new JsonObject()
+								.put("event", "onMessage")
+								.put("message", msg)
+								.put("author", author)
+								.toString());
+			}
+		}
 	}
 
 }

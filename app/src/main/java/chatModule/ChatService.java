@@ -1,5 +1,6 @@
 package chatModule;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -11,24 +12,25 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import server.AbstractRestAPI;
+import server.WebSocketVertx;
 
 /**
  * TODO javadoc
  */
 public class ChatService extends AbstractRestAPI {
 	private final Vertx vertx;
-	//private static final int PORT = 3004;
+	// private static final int PORT = 3004;
 	// private static final String LOCALHOST = "127.0.0.1";
 	private static final String FE_HOST = "127.0.0.1:80";
 	private static int port = Integer.parseInt(Dotenv.load().get("CHAT_PORT", "3004"));
 	private static String host = Dotenv.load().get("CHAT_HOST", "localhost");
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChatService.class);
+	private final WebSocketVertx webSocketVertx;
 
-	public ChatService(final Vertx vertx) {
-		super(vertx, port, host
-		);
+	public ChatService(final Vertx vertx, final WebSocketVertx WebSocketVertx) {
+		super(vertx, port, host);
 		this.vertx = vertx;
-
+		this.webSocketVertx = WebSocketVertx;
 		this.vertx.eventBus().consumer("chat-component:onCreateGame", message -> {
 			LOGGER.info("Received message: " + message.body());
 			final JsonObject bodyMsg = new JsonObject(message.body().toString());
@@ -75,17 +77,16 @@ public class ChatService extends AbstractRestAPI {
 		return future;
 	}
 
-	public void messageReceived(final String msg, final String gameID, final String author) {
+	public void messageReceived(final String msg, final Optional<UUID> gameID, final String author) {
 		LOGGER.info("Received message: " + msg);
 		System.out.println(msg);
-		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-		this.askServiceWithFutureNoBody(HttpMethod.POST, "/handleChatMessage/" + gameID + "/" + author, future)
-				.whenComplete((result, error) -> {
-					if (result.containsKey("error")) {
-						LOGGER.error("Error in sending message : " + result.getString("error"));
-					} else {
-						LOGGER.info("Message sent");
-					}
-				});
+		final JsonObject message = new JsonObject()
+				.put("event", "message")
+				.put("author", author).put("message", msg);
+		if (gameID.isPresent()) {
+			System.out.println("TODO");
+		} else {
+			this.webSocketVertx.broadcastToEveryone(message.toString());
+		}
 	}
 }

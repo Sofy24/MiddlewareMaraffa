@@ -171,13 +171,22 @@ public class GameService {
 				game.getGameSchema().addTrick(game.getCurrentTrick());
 				if (this.statisticManager != null)
 					this.statisticManager.updateRecordWithTrick(String.valueOf(gameID), game.getCurrentTrick());
-					try {
-						game.onTrickCompleted(game.getCurrentTrick());
-						game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
-						game.getTricks().add(game.getCurrentTrick());
-						game.incrementCurrentState();
-						game.onPlayCard();
-						System.out.println("incremeted game service"+game.getCurrentState());
+				try {
+					game.onTrickCompleted(game.getCurrentTrick());
+					game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
+					game.getTricks().add(game.getCurrentTrick());
+					game.incrementCurrentState();
+					System.out.println("la seconda, prima = incremeted game service"+game.getCurrentState());
+					game.onPlayCard();
+					if (game.isRoundEnded()) {
+						System.out.println("RoundEnded");
+						game.onEndRound();
+						game.startNewRound();
+						System.out.println("game ended"+game.isGameEnded());
+						game.onStartGame();
+						
+					}
+					System.out.println("incremeted game service"+game.getCurrentState());
 				} catch (final Exception e) {
 					jsonPlayCard.put(Constants.PLAY, false);
 					jsonPlayCard.put(Constants.ERROR, "Failed to complete the trick");
@@ -265,21 +274,21 @@ public class GameService {
 		return jsonState.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
-	public JsonObject isRoundEnded(final UUID gameID) {
-		final JsonObject jsonEnd = new JsonObject();
-		if (this.games.get(gameID) != null) {
-			final Boolean isEnded = this.games.get(gameID).isRoundEnded();
-			if (isEnded)
-				this.games.get(gameID).onEndRound();
-			jsonEnd.put(Constants.ENDED, isEnded);
-			jsonEnd.put(Constants.MESSAGE, isEnded);
-			if (!isEnded) jsonEnd.put(Constants.ERROR, "Round " + gameID + " not ended");
-			return jsonEnd;
-		}
-		jsonEnd.put(Constants.ENDED, false);
-		jsonEnd.put(Constants.ERROR, "Game " + gameID + " not found");
-		return jsonEnd.put(Constants.MESSAGE, "Game " + gameID + " not found");
-	}
+	// public JsonObject isRoundEnded(final UUID gameID) {
+	// 	final JsonObject jsonEnd = new JsonObject();
+	// 	if (this.games.get(gameID) != null) {
+	// 		final Boolean isEnded = this.games.get(gameID).isRoundEnded();
+	// 		if (isEnded)
+	// 			this.games.get(gameID).onEndRound();
+	// 		jsonEnd.put(Constants.ENDED, isEnded);
+	// 		jsonEnd.put(Constants.MESSAGE, isEnded);
+	// 		if (!isEnded) jsonEnd.put(Constants.ERROR, "Round " + gameID + " not ended");
+	// 		return jsonEnd;
+	// 	}
+	// 	jsonEnd.put(Constants.ENDED, false);
+	// 	jsonEnd.put(Constants.ERROR, "Game " + gameID + " not found");
+	// 	return jsonEnd.put(Constants.MESSAGE, "Game " + gameID + " not found");
+	// }
 
 	public JsonObject isGameEnded(final UUID gameID) {
 		final JsonObject jsonEnd = new JsonObject();

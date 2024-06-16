@@ -151,9 +151,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				if (this.currentTrick.getCardsAndUsers().containsValue(username)) {
 					return false;
 				}
+				
 				this.currentTrick.addCard(card, username);
-				System.out.println("card" + card.toString());
-				System.out.println(this.currentTrick.toString());
 				this.turn = (this.turn + 1) % this.numberOfPlayers;
 				this.removeFromHand(card, username);
 				if (this.currentTrick.isCompleted()) {
@@ -176,7 +175,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					updateCards.remove(card);
 					this.userAndCards.put(e.getKey(), Collections.unmodifiableList(updateCards));
 				});
-
 	}
 
 	/**
@@ -378,7 +376,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		final Team currentTeam = this.teams.get(index);
 		this.teams.set(index,
 				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + (score / 3)));
-		if (this.currentState.get() == this.numberOfTricksInRound) {
+		if (this.currentState.get() == (int) numberOfTricksInRound) {
 			this.teams.set(index,
 					new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + 1));
 		}
@@ -507,7 +505,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			this.setInitialTurn(this.initialTurn++);
 			this.checkMaraffa = true;
 		}
-		return this.currentState.get() == this.numberOfTricksInRound;
+		System.out.println("currentState" + this.currentState.get() + "numberOfTricksInRound" + numberOfTricksInRound);
+		return this.currentState.get() ==  1;//(int) numberOfTricksInRound;
 	}
 
 	/**
@@ -705,6 +704,19 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	@Override
 	public void onEndRound() {
+		if (this.webSocket != null) {
+			for (final var user : this.users) {
+				this.webSocket.sendMessageToClient(user.clientID(),
+						new JsonObject().put("gameID", this.id.toString())
+								.put("event", "endRound")
+								.put("teamA", this.teams.get(0).players())
+								.put("teamB", this.teams.get(1).players())
+								.put("initialTurn", this.initialTurn)
+								.put("teamAScore", this.teams.get(0).score())
+								.put("teamBScore", this.teams.get(1).score()).toString());
+
+			}}
+		System.out.println("sent end socket");
 		if (this.vertx != null)
 			this.vertx.eventBus().send("user-component", this.toJson().toString());
 	}

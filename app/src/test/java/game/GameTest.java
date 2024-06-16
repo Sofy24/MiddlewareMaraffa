@@ -395,8 +395,9 @@ public class GameTest {
 							this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 									.getUsers().get(initialTurn).username());
 			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-			assertFalse(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-					.getBoolean(Constants.ENDED));
+			// this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).onEndRound();
+			assertFalse(this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).isRoundEnded());
+		
 
 			for (int i = 0; i < Constants.NUMBER_OF_CARDS; i++) {
 				assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
@@ -405,8 +406,9 @@ public class GameTest {
 						TEST_CARDS.get(i % MARAFFA_PLAYERS), IS_SUIT_FINISHED)
 						.getBoolean(Constants.PLAY));
 			}
-			assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-					.getBoolean(Constants.ENDED));
+			// this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).onEndRound();
+			assertTrue(this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).isRoundEnded());
+
 
 		context.completeNow();
 	}
@@ -815,8 +817,8 @@ public class GameTest {
 							this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 									.getUsers().get(initialTurn).username());
 			assertTrue(chooseTrumpResponse.getBoolean(Constants.TRUMP));
-			assertFalse(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-					.getBoolean(Constants.ENDED));
+			//this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).onEndRound();
+			assertFalse(this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).isRoundEnded());
 
 			for (int i = 0; i < Constants.NUMBER_OF_CARDS; i++) {
 				assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
@@ -825,8 +827,8 @@ public class GameTest {
 						TEST_CARDS.get(i % MARAFFA_PLAYERS), IS_SUIT_FINISHED)
 						.getBoolean(Constants.PLAY));
 			}
-			assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-					.getBoolean(Constants.ENDED));
+			// this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).onEndRound();
+			assertTrue(this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).isRoundEnded());
 			final int turn = this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 					.getTurn();
 			assertEquals(

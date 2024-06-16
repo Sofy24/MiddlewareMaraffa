@@ -54,7 +54,9 @@ public class BusinessLogicController {
 						startResponse.put("firstPlayer", firstPlayer);
 						LOGGER.info("The first player is: " + firstPlayer);
 						startResponse.put(Constants.START_ATTR, true);
-						this.gameService.getGames().get(gameID).setInitialTurn(firstPlayer);
+						if (this.gameService.getGames().get(gameID).getInitialTurn() == -1){
+							 this.gameService.getGames().get(gameID).setInitialTurn(firstPlayer);
+						}
 						this.gameService.getGames().get(gameID)
 								.handOutCards(deck.stream().map(el -> (Integer) el).toList());
 						LOGGER.info("Round started");
@@ -166,8 +168,8 @@ public class BusinessLogicController {
 						System.out.println("before if winningPosition = " + winningPosition);
 						if (winningPosition == -1) {
 							LOGGER.info("ELeven zero because of mistake by team " + (firstTeam ? "1" : "2"));
-							this.gameService.getGames().get(gameID).endRoundByMistake(firstTeam);
 							this.gameService.getGames().get(gameID).setScore(firstTeam);
+							this.gameService.getGames().get(gameID).endRoundByMistake(firstTeam);
 						} else {
 							this.gameService.getGames().get(gameID)
 									.setTurnWithUser(users.get(String.valueOf(cards[winningPosition])));

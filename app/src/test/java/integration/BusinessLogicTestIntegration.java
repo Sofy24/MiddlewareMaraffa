@@ -1,6 +1,7 @@
 package integration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -226,9 +227,10 @@ public class BusinessLogicTestIntegration {
 						assertNull(res.getString("error"));
 						assertEquals(res.getInteger("winningPosition"), -1);
 						assertEquals(res.getBoolean("firstTeam"), true);
-						assertTrue(this.gameService
-								.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-								.getBoolean(Constants.ENDED));
+						// this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).onEndRound();
+						assertTrue(this.gameService.getGames()
+						.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).isRoundEnded());
+
 						context.completeNow();
 					});
 				});
@@ -262,9 +264,9 @@ public class BusinessLogicTestIntegration {
 						assertNull(res.getString("error"));
 						assertEquals(res.getInteger("winningPosition"), -1);
 						assertEquals(res.getBoolean("firstTeam"), false);
-						assertTrue(this.gameService
-								.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-								.getBoolean(Constants.ENDED));
+						// this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).onEndRound();
+						assertTrue(this.gameService.getGames()
+						.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).isRoundEnded());
 						context.completeNow();
 					});
 				});
@@ -299,9 +301,9 @@ public class BusinessLogicTestIntegration {
 				.whenComplete((res, err) -> {
 					context.verify(() -> {
 						assertNull(res.getString("error"));
-						assertTrue(this.gameService
-								.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-								.getBoolean(Constants.ENDED));
+						// this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).onEndRound();
+						assertTrue(this.gameService.getGames()
+						.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).isRoundEnded());
 						context.completeNow();
 					});
 				});

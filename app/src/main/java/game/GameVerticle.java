@@ -62,7 +62,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private final double numberOfTricksInRound;
 
 	// public GameSchema getGameSchema() {
-	// return this.gameSchema;
+	// return this.gameSchema0
 	// }
 	private static final Logger LOGGER = LoggerFactory.getLogger(GameVerticle.class);
 
@@ -374,11 +374,16 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public void setScore(final int score, final boolean isTeamA) {
 		final int index = isTeamA ? 0 : 1;
 		final Team currentTeam = this.teams.get(index);
+		System.out.println("before: " + currentTeam.score());
 		this.teams.set(index,
-				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + (score / 3)));
+				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + score));
+		System.out.println("after: " + (currentTeam.score() + score));
 		if (this.currentState.get() == (int) this.numberOfTricksInRound) {
+			System.out.println("before: " + currentTeam.score());
+			System.out.println("ALLA FINE AGGIUNGO 1");
 			this.teams.set(index,
-					new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + 1));
+					new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + 3));
+			System.out.println("after: " + (currentTeam.score() + 3));
 		}
 	}
 
@@ -505,8 +510,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			this.setInitialTurn(this.initialTurn++);
 			this.checkMaraffa = true;
 		}
-		System.out.println("currentState" + this.currentState.get() + "numberOfTricksInRound" + this.numberOfTricksInRound);
-		return this.currentState.get() ==  1;//(int) numberOfTricksInRound;
+		System.out.println(
+				"currentState" + this.currentState.get() + "numberOfTricksInRound" + this.numberOfTricksInRound);
+		return this.currentState.get() == (int) this.numberOfTricksInRound;
 	}
 
 	/**
@@ -534,8 +540,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.put("teamA", this.teams.get(0).players())
 				.put("teamB", this.teams.get(1).players())
 				.put("trick", this.currentTrick)
-				.put("teamAScore", this.teams.get(0).score())
-				.put("teamBScore", this.teams.get(1).score())
+				.put("teamAScore", this.teams.get(0).score() / 3)
+				.put("teamBScore", this.teams.get(1).score() / 3)
 				.put("mode", this.gameMode.toString());
 		System.out.println("json" + json.toString());
 		return json;
@@ -656,8 +662,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 												&& this.getCurrentState().get() - 1 >= 0
 														? this.tricks.get(this.getCurrentState().get() - 1)
 														: null)
-								.put("teamAScore", this.teams.get(0).score())
-								.put("teamBScore", this.teams.get(1).score())
+								.put("teamAScore", this.teams.get(0).score() / 3)
+								.put("teamBScore", this.teams.get(1).score() / 3)
 								.put("userTurn", this.users.get(this.turn).username()).toString());
 
 			}
@@ -712,8 +718,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.put("teamA", this.teams.get(0).players())
 								.put("teamB", this.teams.get(1).players())
 								.put("initialTurn", this.initialTurn)
-								.put("teamAScore", this.teams.get(0).score())
-								.put("teamBScore", this.teams.get(1).score()).toString());
+								.put("teamAScore", this.teams.get(0).score() / 3)
+								.put("teamBScore", this.teams.get(1).score() / 3).toString());
 
 			}
 		}

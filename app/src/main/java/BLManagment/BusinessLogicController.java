@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.primitives.Booleans;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -14,8 +17,6 @@ import game.service.GameService;
 import game.utils.Constants;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -54,8 +55,8 @@ public class BusinessLogicController {
 						startResponse.put("firstPlayer", firstPlayer);
 						LOGGER.info("The first player is: " + firstPlayer);
 						startResponse.put(Constants.START_ATTR, true);
-						if (this.gameService.getGames().get(gameID).getInitialTurn() == -1){
-							 this.gameService.getGames().get(gameID).setInitialTurn(firstPlayer);
+						if (this.gameService.getGames().get(gameID).getInitialTurn() == -1) {
+							this.gameService.getGames().get(gameID).setInitialTurn(firstPlayer);
 						}
 						this.gameService.getGames().get(gameID)
 								.handOutCards(deck.stream().map(el -> (Integer) el).toList());
@@ -166,6 +167,9 @@ public class BusinessLogicController {
 						final int winningPosition = handler.result().body().getInteger("winningPosition");
 						final boolean firstTeam = handler.result().body().getBoolean("firstTeam");
 						System.out.println("before if winningPosition = " + winningPosition);
+						LOGGER.info(
+								"GAME " + gameID.toString() + " score of last trick: " + cards.toString() + " -> "
+										+ handler.result().body().getInteger("score"));
 						if (winningPosition == -1) {
 							LOGGER.info("ELeven zero because of mistake by team " + (firstTeam ? "1" : "2"));
 							this.gameService.getGames().get(gameID).setScore(firstTeam);

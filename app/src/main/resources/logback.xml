@@ -58,8 +58,16 @@
     </appender>
 
     <!-- We tried -->
-     <logger level="" name="server" additivity="false">
-        <appender-ref ref="SERVER_LOG_ASYNC"/>
+    <!-- <logger level="DEBUG" name="game" additivity="false">
+        <appender-ref ref="DEBUG_LOG_ASYNC"/>
+    </logger> -->
+
+    <logger level="INFO" name="BLManagment" additivity="false">
+        <appender-ref ref="DEBUG_LOG_ASYNC"/>
+    </logger>
+
+    <logger level="INFO" name="game" additivity="false">
+        <appender-ref ref="DEBUG_LOG_ASYNC"/>
     </logger>
 
     <logger level="INFO" name="server" additivity="false">

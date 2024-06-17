@@ -15,6 +15,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.Gson;
 
 import game.service.User;
@@ -22,8 +25,6 @@ import game.utils.Constants;
 import game.utils.Pair;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import repository.AbstractStatisticManager;
 import server.WebSocketVertx;
@@ -123,6 +124,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			final List<String> updatePlayers = new ArrayList<>(this.teams.get(0).players());
 			updatePlayers.add(user.username());
 			this.teams.set(0, new Team(updatePlayers, "A", this.teams.get(0).score()));
+			LOGGER.info("GAME " + this.id + " joined: " + user.toString());
 			return true;
 		}
 		return false;
@@ -202,6 +204,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public void chooseTrump(final CardSuit suit) {
 		this.trump = suit;
 		this.gameSchema.setTrump(suit);
+		LOGGER.info("GAME " + this.id + " chose trump: " + suit.toString());
 		if (this.statisticManager != null)
 			this.statisticManager.updateSuit(this.gameSchema); // TODO serve davvero o soltanto roba che sembra utile ?
 	}
@@ -374,16 +377,40 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public void setScore(final int score, final boolean isTeamA) {
 		final int index = isTeamA ? 0 : 1;
 		final Team currentTeam = this.teams.get(index);
-		System.out.println("before: " + currentTeam.score());
+		LOGGER.info(
+				"GAME " + this.id + " turn : " + this.currentState.get());
+		LOGGER.info(
+				"GAME " + this.id + " score before compute: " + currentTeam.nameOfTeam() + " : " + currentTeam.score());
+		// System.out.println("before: " + currentTeam.score());
 		this.teams.set(index,
 				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + score));
-		System.out.println("after: " + (currentTeam.score() + score));
+		LOGGER.info(
+				"GAME " + this.id + " score after compute: " + currentTeam.nameOfTeam() + " : "
+						+ (currentTeam.score() + score));
+		LOGGER.info(
+				"GAME " + this.id + " teams : " + this.teams.toString());
 		if (this.currentState.get() == (int) this.numberOfTricksInRound) {
-			System.out.println("before: " + currentTeam.score());
-			System.out.println("ALLA FINE AGGIUNGO 1");
+			// System.out.println("before: " + currentTeam.score());
+			// System.out.println("ALLA FINE AGGIUNGO 1");
+			LOGGER.info(
+					"GAME " + this.id + " score before ultima presa: " + currentTeam.nameOfTeam() + " : "
+							+ currentTeam.score());
 			this.teams.set(index,
-					new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + 3));
-			System.out.println("after: " + (currentTeam.score() + 3));
+					new Team(currentTeam.players(), currentTeam.nameOfTeam(),
+							currentTeam.score() + (currentTeam.score() % 3 == 0 ? 1 : currentTeam.score() % 3))); // il
+																													// punto
+																													// finale
+																													// deve
+																													// essere
+																													// aggiunto
+			// per arrivare a 1 punto in piu di
+			// quello che si ha
+			LOGGER.info(
+					"GAME " + this.id + " score after ultima presa: " + currentTeam.nameOfTeam() + " : "
+							+ currentTeam.score() + (currentTeam.score() % 3 == 0 ? 1 : currentTeam.score() % 3));
+
+			LOGGER.info(
+					"GAME " + this.id + " teams : " + this.teams.toString());
 		}
 	}
 
@@ -510,8 +537,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			this.setInitialTurn(this.initialTurn++);
 			this.checkMaraffa = true;
 		}
-		System.out.println(
-				"currentState" + this.currentState.get() + "numberOfTricksInRound" + this.numberOfTricksInRound);
+		LOGGER.info(
+				"GAME " + this.id + " currentState : " + this.currentState.get() + " is round ended: "
+						+ (this.currentState.get() == (int) this.numberOfTricksInRound));
 		return this.currentState.get() == (int) this.numberOfTricksInRound;
 	}
 
@@ -717,7 +745,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.put("event", "endRound")
 								.put("teamA", this.teams.get(0).players())
 								.put("teamB", this.teams.get(1).players())
-								.put("initialTurn", this.initialTurn)
+								.put("trumpSelectorUsername",
+										this.users.get(this.initialTurn >= 0 ? this.initialTurn : 0).username())
 								.put("teamAScore", this.teams.get(0).score() / 3)
 								.put("teamBScore", this.teams.get(1).score() / 3).toString());
 

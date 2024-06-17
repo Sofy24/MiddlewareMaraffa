@@ -30,7 +30,7 @@ public class ChatIntegration {
 	@BeforeAll
 	public void setUp() {
 		this.vertx = Vertx.vertx();
-		this.chatService = new ChatService(this.vertx);
+		this.chatService = new ChatService(this.vertx, null);
 	}
 
 	/**

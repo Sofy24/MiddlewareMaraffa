@@ -80,6 +80,6 @@ public class Constants {
     public static final String ERROR = "error";
     // game constants
     public static final int NUMBER_OF_CARDS = 40;
-    public static final int MARAFFA_SCORE = 3;
+    public static final int MARAFFA_SCORE = 9;
     public static final int ELEVEN_ZERO_SCORE = 11;
 }

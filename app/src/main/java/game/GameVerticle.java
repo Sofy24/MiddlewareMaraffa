@@ -205,6 +205,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.trump = suit;
 		this.gameSchema.setTrump(suit);
 		LOGGER.info("GAME " + this.id + " chose trump: " + suit.toString());
+		this.onNewRound(); // simply notify new trump
 		if (this.statisticManager != null)
 			this.statisticManager.updateSuit(this.gameSchema); // TODO serve davvero o soltanto roba che sembra utile ?
 	}

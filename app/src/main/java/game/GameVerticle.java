@@ -644,7 +644,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public void onCheckMaraffa(final int suit, final String username) {
 		final int user = this.turn;
 		if (this.getVertx() != null)
-			this.getVertx().eventBus().request("game-maraffs:onCheckMaraffa",
+			this.getVertx().eventBus().request("game-maraffa:onCheckMaraffa",
 					new JsonObject()
 							.put(Constants.SUIT, suit)
 							.put(Constants.GAME_ID, this.id.toString())
@@ -819,6 +819,28 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.toString());
 			}
 		}
+	}
+
+	public void canPlayCard(final Card<CardValue, CardSuit> card, final String username) {
+		// vertx must be, play card asks the business logic
+		this.getVertx().eventBus().request("game-playCard:validate",
+				new JsonObject()
+						.put("card", card)
+						.put(Constants.GAME_ID, this.id.toString())
+						.put("isCardTrump", card.cardSuit().equals(this.trump))
+						.put(Constants.USERNAME, username)
+						.toString(),
+				reply -> {
+					if (reply.succeeded()) {
+						if ((Boolean) reply.result().body()) {
+							LOGGER.info("You have played a valid card");
+							// return (Boolean) reply.result().body();
+						}
+						LOGGER.info("The game succeeded in checking Maraffa");
+					} else {
+						throw new UnsupportedOperationException("Failed to check Maraffa");
+					}
+				});
 	}
 
 }

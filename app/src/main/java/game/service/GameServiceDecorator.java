@@ -8,6 +8,7 @@ import BLManagment.BusinessLogicController;
 import game.Card;
 import game.CardSuit;
 import game.CardValue;
+import game.GameMode;
 import game.GameVerticle;
 import game.service.schema.CanStartResponse;
 import game.service.schema.ChangeTeamBody;
@@ -280,22 +281,48 @@ public class GameServiceDecorator {
 				response.put(Constants.MESSAGE, "Invalid card " + card);
 				context.response().setStatusCode(401).end(response.toBuffer());
 			} else {
-				final JsonObject playCardResponse = this.gameService.playCard(gameID, username, card,
+				final JsonObject canPlayCardResponse = this.gameService.canPlayCard(gameID, username, card,
 						isSuitFinishedByPlayer);
-				if (!playCardResponse.containsKey(Constants.NOT_FOUND)) {
-					if (!this.gameService.getGames().get(gameID).isUserIn(username)
-							|| !playCardResponse.getBoolean(Constants.PLAY)) {
-						response.put(Constants.ERROR, "Is not the turn of " + username
-								+ " or the trump is not setted or the teams are not balanced or the system doesn't know who has the 4 of coins");
-						response.put(Constants.MESSAGE, "Is not the turn of " + username
-								+ " or the trump is not setted or the teams are not balanced or the system doesn't know who has the 4 of coins");
-						context.response().setStatusCode(417).end(response.toBuffer());
-					} else {
-						System.out.println("answer by decorator = current state " + this.gameService.getGames().get(gameID).getCurrentState());
-						System.out.println("answer by decorator = turn " + this.gameService.getGames().get(gameID).getTurn() );
-						System.out.println("answer by decorator = currenttrick " + this.gameService.getGames().get(gameID).getCurrentTrick());
-						context.response().end(response.toBuffer());
-					}
+				if (!canPlayCardResponse.containsKey(Constants.NOT_FOUND)) {
+					final Boolean isCardTrump = this.gameService.getGames().get(gameID).getTrump()
+							.equals(CardSuit.getName(cardSuit));
+					final int[] trick = this.gameService.getGames().get(gameID).getCurrentTrick() == null ? new int[0]
+							: this.gameService.getGames().get(gameID).getCurrentTrick().getCards().stream()
+									.mapToInt(Integer::parseInt).toArray();
+					final int[] userCards = this.gameService.getGames().get(gameID).getUserCards(username).stream()
+							.mapToInt(userCard -> userCard.getCardValue().intValue()).toArray();
+					this.businessLogicController.validatePlayCard(trick, card.getCardValue(), userCards, isCardTrump)
+							.whenComplete((res, err) -> {
+								if (err == null) {
+									if (GameMode.ELEVEN2ZERO
+											.equals(this.gameService.getGames().get(gameID).getGameMode())
+											|| res.getBoolean("valid")) {
+										final JsonObject playCardResponse = this.gameService.playCard(gameID, username,
+												card,
+												isSuitFinishedByPlayer);
+										if (!this.gameService.getGames().get(gameID).isUserIn(username)
+												|| !playCardResponse.getBoolean(Constants.PLAY)) {
+											response.put(Constants.ERROR, "Is not the turn of " + username
+													+ " or the trump is not setted or the teams are not balanced or the system doesn't know who has the 4 of coins");
+											response.put(Constants.MESSAGE, "Is not the turn of " + username
+													+ " or the trump is not setted or the teams are not balanced or the system doesn't know who has the 4 of coins");
+											context.response().setStatusCode(417).end(response.toBuffer());
+										} else {
+											System.out.println("answer by decorator = current state "
+													+ this.gameService.getGames().get(gameID).getCurrentState());
+											System.out.println("answer by decorator = turn "
+													+ this.gameService.getGames().get(gameID).getTurn());
+											System.out.println("answer by decorator = currenttrick "
+													+ this.gameService.getGames().get(gameID).getCurrentTrick());
+											context.response().end(response.toBuffer());
+										}
+									} else {
+										response.put(Constants.ERROR, "Invalid card " + card);
+										response.put(Constants.MESSAGE, "Invalid card " + card);
+										context.response().setStatusCode(500).end(response.toBuffer());
+									}
+								}
+							});
 				} else {
 					response.put(Constants.ERROR, "Game " + gameID + " not found");
 					response.put(Constants.MESSAGE, "Game " + gameID + " not found");
@@ -361,27 +388,33 @@ public class GameServiceDecorator {
 		}
 	}
 
-	// @Operation(summary = "Check if the round is ended", method = Constants.END_METHOD, operationId = Constants.END_ROUND, // !
-	// 		// operationId
-	// 		// must
-	// 		// be
-	// 		// the
-	// 		// same
-	// 		// as
-	// 		// controller
-	// 		tags = { Constants.ROUND_TAG }, parameters = {
-	// 				@Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID, required = true, description = "The unique ID belonging to the game", schema = @Schema(type = "string")) }, responses = {
-	// 						@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json; charset=utf-8", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = IsRoundEndedResponse.class))),
-	// 						@ApiResponse(responseCode = "404", description = "Game not found."),
-	// 						@ApiResponse(responseCode = "500", description = "Internal Server Error.") })
+	// @Operation(summary = "Check if the round is ended", method =
+	// Constants.END_METHOD, operationId = Constants.END_ROUND, // !
+	// // operationId
+	// // must
+	// // be
+	// // the
+	// // same
+	// // as
+	// // controller
+	// tags = { Constants.ROUND_TAG }, parameters = {
+	// @Parameter(in = ParameterIn.PATH, name = Constants.GAME_ID, required = true,
+	// description = "The unique ID belonging to the game", schema = @Schema(type =
+	// "string")) }, responses = {
+	// @ApiResponse(responseCode = "200", description = "OK", content =
+	// @Content(mediaType = "application/json; charset=utf-8", encoding =
+	// @Encoding(contentType = "application/json"), schema = @Schema(name = "game",
+	// implementation = IsRoundEndedResponse.class))),
+	// @ApiResponse(responseCode = "404", description = "Game not found."),
+	// @ApiResponse(responseCode = "500", description = "Internal Server Error.") })
 	// public void isRoundEnded(final RoutingContext context) {
-	// 	final UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
-	// 	final JsonObject jsonEnd = this.gameService.isRoundEnded(gameID);
-	// 	if (!jsonEnd.containsKey(Constants.NOT_FOUND)) {
-	// 		context.response().end(jsonEnd.getString(Constants.MESSAGE));
-	// 	} else {
-	// 		context.response().setStatusCode(404).end(jsonEnd.getString(Constants.MESSAGE));
-	// 	}
+	// final UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
+	// final JsonObject jsonEnd = this.gameService.isRoundEnded(gameID);
+	// if (!jsonEnd.containsKey(Constants.NOT_FOUND)) {
+	// context.response().end(jsonEnd.getString(Constants.MESSAGE));
+	// } else {
+	// context.response().setStatusCode(404).end(jsonEnd.getString(Constants.MESSAGE));
+	// }
 	// }
 
 	@Operation(summary = "Check if the game is ended", method = Constants.END_METHOD, operationId = Constants.END_GAME, // !

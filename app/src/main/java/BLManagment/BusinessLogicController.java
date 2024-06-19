@@ -166,7 +166,6 @@ public class BusinessLogicController {
 					if (handler.succeeded()) {
 						final int winningPosition = handler.result().body().getInteger("winningPosition");
 						final boolean firstTeam = handler.result().body().getBoolean("firstTeam");
-						System.out.println("before if winningPosition = " + winningPosition);
 						LOGGER.info(
 								"GAME " + gameID.toString() + " score of last trick: " + cards.toString() + " -> "
 										+ handler.result().body().getInteger("score"));
@@ -174,6 +173,12 @@ public class BusinessLogicController {
 							LOGGER.info("ELeven zero because of mistake by team " + (firstTeam ? "1" : "2"));
 							this.gameService.getGames().get(gameID).setScore(firstTeam);
 							this.gameService.getGames().get(gameID).endRoundByMistake(firstTeam);
+
+							this.gameService.getGames().get(gameID).clearIsSuitFinished();
+							this.gameService.getGames().get(gameID).onEndRound();
+							this.gameService.getGames().get(gameID).startNewRound();
+							LOGGER.info("Game: " + gameID + " ended: cause 11 to zero");
+							this.gameService.getGames().get(gameID).onStartGame();
 						} else {
 							this.gameService.getGames().get(gameID)
 									.setTurnWithUser(users.get(String.valueOf(cards[winningPosition])));
@@ -201,7 +206,7 @@ public class BusinessLogicController {
 	 * @return a json object with a boolean. True if Maraffa is present
 	 */
 	public void checkMaraffa() {
-		this.vertx.eventBus().consumer("game-maraffs:onCheckMaraffa", message -> {
+		this.vertx.eventBus().consumer("game-maraffa:onCheckMaraffa", message -> {
 			LOGGER.info("Received message: " + message.body());
 			final JsonObject body = new JsonObject(message.body().toString());
 			final int suit = body.getInteger(Constants.SUIT);
@@ -230,6 +235,54 @@ public class BusinessLogicController {
 				.put("deck", deck)
 				.put("suit", suit);
 		WebClient.create(this.vertx).post(this.port, this.host, "/games/checkMaraffa")
+				.putHeader("Accept", "application/json")
+				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
+					if (handler.succeeded()) {
+						future.complete(handler.result().body());
+					} else {
+						LOGGER.error("Error in getting Maraffa " + handler.cause().getMessage());
+						future.complete(JsonObject.of().put("error", handler.cause().getMessage()));
+					}
+				});
+
+		return future;
+	}
+
+	public void checkPlayCard() {
+		this.vertx.eventBus().consumer("game-playCard:validate", message -> {
+			LOGGER.info("Received message: " + message.body());
+			final JsonObject body = new JsonObject(message.body().toString());
+			final int card = body.getInteger("card");
+			final String username = body.getString(Constants.USERNAME);
+			final Boolean isCardTrump = body.getBoolean("isCardTrump");
+			final UUID gameID = UUID.fromString(body.getString(Constants.GAME_ID));
+			final int[] trick = this.gameService.getGames().get(gameID).getCurrentTrick().getCards().stream()
+					.mapToInt(Integer::parseInt).toArray();
+			final int[] userCards = this.gameService.getGames().get(gameID).getUserCards(username).stream()
+					.mapToInt(userCard -> userCard.getCardValue().intValue()).toArray();
+			this.validatePlayCard(trick, card, userCards, isCardTrump).whenComplete((result, error) -> {
+				if (error != null) {
+					LOGGER.error("Error when validating played card ");
+					message.fail(417, "Error when Error when validating played card");
+				} else {
+					final Boolean isValid = result.getBoolean("valid");
+					LOGGER.info(isValid ? "Card is valid" : "Card is not valid");
+					message.reply(isValid);
+				}
+			});
+		});
+
+	}
+
+	public CompletableFuture<JsonObject> validatePlayCard(final int[] trick, final int card, final int[] userCards,
+			final boolean cardIsTrump) {
+		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
+		final JsonObject requestBody = new JsonObject()
+				.put("trick", trick)
+				.put("card", card)
+				.put("userCards", userCards)
+				.put("cardIsTrump", cardIsTrump);
+		WebClient.create(this.vertx).post(this.port, this.host, "/games/playCard-validation")
 				.putHeader("Accept", "application/json")
 				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {

@@ -13,6 +13,9 @@ import com.google.common.primitives.Booleans;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import game.Card;
+import game.CardSuit;
+import game.CardValue;
 import game.service.GameService;
 import game.utils.Constants;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -212,8 +215,9 @@ public class BusinessLogicController {
 			final int suit = body.getInteger(Constants.SUIT);
 			final String username = body.getString(Constants.USERNAME);
 			final UUID gameID = UUID.fromString(body.getString(Constants.GAME_ID));
-			final int[] userCards = this.gameService.getGames().get(gameID).getUserCards(username).stream()
-					.mapToInt(card -> card.getCardValue().intValue()).toArray();
+			List<Card<CardValue, CardSuit>> userCardsTemp = this.gameService.getGames().get(gameID).getUserCards(username);
+			userCardsTemp.add(new Card<>(CardValue.ONE, CardSuit.fromValue(suit)));
+			int[] userCards = userCardsTemp.stream().mapToInt(card -> card.getCardValue().intValue()).toArray();
 			this.getMaraffa(userCards, suit).whenComplete((result, error) -> {
 				if (error != null) {
 					LOGGER.error("Error when checking Maraffa");

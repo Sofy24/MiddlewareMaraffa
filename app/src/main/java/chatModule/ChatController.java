@@ -3,6 +3,7 @@ package chatModule;
 import java.util.Optional;
 import java.util.UUID;
 
+import game.service.GameServiceDecorator;
 import game.utils.Constants;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,8 +18,8 @@ import server.WebSocketVertx;
 public class ChatController {
 	private final ChatService service;
 
-	public ChatController(final Vertx vertx, final WebSocketVertx webSocketVertx) {
-		this.service = new ChatService(vertx, webSocketVertx);
+	public ChatController(final Vertx vertx, final WebSocketVertx webSocketVertx, final GameServiceDecorator gameServiceDecorator) {
+		this.service = new ChatService(vertx, webSocketVertx, gameServiceDecorator.getGames());
 
 	}
 

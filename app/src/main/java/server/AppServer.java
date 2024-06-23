@@ -27,10 +27,12 @@ public class AppServer extends AbstractVerticle {
 	@Override
 	public void start() throws Exception {
 		final WebSocketVertx webSocket = new WebSocketVertx();
+		final GameServiceDecorator gameServiceDecorator = new GameServiceDecorator(this.vertx,
+				this.mongoStatisticManager, webSocket);
 		final RouterConfig routerConfig = new RouterConfig(this.port,
-				new GameServiceDecorator(this.vertx, this.mongoStatisticManager, webSocket),
+				gameServiceDecorator,
 				new UserController(this.vertx),
-				new ChatController(this.vertx, webSocket));
+				new ChatController(this.vertx, gameServiceDecorator));
 		this.server = this.vertx.createHttpServer(this.createOptions());
 		this.server.webSocketHandler(webSocket::handleWebSocket);
 		this.server.requestHandler(routerConfig.configurationRouter(this.vertx));

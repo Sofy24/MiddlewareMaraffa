@@ -1,9 +1,11 @@
 package chatModule;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import game.GameVerticle;
 import game.service.User;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.vertx.core.Vertx;
@@ -26,11 +28,13 @@ public class ChatService extends AbstractRestAPI {
 	private static String host = Dotenv.load().get("CHAT_HOST", "localhost");
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChatService.class);
 	private final WebSocketVertx webSocketVertx;
+	private final Map<UUID, GameVerticle> gamesMap;
 
-	public ChatService(final Vertx vertx, final WebSocketVertx WebSocketVertx) {
+	public ChatService(final Vertx vertx, final WebSocketVertx WebSocketVertx, final Map<UUID, GameVerticle> map) {
 		super(vertx, port, host);
 		this.vertx = vertx;
 		this.webSocketVertx = WebSocketVertx;
+		this.gamesMap = map;
 		this.vertx.eventBus().consumer("chat-component:onCreateGame", message -> {
 			LOGGER.info("Received message: " + message.body());
 			final JsonObject bodyMsg = new JsonObject(message.body().toString());
@@ -84,7 +88,9 @@ public class ChatService extends AbstractRestAPI {
 				.put("event", "message")
 				.put("author", author).put("message", msg);
 		if (gameID.isPresent()) {
-			System.out.println("TODO");
+			this.gamesMap.get(gameID.get()).getUsers().forEach(user -> {
+				this.webSocketVertx.sendMessageToClient(user.clientID(), message.toString());
+			});
 		} else {
 			this.webSocketVertx.broadcastToEveryone(message.toString());
 		}

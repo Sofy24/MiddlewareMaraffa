@@ -22,6 +22,7 @@ import game.service.schema.PlayCardBody;
 import game.service.schema.StartBody;
 import game.service.schema.StateResponse;
 import game.utils.Constants;
+import io.github.cdimascio.dotenv.Dotenv;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -48,12 +49,16 @@ public class GameServiceDecorator {
 	private final BusinessLogicController businessLogicController;
 	private static final Logger LOGGER = LoggerFactory.getLogger(GameServiceDecorator.class);
 	private final WebSocketVertx webSocket;
+	final static Dotenv dotenv = Dotenv.configure()
+            .filename(".env.example")
+            .load();
 
 	public GameServiceDecorator(final Vertx vertx, final AbstractStatisticManager statisticManager,
 			final WebSocketVertx webSocket) {
 		this.gameService = new GameService(vertx, statisticManager, webSocket);
 		this.webSocket = webSocket;
-		this.businessLogicController = new BusinessLogicController(vertx, this.gameService);
+		this.businessLogicController = new BusinessLogicController(vertx, this.gameService, Integer.parseInt(dotenv.get("BUSINESS_LOGIC_PORT", "3000")), dotenv.get("BUSINESS_LOGIC_HOST"));
+
 	}
 
 	@Operation(summary = "Create new game", method = Constants.CREATE_GAME_METHOD, operationId = Constants.CREATE_GAME, tags = {

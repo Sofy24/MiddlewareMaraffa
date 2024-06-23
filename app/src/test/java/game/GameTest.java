@@ -20,6 +20,7 @@ import BLManagment.BusinessLogicController;
 import game.service.GameService;
 import game.service.User;
 import game.utils.Constants;
+import io.github.cdimascio.dotenv.Dotenv;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -50,6 +51,9 @@ public class GameTest {
 	private Vertx vertx;
 	private GameService gameService;
 	private BusinessLogicController businessLogicController;
+	final static Dotenv dotenv = Dotenv.configure()
+            .filename(".env.example")
+            .load();
 
 	/**
 	 * Before executing our test, let's deploy our verticle. This method
@@ -61,7 +65,8 @@ public class GameTest {
 	public void setUp() {
 		this.vertx = Vertx.vertx();
 		this.gameService = new GameService(this.vertx);
-		this.businessLogicController = new BusinessLogicController(this.vertx, this.gameService);
+		this.businessLogicController = new BusinessLogicController(this.vertx, this.gameService, Integer.parseInt(dotenv.get("BUSINESS_LOGIC_PORT", "3000")), dotenv.get("BUSINESS_LOGIC_HOST"));
+		
 	}
 
 	/**

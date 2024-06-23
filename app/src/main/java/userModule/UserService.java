@@ -39,8 +39,8 @@ public class UserService extends AbstractRestAPI {
 	public CompletableFuture<Boolean> endGameHandler(final JsonObject requestBody) {
 		final CompletableFuture<Boolean> future = new CompletableFuture<>();
 		final Gson gg = new Gson();
-		final Team t1 = (Team) gg.fromJson(requestBody.getValue("team1").toString(), Team.class);
-		final Team t2 = (Team) gg.fromJson(requestBody.getValue("team2").toString(), Team.class);
+		final Team t1 = (Team) gg.fromJson(requestBody.getValue("teamA").toString(), Team.class);
+		final Team t2 = (Team) gg.fromJson(requestBody.getValue("teamB").toString(), Team.class);
 
 		final JsonArray updates = new JsonArray();
 		t1.players().forEach(team1Player -> {

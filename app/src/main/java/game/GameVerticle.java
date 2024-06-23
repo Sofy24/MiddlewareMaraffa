@@ -381,16 +381,16 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		Team currentTeam = this.teams.get(index);
 		LOGGER.info("GAME " + this.id + " turn : " + this.currentState.get());
 		LOGGER.info("GAME " + this.id + " score before compute: " + currentTeam.nameOfTeam() + " : " + currentTeam.score());
-		System.out.println("before score : " + currentTeam.score());
+		// System.out.println("before score : " + currentTeam.score());
 		this.teams.set(index,
 				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + score));
-		// LOGGER.info("GAME " + this.id + " score after compute: " + currentTeam.nameOfTeam() + " : "
-		// 				+ (currentTeam.score() + score));
-		// LOGGER.info("GAME " + this.id + " teams : " + this.teams.toString());
+		LOGGER.info("GAME " + this.id + " score after compute: " + currentTeam.nameOfTeam() + " : "
+						+ (currentTeam.score() + score));
+		LOGGER.info("GAME " + this.id + " teams : " + this.teams.toString());
 		Team invTeam = this.teams.get(invIndex);
 		currentTeam = this.teams.get(index);
-		System.out.println("after score: " + currentTeam.score() + currentTeam.nameOfTeam());
-		System.out.println("after score: " + invTeam.score() + invTeam.nameOfTeam());
+		// System.out.println("after score: " + currentTeam.score() + currentTeam.nameOfTeam());
+		// System.out.println("after score: " + invTeam.score() + invTeam.nameOfTeam());
 		if (this.currentState.get() == (int) this.numberOfTricksInRound) {
 			// LOGGER.info("GAME " + this.id + " score before ultima presa: " + currentTeam.nameOfTeam() + " : "
 			// 				+ currentTeam.score());
@@ -405,10 +405,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			System.out.println("after +1 score: " + currentTeam.score());
 			System.out.println("after +1 score, but other team: " + invTeam.score());
 							//??? currentTeam.score() + (currentTeam.score() % 3 == 0 ? 1 : currentTeam.score() % 3)
-			// LOGGER.info("GAME " + this.id + " score after ultima presa: " + currentTeam.nameOfTeam() + " : "
-			// 				+ currentTeam.score() + (currentTeam.score() % 3 == 0 ? 1 : currentTeam.score() % 3));
+			LOGGER.info("GAME " + this.id + " score after ultima presa: " + currentTeam.nameOfTeam() + " : "
+							+ currentTeam.score());
 
-			// LOGGER.info("GAME " + this.id + " teams : " + this.teams.toString());
+			LOGGER.info("GAME " + this.id + " teams : " + this.teams.toString());
 		}
 	}
 

@@ -32,7 +32,7 @@ public class AppServer extends AbstractVerticle {
 		final RouterConfig routerConfig = new RouterConfig(this.port,
 				gameServiceDecorator,
 				new UserController(this.vertx),
-				new ChatController(this.vertx, gameServiceDecorator));
+				new ChatController(this.vertx, webSocket, gameServiceDecorator));
 		this.server = this.vertx.createHttpServer(this.createOptions());
 		this.server.webSocketHandler(webSocket::handleWebSocket);
 		this.server.requestHandler(routerConfig.configurationRouter(this.vertx));

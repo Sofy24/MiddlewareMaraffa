@@ -28,9 +28,9 @@ public class WebSocketVertx {
             // Handle incoming message
             final String message = buffer.toString();
             System.out.println("Received message from " + webSocket.path().split("/")[1] + ": " + message);
-
+            
             // Echo the message back to the client
-            webSocket.writeTextMessage("Echo: " + message);
+            // webSocket.writeTextMessage("Echo: " + message);
         });
 
         webSocket.closeHandler(v -> {

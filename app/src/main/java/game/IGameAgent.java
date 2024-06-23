@@ -24,4 +24,6 @@ public interface IGameAgent {
 	void onEndRound();
 
 	void onChangeTeam();
+
+	void onMakeCall(final Call call);
 }

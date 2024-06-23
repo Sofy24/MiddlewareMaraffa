@@ -151,7 +151,7 @@ public class GameService {
 		return jsonCanStart.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
-	public JsonObject playCard(final UUID gameID, final String username, final Card<CardValue, CardSuit> card,
+	public JsonObject canPlayCard(final UUID gameID, final String username, final Card<CardValue, CardSuit> card,
 			final Boolean isSuitFinishedByPlayer) {
 		final JsonObject jsonPlayCard = new JsonObject();
 		if (this.games.get(gameID) != null && this.games.get(gameID).canStart()) {
@@ -163,31 +163,55 @@ public class GameService {
 				jsonPlayCard.put(Constants.MESSAGE, "Trump not setted");
 				return jsonPlayCard;
 			}
-			final Boolean play = game.addCard(card, username);
-			jsonPlayCard.put(Constants.PLAY, play);
-			System.out.println("(service), play"+ play);
-			if (play && game.getLatestTrick().isCompleted()) {
-				System.out.println("inside");
-				game.getGameSchema().addTrick(game.getCurrentTrick());
-				if (this.statisticManager != null)
-					this.statisticManager.updateRecordWithTrick(String.valueOf(gameID), game.getCurrentTrick());
-					try {
-						game.onTrickCompleted(game.getCurrentTrick());
-						game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
-						game.getTricks().add(game.getCurrentTrick());
-						game.incrementCurrentState();
-						System.out.println("incremeted game service"+game.getCurrentState());
-				} catch (final Exception e) {
-					jsonPlayCard.put(Constants.PLAY, false);
-					jsonPlayCard.put(Constants.ERROR, "Failed to complete the trick");
-					jsonPlayCard.put(Constants.MESSAGE, "Failed to complete the trick");
-					return jsonPlayCard;
-				}
-			}
 		} else {
 			jsonPlayCard.put(Constants.NOT_FOUND, false);
 			jsonPlayCard.put(Constants.ERROR, "Game " + gameID + " not found");
 			return jsonPlayCard.put(Constants.PLAY, false);
+		}
+		return jsonPlayCard;
+	}
+
+	public JsonObject playCard(final UUID gameID, final String username, final Card<CardValue, CardSuit> card,
+			final Boolean isSuitFinishedByPlayer) {
+		final JsonObject jsonPlayCard = new JsonObject();
+		// game.canPlayCard(card, username);
+		// if (game.canPlayCard(card, username)) {
+		final GameVerticle game = this.games.get(gameID);
+		final Boolean play = game.addCard(card, username);
+		jsonPlayCard.put(Constants.PLAY, play);
+		System.out.println("(service), play" + play);
+		if (play && game.getLatestTrick().isCompleted()) {
+			System.out.println("inside");
+			game.getGameSchema().addTrick(game.getCurrentTrick());
+			if (this.statisticManager != null)
+				this.statisticManager.updateRecordWithTrick(String.valueOf(gameID), game.getCurrentTrick());
+			try {
+				game.onTrickCompleted(game.getCurrentTrick());
+				game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
+				game.getTricks().add(game.getCurrentTrick());
+				game.incrementCurrentState();
+				System.out.println("la seconda, prima = incremeted game service" + game.getCurrentState());
+				game.onPlayCard();
+				if (game.isRoundEnded()) {
+					System.out.println("RoundEnded");
+					game.onEndRound();
+					game.startNewRound();
+					System.out.println("game ended" + game.isGameEnded());
+					game.onStartGame();
+
+				}
+				System.out.println("incremeted game service" + game.getCurrentState());
+			} catch (final Exception e) {
+				jsonPlayCard.put(Constants.PLAY, false);
+				jsonPlayCard.put(Constants.ERROR, "Failed to complete the trick");
+				jsonPlayCard.put(Constants.MESSAGE, "Failed to complete the trick");
+				return jsonPlayCard;
+			}
+			// } else {
+			// jsonPlayCard.put(Constants.ERROR, "can't play card with trick, first card
+			// choses the suit of trick: " + game.getCurrentTrick());
+			// return jsonPlayCard.put(Constants.PLAY, false);
+			// }
 		}
 		return jsonPlayCard;
 	}
@@ -264,28 +288,29 @@ public class GameService {
 		return jsonState.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
-	public JsonObject isRoundEnded(final UUID gameID) {
-		final JsonObject jsonEnd = new JsonObject();
-		if (this.games.get(gameID) != null) {
-			final Boolean isEnded = this.games.get(gameID).isRoundEnded();
-			if (isEnded)
-				this.games.get(gameID).onEndRound();
-			jsonEnd.put(Constants.ENDED, isEnded);
-			jsonEnd.put(Constants.MESSAGE, isEnded);
-			if (!isEnded) jsonEnd.put(Constants.ERROR, "Round " + gameID + " not ended");
-			return jsonEnd;
-		}
-		jsonEnd.put(Constants.ENDED, false);
-		jsonEnd.put(Constants.ERROR, "Game " + gameID + " not found");
-		return jsonEnd.put(Constants.MESSAGE, "Game " + gameID + " not found");
-	}
+	// public JsonObject isRoundEnded(final UUID gameID) {
+	// final JsonObject jsonEnd = new JsonObject();
+	// if (this.games.get(gameID) != null) {
+	// final Boolean isEnded = this.games.get(gameID).isRoundEnded();
+	// if (isEnded)
+	// this.games.get(gameID).onEndRound();
+	// jsonEnd.put(Constants.ENDED, isEnded);
+	// jsonEnd.put(Constants.MESSAGE, isEnded);
+	// if (!isEnded) jsonEnd.put(Constants.ERROR, "Round " + gameID + " not ended");
+	// return jsonEnd;
+	// }
+	// jsonEnd.put(Constants.ENDED, false);
+	// jsonEnd.put(Constants.ERROR, "Game " + gameID + " not found");
+	// return jsonEnd.put(Constants.MESSAGE, "Game " + gameID + " not found");
+	// }
 
 	public JsonObject isGameEnded(final UUID gameID) {
 		final JsonObject jsonEnd = new JsonObject();
 		if (this.games.get(gameID) != null) {
 			final Boolean isEnded = this.games.get(gameID).isGameEnded();
 			jsonEnd.put(Constants.ENDED, isEnded);
-			if (!isEnded) jsonEnd.put(Constants.ERROR, "Game " + gameID + " not ended");
+			if (!isEnded)
+				jsonEnd.put(Constants.ERROR, "Game " + gameID + " not ended");
 			return jsonEnd;
 		}
 		jsonEnd.put(Constants.ENDED, false);
@@ -298,7 +323,8 @@ public class GameService {
 		if (this.games.get(gameID) != null) {
 			final boolean success = this.games.get(gameID).makeCall(Call.fromUppercaseString(call.toUpperCase()),
 					username);
-			if (!success) jsonCall.put(Constants.ERROR, "Call " + call + " didn't succeed");
+			if (!success)
+				jsonCall.put(Constants.ERROR, "Call " + call + " didn't succeed");
 			return jsonCall.put(Constants.MESSAGE, success);
 		}
 		jsonCall.put(Constants.NOT_FOUND, false);

@@ -40,7 +40,7 @@ public class Controller implements IController {
 		this.routes.add(
 				new RouteResponse(HttpMethod.GET, "/" + Constants.PLAYER_CARDS, this.entityService::getPlayerCard));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.STATE, this.entityService::getState));
-		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.END_ROUND, this.entityService::isRoundEnded));
+		// this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.END_ROUND, this.entityService::isRoundEnded));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.END_GAME, this.entityService::isGameEnded));
 		this.routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.MAKE_CALL, this.entityService::makeCall));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GAMES, this.entityService::getGames));

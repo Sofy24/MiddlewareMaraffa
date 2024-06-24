@@ -25,9 +25,6 @@ public class UserController {
 	private static String host = dotenv.get("USER_HOST", "localhost");
 
 	public UserController(final Vertx vertx) {
-		System.out.println("UserController constructor");
-		System.out.println("host: " + host);
-		System.out.println("port: " + port);
 		this.userService = new UserService(vertx, host, port);
 	}
 

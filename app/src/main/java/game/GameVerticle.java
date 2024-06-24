@@ -755,9 +755,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 			}
 		}
-		System.out.println("sent end socket");
-		if (this.vertx != null)
-			this.vertx.eventBus().send("user-component", this.toJson().toString());
 	}
 
 	@Override
@@ -774,7 +771,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 			}
 		}
-		System.out.println("sent end socket");
 		if (this.vertx != null)
 			this.vertx.eventBus().send("user-component", this.toJson().toString());
 	}

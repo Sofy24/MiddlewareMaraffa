@@ -94,8 +94,6 @@ public class UserService extends AbstractRestAPI {
 	}
 
 	public CompletableFuture<JsonObject> loginUser(final String nickname, final String password) {
-		System.out.println("login -> host: " + this.getHost());
-		System.out.println("login -> port: " + this.getPort());
 		final JsonObject requestBody = new JsonObject().put("nickname", nickname).put("password", password);
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		WebClient.create(this.vertx).request(HttpMethod.POST, this.getPort(), this.getHost(), "/login")

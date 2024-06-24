@@ -751,6 +751,25 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			this.vertx.eventBus().send("user-component", this.toJson().toString());
 	}
 
+	@Override
+	public void onEndGame() {
+		if (this.webSocket != null) {
+			for (final var user : this.users) {
+				this.webSocket.sendMessageToClient(user.clientID(),
+						new JsonObject().put("gameID", this.id.toString())
+								.put("event", "endGame")
+								.put("teamA", this.teams.get(0).players())
+								.put("teamB", this.teams.get(1).players())
+								.put("teamAScore", this.teams.get(0).score() / 3)
+								.put("teamBScore", this.teams.get(1).score() / 3).toString());
+
+			}
+		}
+		System.out.println("sent end socket");
+		if (this.vertx != null)
+			this.vertx.eventBus().send("user-component", this.toJson().toString());
+	}
+
 	public void handOutCards(final List<Integer> list) {
 		final int chunkSize = (list.size() + this.numberOfPlayers - 1) / this.numberOfPlayers;
 		int index = 0;

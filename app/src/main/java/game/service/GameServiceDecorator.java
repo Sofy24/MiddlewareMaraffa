@@ -1,10 +1,8 @@
 package game.service;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import BLManagment.BusinessLogicController;
 import game.Card;
@@ -509,9 +507,7 @@ public class GameServiceDecorator {
 					@ApiResponse(responseCode = "404", description = "Game not found."),
 					@ApiResponse(responseCode = "500", description = "Internal Server Error.") })
 	public void getPlayers(final RoutingContext context) {
-		final JsonArray jsonPlayers = JsonArray
-				.of(this.gameService.getPlayers());
-		context.response().end(jsonPlayers.toBuffer());
+		context.response().end(this.gameService.getPlayers().toBuffer());
 
 	}
 

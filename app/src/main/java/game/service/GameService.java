@@ -374,8 +374,17 @@ public class GameService {
 		return jsonGames;
 	}
 
-	public List<String> getPlayers() {
-		return this.getGames().values().stream().map(GameVerticle::getUsers)
-				.flatMap(List::stream).map(User::username).collect(Collectors.toList());
+	public JsonObject getPlayers() {
+		final JsonObject jsonPlayers = new JsonObject();
+
+		// this.webSocket.getActiveConnections().keySet().stream().map(clientID ->
+		// this.getGames().values().stream().map(GameVerticle::getUsers).flatMap(List::stream).filter(user
+		// -> user.clientID().equals(clientID))
+		// )
+		jsonPlayers.put("inGamePlayers",
+				this.getGames().values().stream().map(GameVerticle::getUsers)
+						.flatMap(List::stream).map(User::username).collect(Collectors.toList()))
+				.put("connected", this.webSocket.getActiveUsers());
+		return jsonPlayers;
 	}
 }

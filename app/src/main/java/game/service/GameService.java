@@ -1,8 +1,10 @@
 package game.service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import game.Call;
 import game.Card;
@@ -192,7 +194,7 @@ public class GameService {
 				game.incrementCurrentState();
 				System.out.println("la seconda, prima = incremeted game service" + game.getCurrentState());
 				game.onPlayCard();
-				if (game.isGameEnded()){
+				if (game.isGameEnded()) {
 					System.out.println("GameEnded");
 					game.onEndGame();
 				}
@@ -370,5 +372,10 @@ public class GameService {
 		final JsonArray jsonGames = new JsonArray();
 		this.games.values().stream().map(GameVerticle::toJson).forEach(jsonGames::add);
 		return jsonGames;
+	}
+
+	public List<String> getPlayers() {
+		return this.getGames().values().stream().map(GameVerticle::getUsers)
+				.flatMap(List::stream).map(User::username).collect(Collectors.toList());
 	}
 }

@@ -1,8 +1,10 @@
 package game.service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import BLManagment.BusinessLogicController;
 import game.Card;
@@ -55,7 +57,8 @@ public class GameServiceDecorator {
 			final WebSocketVertx webSocket) {
 		this.gameService = new GameService(vertx, statisticManager, webSocket);
 		this.webSocket = webSocket;
-		this.businessLogicController = new BusinessLogicController(vertx, this.gameService, Integer.parseInt(dotenv.get("BUSINESS_LOGIC_PORT", "3000")), dotenv.get("BUSINESS_LOGIC_HOST"));
+		this.businessLogicController = new BusinessLogicController(vertx, this.gameService,
+				Integer.parseInt(dotenv.get("BUSINESS_LOGIC_PORT", "3000")), dotenv.get("BUSINESS_LOGIC_HOST"));
 
 	}
 
@@ -491,6 +494,25 @@ public class GameServiceDecorator {
 			// context.response().setStatusCode(404).end(new
 			// JsonObject().put(Constants.MESSAGE, Constants.NOT_FOUND).toBuffer());
 		}
+	}
+
+	@Operation(summary = "Get all the players", method = Constants.PLAYERS_METHOD, operationId = Constants.GET_PLAYERS, // !
+			// operationId
+			// must
+			// be
+			// the
+			// same
+			// as
+			// controller
+			tags = { Constants.GAME_TAG }, responses = {
+					@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json; charset=utf-8", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = GetGamesResponse.class))),
+					@ApiResponse(responseCode = "404", description = "Game not found."),
+					@ApiResponse(responseCode = "500", description = "Internal Server Error.") })
+	public void getPlayers(final RoutingContext context) {
+		final JsonArray jsonPlayers = JsonArray
+				.of(this.gameService.getPlayers());
+		context.response().end(jsonPlayers.toBuffer());
+
 	}
 
 	@Operation(summary = "Get a specific game", method = Constants.GAMES_METHOD, operationId = Constants.GETGAME, // !

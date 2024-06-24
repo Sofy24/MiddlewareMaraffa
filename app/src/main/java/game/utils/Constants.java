@@ -38,8 +38,10 @@ public class Constants {
     public static final String GAMES = "game/getGames";
     public static final String GETGAME = "game/:" + GAME_ID;
     public static final String COINS_4 = "game/4Coins/:" + GAME_ID + "/username:" + COINS_4_USERNAME;
+    public static final String GET_PLAYERS = "player";
 
     // methods
+    public static final String PLAYERS_METHOD = "GET";
     public static final String CREATE_GAME_METHOD = "POST";
     public static final String JOIN_GAME_METHOD = "PATCH";
     public static final String START_GAME_METHOD = "PATCH";

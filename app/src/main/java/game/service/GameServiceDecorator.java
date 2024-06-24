@@ -49,9 +49,7 @@ public class GameServiceDecorator {
 	private final BusinessLogicController businessLogicController;
 	private static final Logger LOGGER = LoggerFactory.getLogger(GameServiceDecorator.class);
 	private final WebSocketVertx webSocket;
-	final static Dotenv dotenv = Dotenv.configure()
-            .filename(".env.example")
-            .load();
+	final static Dotenv dotenv = Dotenv.configure().load();
 
 	public GameServiceDecorator(final Vertx vertx, final AbstractStatisticManager statisticManager,
 			final WebSocketVertx webSocket) {

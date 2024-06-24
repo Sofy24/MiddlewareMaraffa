@@ -29,11 +29,15 @@ public class UserTestIntegration {
 
 	private Vertx vertx;
 	private UserService userService;
+	final static Dotenv dotenv = Dotenv.configure()
+			.filename(".env.example")
+			.load();
 
 	@BeforeAll
 	public void setUp() {
 		this.vertx = Vertx.vertx();
-		this.userService = new UserService(this.vertx);
+		this.userService = new UserService(this.vertx, dotenv.load().get("USER_HOST", "localhost"),
+				Integer.parseInt(dotenv.load().get("USER_PORT", "3001")));
 	}
 
 	/**

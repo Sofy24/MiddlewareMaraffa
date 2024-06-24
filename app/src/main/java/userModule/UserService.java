@@ -8,7 +8,6 @@ import java.util.concurrent.CompletableFuture;
 import com.google.gson.Gson;
 
 import game.Team;
-import io.github.cdimascio.dotenv.Dotenv;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.impl.logging.Logger;
@@ -21,12 +20,10 @@ import server.AbstractRestAPI;
 
 public class UserService extends AbstractRestAPI {
 	private final Vertx vertx;
-	private static int port = Integer.parseInt(Dotenv.load().get("USER_PORT", "3001"));
-	private static String host = Dotenv.load().get("USER_HOST", "localhost");
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
-	public UserService(final Vertx vertx) {
+	public UserService(final Vertx vertx, final String host, final Integer port) {
 		super(vertx, port, host);
 		this.vertx = vertx;
 		this.vertx.eventBus().consumer("user-component", message -> {
@@ -56,7 +53,7 @@ public class UserService extends AbstractRestAPI {
 			// criccaaaaa
 		});
 
-		WebClient.create(this.vertx).request(HttpMethod.POST, port, host, "/statistic/bulk")
+		WebClient.create(this.vertx).request(HttpMethod.POST, this.getPort(), this.getHost(), "/statistic/bulk")
 				.putHeader("Accept", "application/json").putHeader("Content-type", "application/json")
 				.as(BodyCodec.jsonObject()).sendJson(updates, handler -> {
 					if (handler.succeeded() && handler.result().statusCode() == 200) {
@@ -76,14 +73,14 @@ public class UserService extends AbstractRestAPI {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		this.askServiceWithFutureNoBody(HttpMethod.GET, "/user/" + nickname, future);
 		return future;
-    }
+	}
 
 	public CompletableFuture<JsonObject> registerUser(final String nickname, final String password,
 			final String email) {
 		final JsonObject requestBody = new JsonObject().put("nickname", nickname).put("password", password).put("email",
 				email);
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-		WebClient.create(this.vertx).request(HttpMethod.GET, port, host, "/user/" + nickname)
+		WebClient.create(this.vertx).request(HttpMethod.GET, this.getPort(), this.getHost(), "/user/" + nickname)
 				.putHeader("Accept", "application/json").as(BodyCodec.jsonObject()).send(handler -> {
 					if (handler.succeeded()) {
 						if (handler.result().statusCode() == 404)
@@ -97,9 +94,11 @@ public class UserService extends AbstractRestAPI {
 	}
 
 	public CompletableFuture<JsonObject> loginUser(final String nickname, final String password) {
+		System.out.println("login -> host: " + this.getHost());
+		System.out.println("login -> port: " + this.getPort());
 		final JsonObject requestBody = new JsonObject().put("nickname", nickname).put("password", password);
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-		WebClient.create(this.vertx).request(HttpMethod.POST, port, host, "/login")
+		WebClient.create(this.vertx).request(HttpMethod.POST, this.getPort(), this.getHost(), "/login")
 				.putHeader("Content-type", "application/json").putHeader("Accept", "application/json")
 				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {

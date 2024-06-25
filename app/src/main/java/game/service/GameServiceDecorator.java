@@ -1,8 +1,10 @@
 package game.service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import BLManagment.BusinessLogicController;
 import game.Card;
@@ -22,6 +24,7 @@ import game.service.schema.PlayCardBody;
 import game.service.schema.StartBody;
 import game.service.schema.StateResponse;
 import game.utils.Constants;
+import io.github.cdimascio.dotenv.Dotenv;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -48,12 +51,15 @@ public class GameServiceDecorator {
 	private final BusinessLogicController businessLogicController;
 	private static final Logger LOGGER = LoggerFactory.getLogger(GameServiceDecorator.class);
 	private final WebSocketVertx webSocket;
+	final static Dotenv dotenv = Dotenv.configure().load();
 
 	public GameServiceDecorator(final Vertx vertx, final AbstractStatisticManager statisticManager,
 			final WebSocketVertx webSocket) {
 		this.gameService = new GameService(vertx, statisticManager, webSocket);
 		this.webSocket = webSocket;
-		this.businessLogicController = new BusinessLogicController(vertx, this.gameService);
+		this.businessLogicController = new BusinessLogicController(vertx, this.gameService,
+				Integer.parseInt(dotenv.get("BUSINESS_LOGIC_PORT", "3000")), dotenv.get("BUSINESS_LOGIC_HOST"));
+
 	}
 
 	@Operation(summary = "Create new game", method = Constants.CREATE_GAME_METHOD, operationId = Constants.CREATE_GAME, tags = {
@@ -488,6 +494,25 @@ public class GameServiceDecorator {
 			// context.response().setStatusCode(404).end(new
 			// JsonObject().put(Constants.MESSAGE, Constants.NOT_FOUND).toBuffer());
 		}
+	}
+
+	@Operation(summary = "Get all the players", method = Constants.PLAYERS_METHOD, operationId = Constants.GET_PLAYERS, // !
+			// operationId
+			// must
+			// be
+			// the
+			// same
+			// as
+			// controller
+			tags = { Constants.GAME_TAG }, responses = {
+					@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json; charset=utf-8", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = GetGamesResponse.class))),
+					@ApiResponse(responseCode = "404", description = "Game not found."),
+					@ApiResponse(responseCode = "500", description = "Internal Server Error.") })
+	public void getPlayers(final RoutingContext context) {
+		final JsonArray jsonPlayers = JsonArray
+				.of(this.gameService.getPlayers());
+		context.response().end(jsonPlayers.toBuffer());
+
 	}
 
 	@Operation(summary = "Get a specific game", method = Constants.GAMES_METHOD, operationId = Constants.GETGAME, // !

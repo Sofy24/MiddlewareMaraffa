@@ -27,14 +27,16 @@ import io.vertx.ext.web.codec.BodyCodec;
 
 public class BusinessLogicController {
 	private final Vertx vertx;
-	private final int port = Integer.parseInt(Dotenv.load().get("BUSINESS_LOGIC_PORT", "3000"));
-	private final String host = Dotenv.load().get("BUSINESS_LOGIC_HOST", "localhost");
+	private final int port; //= Integer.parseInt(Dotenv.load().get("BUSINESS_LOGIC_PORT", "3000"));
+	private final String host;// = Dotenv.load().get("BUSINESS_LOGIC_HOST", "localhost");
 	private static final Logger LOGGER = LoggerFactory.getLogger(BusinessLogicController.class);
 	private final GameService gameService;
 
-	public BusinessLogicController(final Vertx vertx, final GameService gameService) {
+	public BusinessLogicController(final Vertx vertx, final GameService gameService, final int port, final String host) {
 		this.vertx = vertx;
 		this.gameService = gameService;
+		this.port = port;
+		this.host = host;
 		this.startRound();
 		this.trickCompleted();
 		this.checkMaraffa();

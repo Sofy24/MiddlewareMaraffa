@@ -23,6 +23,8 @@ public interface IGameAgent {
 
 	void onEndRound();
 
+	void onEndGame();
+
 	void onChangeTeam();
 
 	void onMakeCall(final Call call);

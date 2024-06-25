@@ -60,6 +60,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private List<Boolean> isSuitFinished = new ArrayList<>();
 	private WebSocketVertx webSocket;
 	private int elevenZeroTeam = -1;
+	private int teamPos = 1;
 	private final double numberOfTricksInRound;
 
 	// public GameSchema getGameSchema() {
@@ -121,10 +122,12 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			this.users.add(user);
 			this.status = this.canStart() ? Status.STARTING : Status.WAITING_PLAYERS;
 			this.onJoinGame(user);
-			final List<String> updatePlayers = new ArrayList<>(this.teams.get(0).players());
+			final Team currentTeam = this.teams.get(this.teamPos % 2);
+			final List<String> updatePlayers = new ArrayList<>(currentTeam.players());
 			updatePlayers.add(user.username());
-			this.teams.set(0, new Team(updatePlayers, "A", this.teams.get(0).score()));
+			this.teams.set(this.teamPos % 2, new Team(updatePlayers, currentTeam.nameOfTeam(), currentTeam.score()));
 			LOGGER.info("GAME " + this.id + " joined: " + user.toString());
+			this.teamPos += 1;
 			return true;
 		}
 		return false;
@@ -380,33 +383,39 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		final int invIndex = isTeamA ? 1 : 0;
 		Team currentTeam = this.teams.get(index);
 		LOGGER.info("GAME " + this.id + " turn : " + this.currentState.get());
-		LOGGER.info("GAME " + this.id + " score before compute: " + currentTeam.nameOfTeam() + " : " + currentTeam.score());
-		// System.out.println("before score : " + currentTeam.score());
+		LOGGER.info(
+				"GAME " + this.id + " score before compute: " + currentTeam.nameOfTeam() + " : " + currentTeam.score());
+		System.out.println("before score : " + currentTeam.score());
 		this.teams.set(index,
 				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + score));
-		LOGGER.info("GAME " + this.id + " score after compute: " + currentTeam.nameOfTeam() + " : "
-						+ (currentTeam.score() + score));
-		LOGGER.info("GAME " + this.id + " teams : " + this.teams.toString());
+		// LOGGER.info("GAME " + this.id + " score after compute: " +
+		// currentTeam.nameOfTeam() + " : "
+		// + (currentTeam.score() + score));
+		// LOGGER.info("GAME " + this.id + " teams : " + this.teams.toString());
 		Team invTeam = this.teams.get(invIndex);
 		currentTeam = this.teams.get(index);
 		// System.out.println("after score: " + currentTeam.score() + currentTeam.nameOfTeam());
 		// System.out.println("after score: " + invTeam.score() + invTeam.nameOfTeam());
 		if (this.currentState.get() == (int) this.numberOfTricksInRound) {
-			// LOGGER.info("GAME " + this.id + " score before ultima presa: " + currentTeam.nameOfTeam() + " : "
-			// 				+ currentTeam.score());
+			// LOGGER.info("GAME " + this.id + " score before ultima presa: " +
+			// currentTeam.nameOfTeam() + " : "
+			// + currentTeam.score());
 			this.teams.set(index,
 					new Team(currentTeam.players(), currentTeam.nameOfTeam(),
-							(currentTeam.score() - currentTeam.score() % 3) +3));
+							(currentTeam.score() - currentTeam.score() % 3) + 3));
 			this.teams.set(invIndex,
-			new Team(invTeam.players(), invTeam.nameOfTeam(),
-			(invTeam.score() - invTeam.score() % 3)));
+					new Team(invTeam.players(), invTeam.nameOfTeam(),
+							(invTeam.score() - invTeam.score() % 3)));
 			currentTeam = this.teams.get(index);
 			invTeam = this.teams.get(invIndex);
 			System.out.println("after +1 score: " + currentTeam.score());
 			System.out.println("after +1 score, but other team: " + invTeam.score());
-							//??? currentTeam.score() + (currentTeam.score() % 3 == 0 ? 1 : currentTeam.score() % 3)
-			LOGGER.info("GAME " + this.id + " score after ultima presa: " + currentTeam.nameOfTeam() + " : "
-							+ currentTeam.score());
+			// ??? currentTeam.score() + (currentTeam.score() % 3 == 0 ? 1 :
+			// currentTeam.score() % 3)
+			// LOGGER.info("GAME " + this.id + " score after ultima presa: " +
+			// currentTeam.nameOfTeam() + " : "
+			// + currentTeam.score() + (currentTeam.score() % 3 == 0 ? 1 :
+			// currentTeam.score() % 3));
 
 			LOGGER.info("GAME " + this.id + " teams : " + this.teams.toString());
 		}
@@ -693,8 +702,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.put("userTurn", this.users.get(this.turn).username()).toString());
 			}
 
-			System.out.println("PLAY CARD teamAScore"+this.teams.get(0).score() / 3);
-			System.out.println("PLAY CARD teamBScore"+ this.teams.get(1).score() / 3);
+			System.out.println("PLAY CARD teamAScore" + this.teams.get(0).score() / 3);
+			System.out.println("PLAY CARD teamBScore" + this.teams.get(1).score() / 3);
 		}
 	}
 
@@ -746,7 +755,22 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 			}
 		}
-		System.out.println("sent end socket");
+	}
+
+	@Override
+	public void onEndGame() {
+		if (this.webSocket != null) {
+			for (final var user : this.users) {
+				this.webSocket.sendMessageToClient(user.clientID(),
+						new JsonObject().put("gameID", this.id.toString())
+								.put("event", "endGame")
+								.put("teamA", this.teams.get(0).players())
+								.put("teamB", this.teams.get(1).players())
+								.put("teamAScore", this.teams.get(0).score() / 3)
+								.put("teamBScore", this.teams.get(1).score() / 3).toString());
+
+			}
+		}
 		if (this.vertx != null)
 			this.vertx.eventBus().send("user-component", this.toJson().toString());
 	}

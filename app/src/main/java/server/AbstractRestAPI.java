@@ -11,18 +11,27 @@ import io.vertx.ext.web.codec.BodyCodec;
 public abstract class AbstractRestAPI {
     private final Vertx vertx;
     private final int port;
-    private final String localhost;
+
+    public int getPort() {
+        return this.port;
+    }
+
+    private final String host;
+
+    public String getHost() {
+        return this.host;
+    }
 
     public AbstractRestAPI(final Vertx vertx, final int port, final String localhost) {
         this.vertx = vertx;
         this.port = port;
-        this.localhost = localhost;
+        this.host = localhost;
     }
 
     protected CompletableFuture<JsonObject> askService(final JsonObject requestBody, final HttpMethod method,
             final String requestURI) {
         final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-        WebClient.create(this.vertx).request(method, this.port, this.localhost, requestURI)
+        WebClient.create(this.vertx).request(method, this.port, this.host, requestURI)
                 .putHeader("Accept", "application/json").as(BodyCodec.jsonObject())
                 .sendJsonObject(requestBody, handler -> {
                     if (handler.succeeded()) {
@@ -37,7 +46,7 @@ public abstract class AbstractRestAPI {
 
     protected CompletableFuture<JsonObject> askServiceWithFuture(final JsonObject requestBody, final HttpMethod method,
             final String requestURI, final CompletableFuture<JsonObject> future) {
-        WebClient.create(this.vertx).request(method, this.port, this.localhost, requestURI)
+        WebClient.create(this.vertx).request(method, this.port, this.host, requestURI)
                 .putHeader("Accept", "application/json").as(BodyCodec.jsonObject())
                 .sendJsonObject(requestBody, handler -> {
                     if (handler.succeeded()) {
@@ -52,7 +61,7 @@ public abstract class AbstractRestAPI {
 
     protected CompletableFuture<JsonObject> askServiceWithFutureNoBody(final HttpMethod method, final String requestURI,
             final CompletableFuture<JsonObject> future) {
-        WebClient.create(this.vertx).request(method, this.port, this.localhost, requestURI)
+        WebClient.create(this.vertx).request(method, this.port, this.host, requestURI)
                 .putHeader("Accept", "application/json").as(BodyCodec.jsonObject()).send(handler -> {
                     if (handler.succeeded()) {
 

@@ -1,5 +1,6 @@
 package userModule;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,9 +20,12 @@ import userModule.schema.UserRegisterSchema;
 @Api(tags = "User Operations", description = "APIs for user management")
 public class UserController {
 	private final UserService userService;
+	final static Dotenv dotenv = Dotenv.configure().load();
+	private static int port = Integer.parseInt(dotenv.get("USER_PORT", "3001"));
+	private static String host = dotenv.get("USER_HOST", "localhost");
 
 	public UserController(final Vertx vertx) {
-		this.userService = new UserService(vertx);
+		this.userService = new UserService(vertx, host, port);
 	}
 
 	@Operation(summary = "Single user info", description = "Get User info", method = "GET", operationId = "user/:nickname", tags = {
@@ -132,5 +136,4 @@ public class UserController {
 		context.response().setStatusCode(500)
 				.end(new JsonObject().put("message", "To be impplemenented !").toBuffer());
 	}
-
 }

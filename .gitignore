@@ -48,6 +48,8 @@ gradle-app.setting
 .gradletasknamecache
 
 .env
+app/bin/main/logback.xml
+
 
 # Eclipse Gradle plugin generated files
 # Eclipse Core

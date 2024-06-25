@@ -394,8 +394,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		// LOGGER.info("GAME " + this.id + " teams : " + this.teams.toString());
 		Team invTeam = this.teams.get(invIndex);
 		currentTeam = this.teams.get(index);
-		System.out.println("after score: " + currentTeam.score() + currentTeam.nameOfTeam());
-		System.out.println("after score: " + invTeam.score() + invTeam.nameOfTeam());
+		// System.out.println("after score: " + currentTeam.score() + currentTeam.nameOfTeam());
+		// System.out.println("after score: " + invTeam.score() + invTeam.nameOfTeam());
 		if (this.currentState.get() == (int) this.numberOfTricksInRound) {
 			// LOGGER.info("GAME " + this.id + " score before ultima presa: " +
 			// currentTeam.nameOfTeam() + " : "
@@ -417,7 +417,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			// + currentTeam.score() + (currentTeam.score() % 3 == 0 ? 1 :
 			// currentTeam.score() % 3));
 
-			// LOGGER.info("GAME " + this.id + " teams : " + this.teams.toString());
+			LOGGER.info("GAME " + this.id + " teams : " + this.teams.toString());
 		}
 	}
 

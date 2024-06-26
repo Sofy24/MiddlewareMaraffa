@@ -15,7 +15,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
-
+import io.github.cdimascio.dotenv.Dotenv;
 import game.Team;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -36,8 +36,8 @@ public class UserTestIntegration {
 	@BeforeAll
 	public void setUp() {
 		this.vertx = Vertx.vertx();
-		this.userService = new UserService(this.vertx, dotenv.load().get("USER_HOST", "localhost"),
-				Integer.parseInt(dotenv.load().get("USER_PORT", "3001")));
+		this.userService = new UserService(this.vertx, Dotenv.load().get("USER_HOST", "localhost"),
+				Integer.parseInt(Dotenv.load().get("USER_PORT", "3001")));
 	}
 
 	/**

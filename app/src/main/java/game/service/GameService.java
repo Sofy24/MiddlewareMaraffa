@@ -194,10 +194,6 @@ public class GameService {
 				game.incrementCurrentState();
 				System.out.println("la seconda, prima = incremeted game service" + game.getCurrentState());
 				game.onPlayCard();
-				if (game.isGameEnded()) {
-					System.out.println("GameEnded");
-					game.onEndGame();
-				}
 				if (game.isRoundEnded()) {
 					System.out.println("RoundEnded");
 					game.onEndRound();

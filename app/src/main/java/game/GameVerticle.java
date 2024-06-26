@@ -554,7 +554,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * @return true if the game is ended
 	 */
 	public boolean isGameEnded() {
-		return this.teams.get(0).score() >= this.expectedScore || this.teams.get(1).score() >= this.expectedScore;
+		System.out.println("endA" + this.teams.get(0).score() / 3 + "endB" + this.teams.get(1).score() / 3);
+		return this.teams.get(0).score() / 3 >= this.expectedScore || this.teams.get(1).score() / 3 >= this.expectedScore;
 	}
 
 	/**
@@ -727,6 +728,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 							}
 							this.onPlayCard();
 							this.clearIsSuitFinished();
+							if (this.isGameEnded()){
+								System.out.println("GameEnded");
+								this.onEndGame();
+							}
 						} else {
 							throw new UnsupportedOperationException("Failed to complete the trick");
 						}

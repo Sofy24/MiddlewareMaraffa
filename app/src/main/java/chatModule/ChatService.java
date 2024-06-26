@@ -81,6 +81,20 @@ public class ChatService extends AbstractRestAPI {
 		return future;
 	}
 
+	public void notificationReceived(final String msg, final Optional<UUID> gameID) {
+		LOGGER.info("Received notification: " + msg);
+		final JsonObject message = new JsonObject()
+				.put("event", "notification")
+				.put("message", msg);
+		if (gameID.isPresent()) {
+			this.gamesMap.get(gameID.get()).getUsers().forEach(user -> {
+				this.webSocketVertx.sendMessageToClient(user.clientID(), message.toString());
+			});
+		} else {
+			this.webSocketVertx.broadcastToEveryone(message.toString());
+		}
+	}
+
 	public void messageReceived(final String msg, final Optional<UUID> gameID, final String author) {
 		LOGGER.info("Received message: " + msg);
 		System.out.println(msg);

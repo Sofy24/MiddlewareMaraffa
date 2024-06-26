@@ -59,6 +59,7 @@ public class Controller implements IController {
 		this.routes.add(new RouteResponse(HttpMethod.POST, "/resetPassword", this.userController::registerRoute));
 		this.routes.add(new RouteResponse(HttpMethod.POST, "/logout", this.userController::logoutRoute));
 		// chat management
+		this.routes.add(new RouteResponse(HttpMethod.POST, "/notification", this.chatController::notificationReceived));
 		this.routes.add(new RouteResponse(HttpMethod.POST, "/chat", this.chatController::messageReceived));
 	}
 

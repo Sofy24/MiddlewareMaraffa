@@ -40,6 +40,7 @@ public class Constants {
     public static final String GETGAME = "game/:" + GAME_ID;
     public static final String COINS_4 = "game/4Coins/:" + GAME_ID + "/username:" + COINS_4_USERNAME;
     public static final String GET_PLAYERS = "player";
+    public static final String NEW_GAME = "game/newGame";
 
     // methods
     public static final String PLAYERS_METHOD = "GET";

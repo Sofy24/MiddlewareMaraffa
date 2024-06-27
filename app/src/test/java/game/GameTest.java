@@ -50,7 +50,6 @@ public class GameTest {
 			new Card<>(CardValue.KNAVE, CardSuit.COINS), new Card<>(CardValue.SEVEN, CardSuit.SWORDS), TEST_CARD);
 	private Vertx vertx;
 	private GameService gameService;
-	private BusinessLogicController businessLogicController;
 	final static Dotenv dotenv = Dotenv.configure()
             .filename(".env.example")
             .load();
@@ -65,8 +64,6 @@ public class GameTest {
 	public void setUp() {
 		this.vertx = Vertx.vertx();
 		this.gameService = new GameService(this.vertx);
-		this.businessLogicController = new BusinessLogicController(this.vertx, this.gameService, Integer.parseInt(dotenv.get("BUSINESS_LOGIC_PORT", "3000")), dotenv.get("BUSINESS_LOGIC_HOST"));
-		
 	}
 
 	/**
@@ -213,31 +210,16 @@ public class GameTest {
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
-		// final CompletableFuture<JsonObject> future = this.businessLogicController
-		// .getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-		// MARAFFA_PLAYERS);
-		// try {
-		// final int firstPlayer = future.get().getInteger("firstPlayer");
 		this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 				.setInitialTurn(FIRST_PLAYER);
 		final int initialTurn = this.gameService.getGames()
 				.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
-
-		// assertEquals(firstPlayer, initialTurn);
-
 		final JsonObject chooseTrumpResponse = this.gameService
 				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), FAKE_TRUMP,
 						this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 								.getUsers().get(initialTurn).username());
 		assertFalse(chooseTrumpResponse.getBoolean(Constants.TRUMP));
 		assertTrue(chooseTrumpResponse.getBoolean(Constants.ILLEGAL_TRUMP));
-
-		// } catch (final InterruptedException e) {
-		// e.printStackTrace();
-		// } catch (final ExecutionException e) {
-		// e.printStackTrace();
-		// }
-
 		context.completeNow();
 	}
 
@@ -256,17 +238,10 @@ public class GameTest {
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
-		// final CompletableFuture<JsonObject> future = this.businessLogicController
-		// .getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-		// MARAFFA_PLAYERS);
-		// try {
-		// final int firstPlayer = future.get().getInteger("firstPlayer");
 		this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 				.setInitialTurn(FIRST_PLAYER);
 		final int initialTurn = this.gameService.getGames()
 				.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
-		// assertEquals(firstPlayer, initialTurn);
-
 		final JsonObject chooseTrumpResponse = this.gameService
 				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(),
 						this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
@@ -364,11 +339,6 @@ public class GameTest {
 		}
 		stateResponse = this.gameService.getState(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
 		assertFalse(stateResponse.containsKey(Constants.NOT_FOUND));
-		// } catch (final InterruptedException e) {
-		// this.e.printStackTrace();
-		// } catch (final ExecutionException e) {
-		// this.e.printStackTrace();
-		// }
 		context.completeNow();
 	}
 
@@ -877,6 +847,9 @@ public class GameTest {
 		context.completeNow();
 	}
 
+	/**
+	 * A user is able to change the team
+	 */
 	@Test
 	public void changeTeamTest(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
@@ -893,6 +866,9 @@ public class GameTest {
 		context.completeNow();
 	}
 
+	/**
+	 * A user can't change the team if the game has already started
+	 */
 	@Test
 	public void ChangeNotAllowedWhilePlayingTest(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
@@ -917,6 +893,9 @@ public class GameTest {
 		context.completeNow();
 	}
 
+	/**
+	 * A user can't change the team if the position specified is invalid
+	 */
 	@Test
 	public void WrongPositionTest(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
@@ -929,6 +908,9 @@ public class GameTest {
 		context.completeNow();
 	}
 
+	/**
+	 * Users can change their position in the same team they are
+	 */
 	@Test
 	public void ChangePositionSameTeamTest(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
@@ -947,6 +929,9 @@ public class GameTest {
 		context.completeNow();
 	}
 
+	/**
+	 * The game can't start if the teams are not balanced
+	 */
 	@Test
 	public void TeamNotBalancedTest(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
@@ -962,8 +947,6 @@ public class GameTest {
 		}
 		this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 				.setInitialTurn(FIRST_PLAYER);
-		final int initialTurn = this.gameService.getGames()
-				.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getInitialTurn();
 		assertTrue(this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 				.getBoolean(Constants.START_ATTR));
 		assertFalse(this.gameService.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
@@ -979,6 +962,26 @@ public class GameTest {
 				.getBoolean(Constants.START_ATTR));
 		assertTrue(this.gameService.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 				.getBoolean(Constants.START_ATTR));
+		context.completeNow();
+	}
+
+	/**
+	 * Start another game with the same users, same game mode, same expected score of the previos one
+	 */
+	@Test
+	public void NewGameTest(final VertxTestContext context) {
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
+				GAME_MODE.toString());
+		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED).getBoolean(Constants.PLAY));
+			final JsonObject joinResponse = this.gameService.joinGame(
+					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+		}
+		assertTrue(this.gameService.newGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID))));
 		context.completeNow();
 	}
 

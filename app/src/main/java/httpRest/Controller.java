@@ -45,12 +45,13 @@ public class Controller implements IController {
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.END_GAME, this.entityService::isGameEnded));
 		this.routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.MAKE_CALL, this.entityService::makeCall));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GAMES, this.entityService::getGames));
+		this.routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.NEW_GAME, this.entityService::newGame));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GET_PLAYERS, this.entityService::getPlayers));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GETGAME, this.entityService::getGame));
-		this.routes
-				.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CARDS_ON_HAND, this.entityService::cardsOnHand));
-		this.routes.add(
-				new RouteResponse(HttpMethod.GET, "/" + Constants.CARDS_ON_TABLE, this.entityService::cardsOnTable));
+		// this.routes
+		// 		.add(new RouteResponse(HttpMethod.GET, "/" + Constants.CARDS_ON_HAND, this.entityService::cardsOnHand));
+		// this.routes.add(
+		// 		new RouteResponse(HttpMethod.GET, "/" + Constants.CARDS_ON_TABLE, this.entityService::cardsOnTable));
 		// TODO delete game
 		// user management
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/user/:nickname", this.userController::fetchUserInfo));

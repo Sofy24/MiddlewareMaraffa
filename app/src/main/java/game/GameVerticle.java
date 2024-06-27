@@ -518,6 +518,12 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.users.size();
 	}
 
+	
+	/** @return the expected score a team should obtain in order to win the game */
+	public int getExpectedScore() {
+		return expectedScore;
+	}
+
 	/**
 	 * @return the number of players for this game
 	 */

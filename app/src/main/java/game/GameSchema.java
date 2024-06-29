@@ -7,6 +7,11 @@ import java.util.List;
 /** TODO/Define the mongodb schema of the game */
 public class GameSchema {
 	private String gameID;
+
+	public void setGameID(final String gameID) {
+		this.gameID = gameID;
+	}
+
 	private CardSuit leadingSuit;
 	private Date date;
 

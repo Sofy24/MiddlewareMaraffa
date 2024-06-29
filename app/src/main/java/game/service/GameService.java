@@ -186,7 +186,7 @@ public class GameService {
 			System.out.println("inside");
 			game.getGameSchema().addTrick(game.getCurrentTrick());
 			if (this.statisticManager != null)
-				this.statisticManager.updateRecordWithTrick(String.valueOf(gameID), game.getCurrentTrick());
+				this.statisticManager.updateRecordWithTrick(String.valueOf(gameID) + '-' + game.getCurrentState().get() / 10 , game.getCurrentTrick());
 			try {
 				game.onTrickCompleted(game.getCurrentTrick());
 				game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
@@ -364,7 +364,7 @@ public class GameService {
 	public boolean newGame(final UUID gameID) {
 		if (this.games.get(gameID) != null) {
 			final GameVerticle previousGame = this.getGames().get(gameID);
-			JsonObject newGameJson = this.createGame(previousGame.getNumberOfPlayersIn(), previousGame.getUsers().get(0), previousGame.getExpectedScore(), previousGame.getGameMode().name());
+			final JsonObject newGameJson = this.createGame(previousGame.getNumberOfPlayersIn(), previousGame.getUsers().get(0), previousGame.getExpectedScore(), previousGame.getGameMode().name());
 			final String newGameID = newGameJson.getString(Constants.GAME_ID);
 			final GameVerticle newGame = this.getGames().get(UUID.fromString(newGameID));
 			previousGame.getUsers().stream().filter(user -> !user.username().equals(previousGame.getUsers().get(0).username())).forEach(newGame::addUser);

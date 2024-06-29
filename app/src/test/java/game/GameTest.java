@@ -16,7 +16,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import BLManagment.BusinessLogicController;
 import game.service.GameService;
 import game.service.User;
 import game.utils.Constants;
@@ -51,8 +50,8 @@ public class GameTest {
 	private Vertx vertx;
 	private GameService gameService;
 	final static Dotenv dotenv = Dotenv.configure()
-            .filename(".env.example")
-            .load();
+			.filename(".env.example")
+			.load();
 
 	/**
 	 * Before executing our test, let's deploy our verticle. This method
@@ -148,12 +147,13 @@ public class GameTest {
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 			startGameResponse = this.gameService.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
 		}
-		JsonObject changeResponse = this.gameService.changeTeam(
-				UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-				TEST_USER.username(), "B", 0);
-		assertTrue(changeResponse.getBoolean(Constants.TEAM));
-		changeResponse = this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-				TEST_USER.username() + 1, "B", EXPECTED_POS);
+		// JsonObject changeResponse = this.gameService.changeTeam(
+		// UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+		// TEST_USER.username(), "B", 0);
+		// assertTrue(changeResponse.getBoolean(Constants.TEAM));
+		// changeResponse =
+		// this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+		// TEST_USER.username() + 1, "B", EXPECTED_POS);
 		startGameResponse = this.gameService.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
 		assertTrue(startGameResponse.getBoolean(Constants.START_ATTR));
 		context.completeNow();
@@ -359,12 +359,6 @@ public class GameTest {
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
-		JsonObject changeResponse = this.gameService.changeTeam(
-				UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-				TEST_USER.username() + 0, "B", 0);
-		assertTrue(changeResponse.getBoolean(Constants.TEAM));
-		changeResponse = this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-				TEST_USER.username() + 1, "B", EXPECTED_POS);
 		assertTrue(this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 				.startGame());
 		this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
@@ -449,12 +443,12 @@ public class GameTest {
 	// 	// assertTrue(this.gameService.isRoundEnded(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 	// 	// .getBoolean(Constants.ENDED));
 
-	// 	// } catch (final InterruptedException e) {
-	// 	// e.printStackTrace();
-	// 	// } catch (final ExecutionException e) {
-	// 	// e.printStackTrace();
-	// 	// }
-	// 	context.completeNow();
+	// // } catch (final InterruptedException e) {
+	// // e.printStackTrace();
+	// // } catch (final ExecutionException e) {
+	// // e.printStackTrace();
+	// // }
+	// context.completeNow();
 	// }
 
 	/** Only the first player can make a call */
@@ -878,16 +872,10 @@ public class GameTest {
 			this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 		}
-		JsonObject changeResponse = this.gameService.changeTeam(
-				UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-				TEST_USER.username(), "B", 0);
-		assertTrue(changeResponse.getBoolean(Constants.TEAM));
-		changeResponse = this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-				TEST_USER.username() + 1, "B", EXPECTED_POS);
-		assertTrue(changeResponse.getBoolean(Constants.TEAM));
 		this.gameService
 				.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
-		changeResponse = this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+		final JsonObject changeResponse = this.gameService.changeTeam(
+				UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 				TEST_USER.username(), "A", EXPECTED_POS - 1);
 		assertFalse(changeResponse.getBoolean(Constants.TEAM));
 		context.completeNow();
@@ -929,44 +917,50 @@ public class GameTest {
 		context.completeNow();
 	}
 
-	/**
-	 * The game can't start if the teams are not balanced
-	 */
-	@Test
-	public void TeamNotBalancedTest(final VertxTestContext context) {
-		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
-				GAME_MODE.toString());
-		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
-		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
-			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED).getBoolean(Constants.PLAY));
-			final JsonObject joinResponse = this.gameService.joinGame(
-					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					new User(TEST_USER.username() + i, TEST_USER.clientID()));
-			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
-		}
-		this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-				.setInitialTurn(FIRST_PLAYER);
-		assertTrue(this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-				.getBoolean(Constants.START_ATTR));
-		assertFalse(this.gameService.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-				.getBoolean(Constants.START_ATTR));
-		JsonObject changeResponse = this.gameService.changeTeam(
-				UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-				TEST_USER.username(), "B", 0);
-		assertTrue(changeResponse.getBoolean(Constants.TEAM));
-		changeResponse = this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-				TEST_USER.username() + 1, "B", EXPECTED_POS);
-		assertTrue(changeResponse.getBoolean(Constants.TEAM));
-		assertTrue(this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-				.getBoolean(Constants.START_ATTR));
-		assertTrue(this.gameService.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
-				.getBoolean(Constants.START_ATTR));
-		context.completeNow();
-	}
+	// * La funzione di join ora assegna i player in modo bilanciato
+	// /**
+	// * The game can't start if the teams are not balanced
+	// */
+	// @Test
+	// public void TeamNotBalancedTest(final VertxTestContext context) {
+	// final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS,
+	// TEST_USER, EXPECTED_SCORE,
+	// GAME_MODE.toString());
+	// Assertions.assertEquals(UUID_SIZE,
+	// gameResponse.getString(Constants.GAME_ID).length());
+	// for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
+	// assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+	// TEST_USER.username(), TEST_CARD,
+	// IS_SUIT_FINISHED).getBoolean(Constants.PLAY));
+	// final JsonObject joinResponse = this.gameService.joinGame(
+	// UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+	// new User(TEST_USER.username() + i, TEST_USER.clientID()));
+	// assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
+	// }
+	// this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+	// .setInitialTurn(FIRST_PLAYER);
+	// assertTrue(this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+	// .getBoolean(Constants.START_ATTR));
+	// assertFalse(this.gameService.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+	// .getBoolean(Constants.START_ATTR));
+	// JsonObject changeResponse = this.gameService.changeTeam(
+	// UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+	// TEST_USER.username(), "B", 0);
+	// assertTrue(changeResponse.getBoolean(Constants.TEAM));
+	// changeResponse =
+	// this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+	// TEST_USER.username() + 1, "B", EXPECTED_POS);
+	// assertTrue(changeResponse.getBoolean(Constants.TEAM));
+	// assertTrue(this.gameService.canStart(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+	// .getBoolean(Constants.START_ATTR));
+	// assertTrue(this.gameService.startGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+	// .getBoolean(Constants.START_ATTR));
+	// context.completeNow();
+	// }
 
 	/**
-	 * Start another game with the same users, same game mode, same expected score of the previos one
+	 * Start another game with the same users, same game mode, same expected score
+	 * of the previos one
 	 */
 	@Test
 	public void NewGameTest(final VertxTestContext context) {

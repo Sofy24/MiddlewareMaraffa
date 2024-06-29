@@ -19,7 +19,13 @@ public class AppServer extends AbstractVerticle {
 	private final int port = Integer.parseInt(Dotenv.load().get("MIDDLEWARE_PORT", "3003"));
 	private final String host = Dotenv.load().get("MIDDLEWARE_HOST", "localhost");
 	private HttpServer server;
-	AbstractStatisticManager mongoStatisticManager = new MongoStatisticManager();
+	AbstractStatisticManager mongoStatisticManager = new MongoStatisticManager(
+			Dotenv.load().get("MONGO_USER", "user"),
+			Dotenv.load().get("MONGO_PASSWORD", "password"),
+			Dotenv.load().get("MONGO_HOST", "localhost"),
+			Integer.parseInt(Dotenv.load().get("MONGO_PORT", "27127")),
+			Dotenv.load().get("MONGO_DATABASE", "maraffa")
+			);
 
 	public AppServer() {
 	}

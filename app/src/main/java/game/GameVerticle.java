@@ -521,7 +521,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	
 	/** @return the expected score a team should obtain in order to win the game */
 	public int getExpectedScore() {
-		return expectedScore;
+		return this.expectedScore;
 	}
 
 	/**

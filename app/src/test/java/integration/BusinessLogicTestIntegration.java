@@ -55,7 +55,7 @@ public class BusinessLogicTestIntegration {
 			new Card<>(CardValue.SIX, CardSuit.CUPS),
 			new Card<>(CardValue.ONE, CardSuit.CLUBS));
 	final static Dotenv dotenv = Dotenv.configure()
-            .filename(".env.example")
+            .filename("env.example")
             .load();
 
 	@BeforeAll

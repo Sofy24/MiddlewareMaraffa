@@ -18,6 +18,7 @@ import game.GameMode;
 import game.service.GameService;
 import game.service.User;
 import game.utils.Constants;
+import io.github.cdimascio.dotenv.Dotenv;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 
@@ -33,7 +34,16 @@ public class StatisticMongoTest {
 	private static final CardSuit UNDEFINED_TRUMP = CardSuit.NONE;
 	private final Card<CardSuit, CardValue> cardTest = new Card<>(CardValue.THREE, CardSuit.CLUBS);
 	private final Boolean isSuitFinished = true;
-	private final MongoStatisticManager mongoStatisticManager = new MongoStatisticManager(); // TODO andrebbe fatto
+	private final MongoStatisticManager mongoStatisticManager = new MongoStatisticManager(
+			Dotenv.configure()
+					.filename("env.example").load().get("MONGO_USER", "user"),
+			Dotenv.configure()
+					.filename("env.example").load().get("MONGO_PASSWORD", "password"),
+			Dotenv.configure()
+					.filename("env.example").load().get("MONGO_HOST", "localhost"),
+			Integer.parseInt(Dotenv.configure()
+					.filename("env.example").load().get("MONGO_PORT", "27127")),
+			Dotenv.configure().filename("env.example").load().get("MONGO_DATABASE", "maraffa-test"));
 
 	// contro il db
 	// {nome}_test
@@ -74,10 +84,15 @@ public class StatisticMongoTest {
 		}
 
 		this.gameService.chooseTrump(gameId, this.cardTest.cardSuit().toString(), this.userTest.username());
-		this.gameService.playCard(gameId, this.userTest.username(), new Card<>(CardValue.ONE, CardSuit.CLUBS), isSuitFinished);
-		this.gameService.playCard(gameId, this.userTest.username() + "2", new Card<>(CardValue.TWO, CardSuit.CLUBS), isSuitFinished);
-		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.THREE, CardSuit.CLUBS), isSuitFinished);
-		this.gameService.playCard(gameId, this.userTest.username() + "4", new Card<>(CardValue.FOUR, CardSuit.CLUBS), isSuitFinished);
-		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.KING, CardSuit.CLUBS), isSuitFinished);
+		this.gameService.playCard(gameId, this.userTest.username(), new Card<>(CardValue.ONE, CardSuit.CLUBS),
+				this.isSuitFinished);
+		this.gameService.playCard(gameId, this.userTest.username() + "2", new Card<>(CardValue.TWO, CardSuit.CLUBS),
+				this.isSuitFinished);
+		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.THREE, CardSuit.CLUBS),
+				this.isSuitFinished);
+		this.gameService.playCard(gameId, this.userTest.username() + "4", new Card<>(CardValue.FOUR, CardSuit.CLUBS),
+				this.isSuitFinished);
+		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.KING, CardSuit.CLUBS),
+				this.isSuitFinished);
 	}
 }

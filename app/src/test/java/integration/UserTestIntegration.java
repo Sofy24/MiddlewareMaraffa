@@ -30,7 +30,7 @@ public class UserTestIntegration {
 	private Vertx vertx;
 	private UserService userService;
 	final static Dotenv dotenv = Dotenv.configure()
-			.filename(".env.example")
+			.filename("env.example")
 			.load();
 
 	@BeforeAll

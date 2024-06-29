@@ -5,7 +5,7 @@
 
 
 # Percorso del file di configurazione
-file="app/.env.example"
+file="app/env.example"
 
 declare -a config_array
 

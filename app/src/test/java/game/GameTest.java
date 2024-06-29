@@ -50,7 +50,7 @@ public class GameTest {
 	private Vertx vertx;
 	private GameService gameService;
 	final static Dotenv dotenv = Dotenv.configure()
-			.filename(".env.example")
+			.filename("env.example")
 			.load();
 
 	/**

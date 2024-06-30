@@ -40,7 +40,9 @@ public class UserService extends AbstractRestAPI {
 		final Team t2 = (Team) gg.fromJson(requestBody.getValue("teamB").toString(), Team.class);
 
 		final JsonArray updates = new JsonArray();
-		t1.players().forEach(team1Player -> {
+		t1.players()
+		
+		.forEach(team1Player -> {
 			updates.add(
 					new JsonObject().put("nickname", team1Player).put("win", t1.score() > t2.score()).put("cricca", 0)); // TODO
 			// la

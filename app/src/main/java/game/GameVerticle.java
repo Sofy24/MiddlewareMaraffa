@@ -79,7 +79,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.numberOfPlayers = numberOfPlayers;
 		this.numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
 		this.creatorName = user.username();
-		this.teams.add(new Team(List.of(this.creatorName), "A", 0));
+		this.teams.add(new Team(List.of(user), "A", 0));
 		this.teams.add(new Team(List.of(), "B", 0));
 		this.users.add(user);
 		this.gameSchema = new GameSchema(String.valueOf(id) + '-' + this.currentState.get() / 10, CardSuit.NONE);
@@ -100,7 +100,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.creatorName = user.username();
 		this.numberOfPlayers = numberOfPlayers;
 		this.numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
-		this.teams.add(new Team(List.of(this.creatorName), "A", 0));
+		this.teams.add(new Team(List.of(user), "A", 0));
 		this.teams.add(new Team(List.of(), "B", 0));
 		this.users.add(user);
 		this.gameSchema = new GameSchema(String.valueOf(id) + '-' + this.currentState.get() / 10, CardSuit.NONE);
@@ -123,8 +123,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			this.status = this.canStart() ? Status.STARTING : Status.WAITING_PLAYERS;
 			this.onJoinGame(user);
 			final Team currentTeam = this.teams.get(this.teamPos % 2);
-			final List<String> updatePlayers = new ArrayList<>(currentTeam.players());
-			updatePlayers.add(user.username());
+			final List<User> updatePlayers = new ArrayList<>(currentTeam.players());
+			updatePlayers.add(user);
 			this.teams.set(this.teamPos % 2, new Team(updatePlayers, currentTeam.nameOfTeam(), currentTeam.score()));
 			LOGGER.info("GAME " + this.id + " joined: " + user.toString());
 			this.teamPos += 1;
@@ -224,7 +224,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					.max()
 					.orElse(0);
 			// get an ordered list of Usernames
-			final List<String> playerNames = IntStream.range(0, maxPlayers)
+			// final List<User> playerNames = IntStream.range(0, maxPlayers)
+			this.users = IntStream.range(0, maxPlayers)
 					.mapToObj(i -> this.teams.stream()
 							.filter(team -> team.players().size() > i)
 							.map(team -> team.players().get(i)))
@@ -236,9 +237,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					.collect(Collectors.toMap((Function<? super User, ? extends String>) User::username, user -> user));
 
 			// ordering users
-			this.users = playerNames.stream()
-					.map(userMap::get)
-					.collect(Collectors.toList());
+			// this.users = playerNames.stream()
+			// 		.map(userMap::get)
+			// 		.collect(Collectors.toList());
 
 			this.status = Status.PLAYING;
 			this.onStartGame();
@@ -483,17 +484,22 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public boolean changeTeam(final String username, final String team, final Integer pos) {
 		System.out.println("Change team: The team is " + team + " and the position is " + pos);
 		if (this.status == Status.WAITING_PLAYERS || this.status == Status.STARTING) {
+			// final List<User> users = this.teams.stream().flatMap(tm -> tm.players().stream()).toList();
+			final User deletedUser = this.teams.stream()
+					.flatMap(tm -> tm.players().stream().filter(u -> u.username().equals(username))).findFirst()
+					.orElseThrow();
 			this.teams = this.teams.stream().map(t -> {
-				final List<String> updatedPlayers = new ArrayList<>(t.players());
-				updatedPlayers.remove(username);
+				final List<User> updatedPlayers = new ArrayList<>(t.players());
+				// updatedPlayers.remove(updatedPlayers.stream().map(User::username).toList().indexOf(username));
+				updatedPlayers.remove(deletedUser);
 				return new Team(updatedPlayers, t.nameOfTeam(), t.score());
 			}).collect(Collectors.toList());
 			final Team selectedteam = this.teams.stream().filter(t -> t.nameOfTeam().equals(team)).findFirst()
 					.orElseThrow();
 			try {
 				final int teamIndex = this.teams.indexOf(selectedteam);
-				final List<String> updatedPlayers = new ArrayList<>(selectedteam.players());
-				updatedPlayers.add(pos, username);
+				final List<User> updatedPlayers = new ArrayList<>(selectedteam.players());
+				updatedPlayers.add(pos, deletedUser);
 				this.teams.set(teamIndex, new Team(updatedPlayers, selectedteam.nameOfTeam(), selectedteam.score()));
 				LOGGER.info("The team has been changed" + this.teams.toString());
 				this.onChangeTeam();
@@ -615,8 +621,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.put("event", "userJoin")
 								.put("username", user.username())
 								.put("status", this.status.toString())
-								.put("teamA", this.teams.get(0).players())
-								.put("teamB", this.teams.get(1).players())
+								.put("teamA", this.teams.get(0).players().stream().map(User::username).toList())
+								.put("teamB", this.teams.get(1).players().stream().map(User::username).toList())
 								.put("status", this.status.toString()).toString());
 			}
 		}
@@ -683,8 +689,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			for (final var user : this.users) {
 				this.webSocket.sendMessageToClient(user.clientID(),
 						new JsonObject().put("gameID", this.id.toString())
-								.put("teamA", this.teams.get(0).players())
-								.put("teamB", this.teams.get(1).players())
+								.put("teamA", this.teams.get(0).players().stream().map(User::username).toList())
+								.put("teamB", this.teams.get(1).players().stream().map(User::username).toList())
 								.put("event", "changeTeam").toString());
 			}
 		}
@@ -758,8 +764,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				this.webSocket.sendMessageToClient(user.clientID(),
 						new JsonObject().put("gameID", this.id.toString())
 								.put("event", "endRound")
-								.put("teamA", this.teams.get(0).players())
-								.put("teamB", this.teams.get(1).players())
+								.put("teamA", this.teams.get(0).players().stream().map(User::username).toList())
+								.put("teamB", this.teams.get(1).players().stream().map(User::username).toList())
 								.put("trumpSelectorUsername",
 										this.users.get(this.initialTurn >= 0 ? this.initialTurn : 0).username())
 								.put("teamAScore", this.teams.get(0).score() / 3)
@@ -776,8 +782,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				this.webSocket.sendMessageToClient(user.clientID(),
 						new JsonObject().put("gameID", this.id.toString())
 								.put("event", "endGame")
-								.put("teamA", this.teams.get(0).players())
-								.put("teamB", this.teams.get(1).players())
+								.put("teamA", this.teams.get(0).players().stream().map(User::username).toList())
+								.put("teamB", this.teams.get(1).players().stream().map(User::username).toList())
 								.put("teamAScore", this.teams.get(0).score() / 3)
 								.put("teamBScore", this.teams.get(1).score() / 3).toString());
 

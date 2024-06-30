@@ -28,6 +28,7 @@ public class GameService {
 	private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
 	private final Vertx vertx;
 	private WebSocketVertx webSocket;
+	private final static Boolean DEBUG = false;
 
 	private AbstractStatisticManager statisticManager;
 
@@ -220,7 +221,7 @@ public class GameService {
 	public JsonObject chooseTrump(final UUID gameID, final String cardSuit, final String username) {
 		final JsonObject jsonTrump = new JsonObject();
 		if (this.games.get(gameID) != null) {
-			if (this.games.get(gameID).getPositionByUsername(username) == this.games.get(gameID).getTurn()) {
+			if (this.games.get(gameID).getPositionByUsername(username) == this.games.get(gameID).getTurn() || DEBUG) {
 				CardSuit trump;
 				try {
 					trump = CardSuit.valueOf(cardSuit);

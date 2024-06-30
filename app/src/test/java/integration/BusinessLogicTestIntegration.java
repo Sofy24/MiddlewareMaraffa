@@ -41,7 +41,7 @@ import io.vertx.junit5.VertxTestContext;
 @ExtendWith(VertxExtension.class)
 public class BusinessLogicTestIntegration {
 
-	private static final User TEST_USER = new User("testUser", UUID.randomUUID());
+	private static final User TEST_USER = new User("testUser", UUID.randomUUID(), false);
 	private static final int MARAFFA_PLAYERS = 4;
 	private GameService gameService;
 	private Vertx vertx;
@@ -98,7 +98,7 @@ public class BusinessLogicTestIntegration {
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+					new User(TEST_USER.username() + i, TEST_USER.clientID(), false));
 		}
 
 		this.businessLogicController
@@ -123,7 +123,7 @@ public class BusinessLogicTestIntegration {
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+					new User(TEST_USER.username() + i, TEST_USER.clientID(), false));
 		}
 
 		this.businessLogicController
@@ -205,7 +205,7 @@ public class BusinessLogicTestIntegration {
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+					new User(TEST_USER.username() + i, TEST_USER.clientID(), false));
 		}
 
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
@@ -251,7 +251,7 @@ public class BusinessLogicTestIntegration {
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+					new User(TEST_USER.username() + i, TEST_USER.clientID(), false));
 		}
 
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
@@ -286,7 +286,7 @@ public class BusinessLogicTestIntegration {
 		for (int i = 1; i < MARAFFA_PLAYERS; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					new User(TEST_USER.username() + i, TEST_USER.clientID()));
+					new User(TEST_USER.username() + i, TEST_USER.clientID(), false));
 		}
 		this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 				TEST_USER.username() + "2", "B", 0);

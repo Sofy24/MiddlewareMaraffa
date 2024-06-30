@@ -25,7 +25,7 @@ import io.vertx.junit5.VertxExtension;
 @TestInstance(Lifecycle.PER_CLASS)
 @ExtendWith(VertxExtension.class)
 public class StatisticMongoTest {
-	private final User userTest = new User("user", UUID.randomUUID());
+	private final User userTest = new User("user", UUID.randomUUID(), false);
 	private static final int MARAFFA_PLAYERS = 4;
 	private static final int EXPECTED_SCORE = 11;
 	private static final GameMode GAME_MODE = GameMode.CLASSIC;
@@ -80,7 +80,7 @@ public class StatisticMongoTest {
 		final UUID gameId = UUID.fromString(gameID);
 		for (int i = 2; i < MARAFFA_PLAYERS + 1; i++) {
 			System.out.println(this.gameService.joinGame(gameId,
-					new User(this.userTest.username() + i, this.userTest.clientID())));
+					new User(this.userTest.username() + i, this.userTest.clientID(), false)));
 		}
 
 		this.gameService.chooseTrump(gameId, this.cardTest.cardSuit().toString(), this.userTest.username());

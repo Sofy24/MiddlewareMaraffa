@@ -48,7 +48,7 @@ public class ChatService extends AbstractRestAPI {
 			LOGGER.info("Received message: " + message.body());
 			final JsonObject bodyMsg = new JsonObject(message.body().toString());
 			this.joinGameHandler(bodyMsg.getString("gameID"),
-					new User(bodyMsg.getString("userID"), UUID.fromString(bodyMsg.getString("clientID"))));
+					new User(bodyMsg.getString("userID"), UUID.fromString(bodyMsg.getString("clientID")), false));
 			message.reply("pong!");
 		});
 	}

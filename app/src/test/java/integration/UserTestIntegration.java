@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterAll;
@@ -15,8 +16,10 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
-import io.github.cdimascio.dotenv.Dotenv;
+
 import game.Team;
+import game.service.User;
+import io.github.cdimascio.dotenv.Dotenv;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
@@ -26,7 +29,7 @@ import userModule.UserService;
 @TestInstance(Lifecycle.PER_CLASS)
 @ExtendWith(VertxExtension.class)
 public class UserTestIntegration {
-
+	private final static UUID clientID = UUID.randomUUID();
 	private Vertx vertx;
 	private UserService userService;
 	final static Dotenv dotenv = Dotenv.configure()
@@ -145,8 +148,10 @@ public class UserTestIntegration {
 		this.userService.registerUser("user2", "pwd", "mail").join();
 		this.userService.registerUser("user3", "pwd", "mail").join();
 		this.userService.registerUser("user4", "pwd", "mail").join();
-		final Team team1 = new Team(List.of("user1", "user2"), "teamA", 8);
-		final Team team2 = new Team(List.of("user3", "user4"), "teamB", 3);
+		final Team team1 = new Team(List.of(new User("user1", clientID, false), new User("user2", clientID, false)),
+				"teamA", 8);
+		final Team team2 = new Team(List.of(new User("user3", clientID, false), new User("user4", clientID, false)),
+				"teamB", 3);
 		/** testing only the necessary part of the after round body */
 		final JsonObject requestBody = new JsonObject().put("team1", team1).put("team2", team2);
 		/**

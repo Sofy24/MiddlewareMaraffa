@@ -82,6 +82,7 @@ public class Constants {
     public static final String RESULT = "result";
     public static final String VALUE = "value";
     public static final String ERROR = "error";
+    public static final String GUEST = "guest";
     // game constants
     public static final int NUMBER_OF_CARDS = 40;
     public static final int MARAFFA_SCORE = 9;

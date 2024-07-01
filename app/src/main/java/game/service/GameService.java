@@ -333,6 +333,7 @@ public class GameService {
 				newGame.startGame();
 				previousGame.onNewGame(newGameID);
 				jsonNewGame.put(Constants.MESSAGE, "New game created");
+				jsonNewGame.put("newGameID", newGameID);
 				return jsonNewGame.put(Constants.NEW_GAME_CREATION, true);
 			}
 			jsonNewGame.put(Constants.NEW_GAME_CREATION, false);

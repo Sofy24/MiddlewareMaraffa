@@ -917,6 +917,22 @@ public class GameTest {
 		context.completeNow();
 	}
 
+	/**
+	 * Start another game with the same users, same game mode, same expected score
+	 * of the previos one
+	 */
+	@Test
+	public void newGameTest(final VertxTestContext context) {
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
+		GAME_MODE.toString());
+		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+		final JsonObject newGameResponse = this.gameService.newGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
+		System.out.println(newGameResponse.toString());
+		this.gameService.getGames().get(UUID.fromString(newGameResponse.getString("newGameID")));
+		assertTrue(newGameResponse.getBoolean(Constants.NEW_GAME_CREATION));
+		context.completeNow();
+	}
+
 	// * La funzione di join ora assegna i player in modo bilanciato
 	// /**
 	// * The game can't start if the teams are not balanced
@@ -958,20 +974,7 @@ public class GameTest {
 	// context.completeNow();
 	// }
 
-	/**
-	 * Start another game with the same users, same game mode, same expected score
-	 * of the previos one
-	 */
-	@Test
-	public void newGameTest(final VertxTestContext context) {
-		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
-				GAME_MODE.toString());
-		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
-		final JsonObject newGameResponse = this.gameService.newGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
-		System.out.println(newGameResponse.toString());
-		this.gameService.getGames().get(UUID.fromString(newGameResponse.getString("newGameID")));
-		assertTrue(newGameResponse.getBoolean(Constants.NEW_GAME_CREATION));
-		context.completeNow();
-	}
+
+	
 
 }

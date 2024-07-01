@@ -330,7 +330,8 @@ public class GameService {
 				final String newGameID = newGameJson.getString(Constants.GAME_ID);
 				final GameVerticle newGame = this.getGames().get(UUID.fromString(newGameID));
 				previousGame.getUsers().stream().filter(user -> !user.username().equals(previousGame.getUsers().get(0).username())).forEach(newGame::addUser);
-				newGame.startGame();
+				// newGame.startGame();
+				newGame.onStartGame();
 				previousGame.onNewGame(newGameID);
 				jsonNewGame.put(Constants.MESSAGE, "New game created");
 				jsonNewGame.put("newGameID", newGameID);

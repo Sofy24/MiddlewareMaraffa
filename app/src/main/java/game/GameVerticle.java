@@ -62,6 +62,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private int elevenZeroTeam = -1;
 	private int teamPos = 1;
 	private final double numberOfTricksInRound;
+	private boolean newGameCreated = false;
 
 	// public GameSchema getGameSchema() {
 	// return this.gameSchema0
@@ -524,6 +525,16 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.expectedScore;
 	}
 
+	/**@return the flag newGameCreated */
+	public boolean isNewGameCreated() {
+		return newGameCreated;
+	}
+
+	/** set the flag newGameCreated to true */
+	public void setNewGameCreated() {
+		this.newGameCreated = true;
+	}
+
 	/**
 	 * @return the number of players for this game
 	 */
@@ -563,6 +574,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		System.out.println("endA" + this.teams.get(0).score() / 3 + "endB" + this.teams.get(1).score() / 3);
 		return this.teams.get(0).score() / 3 >= this.expectedScore || this.teams.get(1).score() / 3 >= this.expectedScore;
 	}
+
 
 	/**
 	 * @return a json with id, status and game mode
@@ -779,11 +791,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.put("teamB", this.teams.get(1).players())
 								.put("teamAScore", this.teams.get(0).score() / 3)
 								.put("teamBScore", this.teams.get(1).score() / 3).toString());
-
 			}
 		}
-		if (this.vertx != null)
-			this.vertx.eventBus().send("user-component", this.toJson().toString());
+		// if (this.vertx != null)
+		// 	this.vertx.eventBus().send("user-component", this.toJson().toString());
 	}
 
 	public void handOutCards(final List<Integer> list) {

@@ -512,15 +512,18 @@ public class GameServiceDecorator {
 	public void newGame(final RoutingContext context) {
 		final String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
 		final UUID gameID = UUID.fromString(uuidAsString);
-		final boolean correct = this.gameService.newGame(gameID);
-		final JsonObject jsonGame = new JsonObject();
+		final JsonObject jsonGame = this.gameService.newGame(gameID);
 		System.out.println("new game decorator");
-		if (correct) {
-			context.response().end(jsonGame.put(Constants.MESSAGE, "Neww game created").toBuffer());
+		if (!jsonGame.containsKey(Constants.NOT_FOUND)) {
+			if (jsonGame.getBoolean(Constants.NEW_GAME_CREATION)) {
+				context.response().end(jsonGame.getString(Constants.MESSAGE));
+			} else {
+				context.response().end(jsonGame.getString(Constants.MESSAGE));
+			}
 		} else {
-			context.response().setStatusCode(404)
-					.end(jsonGame.put(Constants.ERROR, "Game " + gameID.toString() + " not found").toBuffer());
+			context.response().setStatusCode(404).end(jsonGame.getString(Constants.MESSAGE));
 		}
+
 	}
 
 	public Map<UUID, GameVerticle> getGames() {

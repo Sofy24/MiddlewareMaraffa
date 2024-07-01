@@ -975,7 +975,7 @@ public class GameTest {
 					new User(TEST_USER.username() + i, TEST_USER.clientID()));
 			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
 		}
-		assertTrue(this.gameService.newGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID))));
+		assertTrue(this.gameService.newGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getBoolean(Constants.NEW_GAME_CREATION));
 		context.completeNow();
 	}
 

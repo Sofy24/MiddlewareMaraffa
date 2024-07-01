@@ -41,19 +41,25 @@ public class UserService extends AbstractRestAPI {
 
 		final JsonArray updates = new JsonArray();
 		t1.players()
-		
-		.forEach(team1Player -> {
-			updates.add(
-					new JsonObject().put("nickname", team1Player).put("win", t1.score() > t2.score()).put("cricca", 0)); // TODO
-			// la
-			// criccaaaaa
-		});
-		t2.players().forEach(team2Player -> {
-			updates.add(
-					new JsonObject().put("nickname", team2Player).put("win", t2.score() > t1.score()).put("cricca", 0)); // TODO
-			// la
-			// criccaaaaa
-		});
+				.stream()
+				.filter(user -> !user.guest())
+				.forEach(team1Player -> {
+					updates.add(
+							new JsonObject().put("nickname", team1Player).put("win", t1.score() > t2.score())
+									.put("cricca", 0)); // TODO
+					// la
+					// criccaaaaa
+				});
+		t2.players()
+				.stream()
+				.filter(user -> !user.guest())
+				.forEach(team2Player -> {
+					updates.add(
+							new JsonObject().put("nickname", team2Player).put("win", t2.score() > t1.score())
+									.put("cricca", 0)); // TODO
+					// la
+					// criccaaaaa
+				});
 
 		WebClient.create(this.vertx).request(HttpMethod.POST, this.getPort(), this.getHost(), "/statistic/bulk")
 				.putHeader("Accept", "application/json").putHeader("Content-type", "application/json")
@@ -98,10 +104,12 @@ public class UserService extends AbstractRestAPI {
 	public CompletableFuture<JsonObject> loginUser(final String nickname, final String password) {
 		final JsonObject requestBody = new JsonObject().put("nickname", nickname).put("password", password);
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
+		System.out.println("Calling login user at " + this.getHost() + ":" + this.getPort());
 		WebClient.create(this.vertx).request(HttpMethod.POST, this.getPort(), this.getHost(), "/login")
 				.putHeader("Content-type", "application/json").putHeader("Accept", "application/json")
 				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
+						System.out.println("Login response: " + handler.result().body().toString());
 						if (handler.result().statusCode() == 200)
 							future.complete(JsonObject.of().put("status", String.valueOf(handler.result().statusCode()))
 									.put("token", encryptThisString(nickname)));

@@ -153,7 +153,7 @@ public class UserTestIntegration {
 		final Team team2 = new Team(List.of(new User("user3", clientID, false), new User("user4", clientID, false)),
 				"teamB", 3);
 		/** testing only the necessary part of the after round body */
-		final JsonObject requestBody = new JsonObject().put("team1", team1).put("team2", team2);
+		final JsonObject requestBody = new JsonObject().put("teamA", team1).put("teamB", team2);
 		/**
 		 * new JsonObject(requestBody.toString()) seems bad and a repetition but the
 		 * json needs to be pushend onto the messagebus so the conversion to string is

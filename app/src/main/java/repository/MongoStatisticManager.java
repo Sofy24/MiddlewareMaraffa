@@ -31,6 +31,7 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 		// final String uri =
 		// "mongodb://your_mongo_user:your_mongo_password@127.0.0.1:27012";
 		final String uri = "mongodb://" + user + ":" + password + "@" + host + ":" + port;
+		System.out.println("MONGOOO: " + uri);
 		try {
 
 			final CodecProvider pojoCodecProvider = PojoCodecProvider.builder().automatic(true).build();

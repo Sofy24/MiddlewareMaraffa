@@ -7,7 +7,6 @@ import java.util.concurrent.CompletableFuture;
 
 import game.GameVerticle;
 import game.service.User;
-import io.github.cdimascio.dotenv.Dotenv;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.impl.logging.Logger;
@@ -24,8 +23,8 @@ public class ChatService extends AbstractRestAPI {
 	// private static final int PORT = 3004;
 	// private static final String LOCALHOST = "127.0.0.1";
 	private static final String FE_HOST = "127.0.0.1:80";
-	private static int port = Integer.parseInt(Dotenv.load().get("CHAT_PORT", "3004"));
-	private static String host = Dotenv.load().get("CHAT_HOST", "localhost");
+	private static int port = Integer.parseInt(System.getenv().getOrDefault("CHAT_PORT", "3004"));
+	private static String host = System.getenv().getOrDefault("CHAT_HOST", "localhost");
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChatService.class);
 	private final WebSocketVertx webSocketVertx;
 	private final Map<UUID, GameVerticle> gamesMap;

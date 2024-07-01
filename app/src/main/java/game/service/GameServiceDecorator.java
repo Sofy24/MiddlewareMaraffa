@@ -22,7 +22,6 @@ import game.service.schema.PlayCardBody;
 import game.service.schema.StartBody;
 import game.service.schema.StateResponse;
 import game.utils.Constants;
-import io.github.cdimascio.dotenv.Dotenv;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -50,14 +49,15 @@ public class GameServiceDecorator {
 	private static final Logger LOGGER = LoggerFactory.getLogger(GameServiceDecorator.class);
 	private final WebSocketVertx webSocket;
 	// private final static Boolean DEBUG = true;
-	final static Dotenv dotenv = Dotenv.configure().load();
+	// final static Dotenv dotenv = Dotenv.configure().load();
 
 	public GameServiceDecorator(final Vertx vertx, final AbstractStatisticManager statisticManager,
 			final WebSocketVertx webSocket) {
 		this.gameService = new GameService(vertx, statisticManager, webSocket);
 		this.webSocket = webSocket;
 		this.businessLogicController = new BusinessLogicController(vertx, this.gameService,
-				Integer.parseInt(dotenv.get("BUSINESS_LOGIC_PORT", "3000")), dotenv.get("BUSINESS_LOGIC_HOST"));
+				Integer.parseInt(System.getenv().getOrDefault("BUSINESS_LOGIC_PORT", "3000")),
+				System.getenv().getOrDefault("BUSINESS_LOGIC_HOST", "localhost"));
 
 	}
 
@@ -77,7 +77,7 @@ public class GameServiceDecorator {
 		final Integer numberOfPlayers = context.body().asJsonObject().getInteger(Constants.NUMBER_OF_PLAYERS);
 		final String username = context.body().asJsonObject().getString(Constants.USERNAME);
 		final String gameMode = context.body().asJsonObject().getString(Constants.GAME_MODE);
-		final boolean isGuest = context.body().asJsonObject().getBoolean(Constants.GUEST, false); 
+		final boolean isGuest = context.body().asJsonObject().getBoolean(Constants.GUEST, false);
 		final Integer expectedScore = context.body().asJsonObject().getInteger(Constants.EXPECTED_SCORE);
 		final JsonObject jsonGame = this.gameService.createGame(numberOfPlayers, new User(username, guiId, isGuest),
 				expectedScore, gameMode);
@@ -101,7 +101,7 @@ public class GameServiceDecorator {
 	public void joinGame(final RoutingContext context) {
 		final String uuidAsString = context.body().asJsonObject().getString(Constants.GAME_ID);
 		final String guiIdAsString = context.body().asJsonObject().getString(Constants.GUIID);
-		final boolean isGuest = context.body().asJsonObject().getBoolean(Constants.GUEST, false); 
+		final boolean isGuest = context.body().asJsonObject().getBoolean(Constants.GUEST, false);
 		final UUID gameID = UUID.fromString(uuidAsString);
 		final UUID guiId = UUID.fromString(guiIdAsString);
 		final String username = context.body().asJsonObject().getString(Constants.USERNAME);

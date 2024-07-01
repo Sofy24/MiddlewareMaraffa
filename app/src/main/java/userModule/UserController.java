@@ -1,6 +1,5 @@
 package userModule;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,11 +19,13 @@ import userModule.schema.UserRegisterSchema;
 @Api(tags = "User Operations", description = "APIs for user management")
 public class UserController {
 	private final UserService userService;
-	final static Dotenv dotenv = Dotenv.configure().load();
-	private static int port = Integer.parseInt(dotenv.get("USER_PORT", "3001"));
-	private static String host = dotenv.get("USER_HOST", "localhost");
+	// final static Dotenv dotenv = Dotenv.configure().load();
+	private static int port = Integer.parseInt(System.getenv().getOrDefault("USER_PORT", "3001"));
+	private static String host = System.getenv().getOrDefault("USER_HOST", "localhost");
 
 	public UserController(final Vertx vertx) {
+		System.out.println("host: " + System.getenv("USER_HOST"));
+		System.out.println("port: " + System.getenv("USER_PORT"));
 		this.userService = new UserService(vertx, host, port);
 	}
 
@@ -69,8 +70,10 @@ public class UserController {
 							@ApiResponse(responseCode = "401", description = "Wrong password"),
 							@ApiResponse(responseCode = "500", description = "Internal Server Error") })
 	public void loginRoute(final RoutingContext context) {
+		System.out.println("Login route called !");
 		this.userService.loginUser(context.body().asJsonObject().getString("nickname"),
 				context.body().asJsonObject().getString("password")).whenComplete((response, error) -> {
+					System.out.println("Response from service: " + response.toString());
 					if (error != null) {
 						context.response().setStatusCode(500).end(error.getMessage());
 					} else {

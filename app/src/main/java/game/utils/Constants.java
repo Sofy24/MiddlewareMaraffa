@@ -45,6 +45,7 @@ public class Constants {
     // methods
     public static final String PLAYERS_METHOD = "GET";
     public static final String CREATE_GAME_METHOD = "POST";
+    public static final String NEW_GAME_METHOD = "POST";
     public static final String JOIN_GAME_METHOD = "PATCH";
     public static final String START_GAME_METHOD = "PATCH";
     public static final String PLAY_CARD_METHOD = "POST";

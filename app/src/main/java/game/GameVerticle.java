@@ -832,6 +832,18 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		}
 	}
 
+	@Override
+	public void onNewGame(String newGameID) {
+		if (this.webSocket != null) {
+			for (final var user : this.users) {
+				this.webSocket.sendMessageToClient(user.clientID(),
+						new JsonObject().put("gameID", this.id.toString())
+								.put("event", "newGame")
+								.put("newGameID", newGameID).toString());
+			}
+		}
+	}
+
 	public void setTurnWithUser(final String username) {
 		this.turn = this.users.stream().map(User::username).toList().indexOf(username);
 	}

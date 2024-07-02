@@ -25,6 +25,8 @@ public interface IGameAgent {
 
 	void onEndGame();
 
+	void onNewGame(String newGameID);
+
 	void onChangeTeam();
 
 	void onMakeCall(final Call call);

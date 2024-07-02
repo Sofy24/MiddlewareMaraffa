@@ -62,6 +62,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private int elevenZeroTeam = -1;
 	private int teamPos = 1;
 	private final double numberOfTricksInRound;
+	private boolean newGameCreated = false;
 
 	// public GameSchema getGameSchema() {
 	// return this.gameSchema0
@@ -530,6 +531,16 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.expectedScore;
 	}
 
+	/**@return the flag newGameCreated */
+	public boolean isNewGameCreated() {
+		return newGameCreated;
+	}
+
+	/** set the flag newGameCreated to true */
+	public void setNewGameCreated() {
+		this.newGameCreated = true;
+	}
+
 	/**
 	 * @return the number of players for this game
 	 */
@@ -570,6 +581,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.teams.get(0).score() / 3 >= this.expectedScore
 				|| this.teams.get(1).score() / 3 >= this.expectedScore;
 	}
+
 
 	/**
 	 * @return a json with id, status and game mode
@@ -786,11 +798,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.put("teamB", this.teams.get(1).players().stream().map(User::username).toList())
 								.put("teamAScore", this.teams.get(0).score() / 3)
 								.put("teamBScore", this.teams.get(1).score() / 3).toString());
-
 			}
 		}
-		if (this.vertx != null)
-			this.vertx.eventBus().send("user-component", this.toJson().toString());
+		// if (this.vertx != null)
+		// 	this.vertx.eventBus().send("user-component", this.toJson().toString());
 	}
 
 	public void handOutCards(final List<Integer> list) {
@@ -840,6 +851,18 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			// .put("event", "userTurn")
 			// .put("turn", this.turn)
 			// .put("userTurn", this.users.get(this.turn).username()).toString());
+		}
+	}
+
+	@Override
+	public void onNewGame(String newGameID) {
+		if (this.webSocket != null) {
+			for (final var user : this.users) {
+				this.webSocket.sendMessageToClient(user.clientID(),
+						new JsonObject().put("gameID", this.id.toString())
+								.put("event", "newGame")
+								.put("newGameID", newGameID).toString());
+			}
 		}
 	}
 

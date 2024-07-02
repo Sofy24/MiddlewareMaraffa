@@ -68,12 +68,13 @@ public class StatisticMongoTest {
 		final String gameID = this.gameService
 				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString())
 				.getString(Constants.GAME_ID);
-		final var doc = this.mongoStatisticManager.getRecord(gameID);
+		final var doc = this.mongoStatisticManager.getRecord(gameID + "-0");
 		assertNotNull(doc);
 	}
 
 	@Test
 	public void playCard() {
+		//TODO not finished
 		final String gameID = this.gameService
 				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString())
 				.getString(Constants.GAME_ID);

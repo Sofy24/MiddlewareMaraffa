@@ -290,22 +290,6 @@ public class GameService {
 		return jsonState.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
-	// public JsonObject isRoundEnded(final UUID gameID) {
-	// final JsonObject jsonEnd = new JsonObject();
-	// if (this.games.get(gameID) != null) {
-	// final Boolean isEnded = this.games.get(gameID).isRoundEnded();
-	// if (isEnded)
-	// this.games.get(gameID).onEndRound();
-	// jsonEnd.put(Constants.ENDED, isEnded);
-	// jsonEnd.put(Constants.MESSAGE, isEnded);
-	// if (!isEnded) jsonEnd.put(Constants.ERROR, "Round " + gameID + " not ended");
-	// return jsonEnd;
-	// }
-	// jsonEnd.put(Constants.ENDED, false);
-	// jsonEnd.put(Constants.ERROR, "Game " + gameID + " not found");
-	// return jsonEnd.put(Constants.MESSAGE, "Game " + gameID + " not found");
-	// }
-
 	public JsonObject isGameEnded(final UUID gameID) {
 		final JsonObject jsonEnd = new JsonObject();
 		if (this.games.get(gameID) != null) {
@@ -334,45 +318,33 @@ public class GameService {
 		return jsonCall.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
-	// public JsonObject cardsOnHand(final UUID gameID, final String username) {
-	// 	final JsonObject jsonCardsOnHand = new JsonObject();
-	// 	/*
-	// 	 * if(this.games.get(gameID) != null){ Trick currentTrick =
-	// 	 * this.games.get(gameID).getStates().get(this.games.get(gameID).getCurrentState
-	// 	 * ().get()); jsonCardsOnHand.put(Constants.MESSAGE, currentTrick.toString());
-	// 	 * return jsonCardsOnHand; }
-	// 	 */
-	// 	jsonCardsOnHand.put(Constants.NOT_FOUND, false);
-	// 	return jsonCardsOnHand.put(Constants.MESSAGE, "Game " + gameID + " not found");
-	// }
-
-	// public JsonObject cardsOnTable(final UUID gameID) {
-	// 	final JsonObject jsonCardsOnTable = new JsonObject();
-	// 	/*
-	// 	 * if(this.games.get(gameID) != null){ Trick currentTrick =
-	// 	 * this.games.get(gameID).getStates().get(this.games.get(gameID).getCurrentState
-	// 	 * ().get()); jsonCardsOnHand.put(Constants.MESSAGE, currentTrick.toString());
-	// 	 * return jsonCardsOnHand; }
-	// 	 */
-	// 	jsonCardsOnTable.put(Constants.NOT_FOUND, false);
-	// 	return jsonCardsOnTable.put(Constants.MESSAGE, "Game " + gameID + " not found");
-	// }
-
 	/**@param the id of the new game
 	 * @return true if the game has been created, false if the gameId is not found
-	 
 	 */
-	public boolean newGame(final UUID gameID) {
+	public JsonObject newGame(final UUID gameID) {
+		final JsonObject jsonNewGame = new JsonObject();
 		if (this.games.get(gameID) != null) {
 			final GameVerticle previousGame = this.getGames().get(gameID);
-			final JsonObject newGameJson = this.createGame(previousGame.getNumberOfPlayersIn(), previousGame.getUsers().get(0), previousGame.getExpectedScore(), previousGame.getGameMode().name());
-			final String newGameID = newGameJson.getString(Constants.GAME_ID);
-			final GameVerticle newGame = this.getGames().get(UUID.fromString(newGameID));
-			previousGame.getUsers().stream().filter(user -> !user.username().equals(previousGame.getUsers().get(0).username())).forEach(newGame::addUser);
-			newGame.startGame();
-			return true;
+			if (!previousGame.isNewGameCreated()){
+				previousGame.setNewGameCreated();
+				final JsonObject newGameJson = this.createGame(previousGame.getNumberOfPlayersIn(), previousGame.getUsers().get(0), previousGame.getExpectedScore(), previousGame.getGameMode().name());
+				final String newGameID = newGameJson.getString(Constants.GAME_ID);
+				final GameVerticle newGame = this.getGames().get(UUID.fromString(newGameID));
+				previousGame.getUsers().stream().filter(user -> !user.username().equals(previousGame.getUsers().get(0).username())).forEach(newGame::addUser);
+				// newGame.startGame();
+				newGame.onStartGame();
+				previousGame.onNewGame(newGameID);
+				jsonNewGame.put(Constants.MESSAGE, "New game created");
+				jsonNewGame.put("newGameID", newGameID);
+				return jsonNewGame.put(Constants.NEW_GAME_CREATION, true);
+			}
+			jsonNewGame.put(Constants.NEW_GAME_CREATION, false);
+			jsonNewGame.put(Constants.ERROR, "Nuovo game già creato");
+			return jsonNewGame.put(Constants.MESSAGE, "New game already created");
 		} 
-		return false;
+		jsonNewGame.put(Constants.NOT_FOUND, false);
+		jsonNewGame.put(Constants.ERROR, "Game " + gameID + " non trovato");
+		return jsonNewGame.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
 	public Map<UUID, GameVerticle> getGames() {

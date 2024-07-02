@@ -45,6 +45,7 @@ public class Constants {
     // methods
     public static final String PLAYERS_METHOD = "GET";
     public static final String CREATE_GAME_METHOD = "POST";
+    public static final String NEW_GAME_METHOD = "POST";
     public static final String JOIN_GAME_METHOD = "PATCH";
     public static final String START_GAME_METHOD = "PATCH";
     public static final String PLAY_CARD_METHOD = "POST";
@@ -83,6 +84,7 @@ public class Constants {
     public static final String VALUE = "value";
     public static final String ERROR = "error";
     public static final String GUEST = "guest";
+    public static final String NEW_GAME_CREATION = "newGame";
     // game constants
     public static final int NUMBER_OF_CARDS = 40;
     public static final int MARAFFA_SCORE = 9;

@@ -864,7 +864,7 @@ public class GameTest {
 	 * A user can't change the team if the game has already started
 	 */
 	@Test
-	public void ChangeNotAllowedWhilePlayingTest(final VertxTestContext context) {
+	public void changeNotAllowedWhilePlayingTest(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
 				GAME_MODE.toString());
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
@@ -885,7 +885,7 @@ public class GameTest {
 	 * A user can't change the team if the position specified is invalid
 	 */
 	@Test
-	public void WrongPositionTest(final VertxTestContext context) {
+	public void wrongPositionTest(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
 				GAME_MODE.toString());
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
@@ -900,7 +900,7 @@ public class GameTest {
 	 * Users can change their position in the same team they are
 	 */
 	@Test
-	public void ChangePositionSameTeamTest(final VertxTestContext context) {
+	public void changePositionSameTeamTest(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
 				GAME_MODE.toString());
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
@@ -914,6 +914,22 @@ public class GameTest {
 		changeResponse = this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 				TEST_USER.username(), "A", EXPECTED_POS - 1);
 		assertTrue(changeResponse.getBoolean(Constants.TEAM));
+		context.completeNow();
+	}
+
+	/**
+	 * Start another game with the same users, same game mode, same expected score
+	 * of the previos one
+	 */
+	@Test
+	public void newGameTest(final VertxTestContext context) {
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
+		GAME_MODE.toString());
+		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+		final JsonObject newGameResponse = this.gameService.newGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
+		System.out.println(newGameResponse.toString());
+		this.gameService.getGames().get(UUID.fromString(newGameResponse.getString("newGameID")));
+		assertTrue(newGameResponse.getBoolean(Constants.NEW_GAME_CREATION));
 		context.completeNow();
 	}
 
@@ -958,25 +974,7 @@ public class GameTest {
 	// context.completeNow();
 	// }
 
-	/**
-	 * Start another game with the same users, same game mode, same expected score
-	 * of the previos one
-	 */
-	@Test
-	public void NewGameTest(final VertxTestContext context) {
-		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
-				GAME_MODE.toString());
-		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
-		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
-			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED).getBoolean(Constants.PLAY));
-			final JsonObject joinResponse = this.gameService.joinGame(
-					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					new User(TEST_USER.username() + i, TEST_USER.clientID(), false));
-			assertTrue(joinResponse.containsKey(Constants.JOIN_ATTR));
-		}
-		assertTrue(this.gameService.newGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID))));
-		context.completeNow();
-	}
+
+	
 
 }

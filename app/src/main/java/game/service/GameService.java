@@ -50,14 +50,14 @@ public class GameService {
 	}
 
 	public JsonObject createGame(final Integer numberOfPlayers, final User user, final int expectedScore,
-			final String gameMode, final String password) {
+			final String gameMode) {
 		final JsonObject jsonGame = new JsonObject();
 		final UUID newId = UUID.randomUUID();
 		GameVerticle currentGame;
 		try {
 			currentGame = new GameVerticle(newId, user, numberOfPlayers, expectedScore,
 					GameMode.valueOf(gameMode.toUpperCase()),
-					this.statisticManager, this.webSocket, password);
+					this.statisticManager, this.webSocket);
 			// TODO migliore gestione qui perche e' terribile ma per testare OK
 		} catch (final IllegalArgumentException e) {
 			jsonGame.put(Constants.ERROR, "Invalida modalità di gioco " + gameMode);
@@ -335,7 +335,7 @@ public class GameService {
 			final GameVerticle previousGame = this.getGames().get(gameID);
 			if (!previousGame.isNewGameCreated()) {
 				previousGame.setNewGameCreated();
-				final JsonObject newGameJson = this.createGame(previousGame.getNumberOfPlayersIn(), previousGame.getUsers().get(0), previousGame.getExpectedScore(), previousGame.getGameMode().name(), previousGame.getPassword().get());
+				final JsonObject newGameJson = this.createGame(previousGame.getNumberOfPlayersIn(), previousGame.getUsers().get(0), previousGame.getExpectedScore(), previousGame.getGameMode().name());
 				final String newGameID = newGameJson.getString(Constants.GAME_ID);
 				final GameVerticle newGame = this.getGames().get(UUID.fromString(newGameID));
 				previousGame.getUsers().stream()
@@ -355,6 +355,18 @@ public class GameService {
 		jsonNewGame.put(Constants.NOT_FOUND, false);
 		jsonNewGame.put(Constants.ERROR, "Game " + gameID + " non trovato");
 		return jsonNewGame.put(Constants.MESSAGE, "Game " + gameID + " not found");
+	}
+
+	/**@param the id of the new game
+	 * @param the password of the game
+	 * @return true if the password has been set, false if the gameId is not found
+	 */
+	public boolean setPassword(final UUID gameID, final String password) {
+		if (this.games.get(gameID) != null) {
+			this.games.get(gameID).setPassword(password);
+			return true;
+		}
+		return false;
 	}
 
 	public Map<UUID, GameVerticle> getGames() {

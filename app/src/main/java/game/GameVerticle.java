@@ -64,7 +64,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private int teamPos = 1;
 	private final double numberOfTricksInRound;
 	private boolean newGameCreated = false;
-	private Optional<String> password;
+	private Optional<String> password = Optional.of("1234");
 
 	// public GameSchema getGameSchema() {
 	// return this.gameSchema0
@@ -73,7 +73,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	public GameVerticle(final UUID id, final User user, final int numberOfPlayers, final int expectedScore,
 			final GameMode gameMode,
-			final AbstractStatisticManager statisticManager, final WebSocketVertx webSocket, final String password) {
+			final AbstractStatisticManager statisticManager, final WebSocketVertx webSocket) {
 		this.id = id;
 		this.gameMode = gameMode;
 		this.expectedScore = expectedScore;
@@ -88,7 +88,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.gameSchema = new GameSchema(String.valueOf(id) + '-' + this.currentState.get() / 10, CardSuit.NONE);
 		this.statisticManager = statisticManager;
 		this.webSocket = webSocket;
-		this.password = Optional.fromNullable(password);
 		if (this.statisticManager != null)
 			this.statisticManager.createRecord(this.gameSchema); // TODO andrebbero usati gli UUID ma vediamo se mongo
 		// di aiuta con la questione _id
@@ -108,7 +107,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.teams.add(new Team(List.of(), "B", 0));
 		this.users.add(user);
 		this.gameSchema = new GameSchema(String.valueOf(id) + '-' + this.currentState.get() / 10, CardSuit.NONE);
-		this.password = Optional.fromNullable(password);
 	}
 
 	/**
@@ -136,6 +134,14 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			return true;
 		}
 		return false;
+	}
+
+	
+	/**
+	 * @param password of the game
+	 */
+	public void setPassword(String password) {
+		this.password = Optional.of(password);
 	}
 
 	/**

@@ -42,6 +42,7 @@ public class Constants {
     public static final String COINS_4 = "game/4Coins/:" + GAME_ID + "/username:" + COINS_4_USERNAME;
     public static final String GET_PLAYERS = "player";
     public static final String NEW_GAME = "game/newGame";
+    public static final String SET_PASSWORD = "game/password";
 
     // methods
     public static final String PLAYERS_METHOD = "GET";
@@ -63,6 +64,7 @@ public class Constants {
     public static final String GAMES_METHOD = "GET";
     public static final String COINS_4_METHOD = "GET";
     public static final String EXIT_GAME = "DELETE";
+    public static final String PASSOWRD_METHOD = "PATCH";
 
     // tags
     public static final String GAME_TAG = "Middleware.Game";

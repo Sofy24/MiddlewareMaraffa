@@ -19,6 +19,7 @@ import game.service.schema.IsRoundEndedResponse;
 import game.service.schema.JoinGameBody;
 import game.service.schema.MakeCallBody;
 import game.service.schema.NewGameBody;
+import game.service.schema.PasswordBody;
 import game.service.schema.PlayCardBody;
 import game.service.schema.StartBody;
 import game.service.schema.StateResponse;
@@ -67,7 +68,6 @@ public class GameServiceDecorator {
 					+ "  \"" + Constants.NUMBER_OF_PLAYERS + "\": 4,\n" + "  \"" + Constants.USERNAME
 					+ "\": \"sofi\",\n" + "  \"" + Constants.EXPECTED_SCORE + "\": 41,\n" + "  \"" + Constants.GAME_MODE
 					+ "\": \"CLASSIC\",\n"
-					+ "\": \"sofi\",\n" + "  \"" + Constants.PASSWORD + "\": \"\",\n" 
 					// TODO check perche scompare tutto
 					+ " \"" + Constants.GUIID + "\": \"c1bdcf34-e0f2-409c-aced-e00d4be32b00\"\n" + "}"))), responses = {
 							@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game-creation", implementation = CreateGameBody.class))),
@@ -79,11 +79,10 @@ public class GameServiceDecorator {
 		final Integer numberOfPlayers = context.body().asJsonObject().getInteger(Constants.NUMBER_OF_PLAYERS);
 		final String username = context.body().asJsonObject().getString(Constants.USERNAME);
 		final String gameMode = context.body().asJsonObject().getString(Constants.GAME_MODE);
-		final String password = context.body().asJsonObject().getString(Constants.PASSWORD);
 		final boolean isGuest = context.body().asJsonObject().getBoolean(Constants.GUEST, false);
 		final Integer expectedScore = context.body().asJsonObject().getInteger(Constants.EXPECTED_SCORE);
 		final JsonObject jsonGame = this.gameService.createGame(numberOfPlayers, new User(username, guiId, isGuest),
-				expectedScore, gameMode, password);
+				expectedScore, gameMode);
 		if (jsonGame.containsKey(Constants.INVALID)) {
 			context.response().setStatusCode(401).end("Invalid game mode");
 		}
@@ -530,7 +529,25 @@ public class GameServiceDecorator {
 		} else {
 			context.response().setStatusCode(404).end(jsonGame.getString(Constants.MESSAGE));
 		}
+	}
 
+	@Operation(summary = "Set the password of a specific game", method = Constants.PASSOWRD_METHOD, operationId = Constants.SET_PASSWORD, tags = {
+		Constants.GAME_TAG }, requestBody = @RequestBody(description = "id of the game is required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = PasswordBody.class, example = "{\n"
+				+ "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n"
+				+ "  \"" + Constants.PASSWORD + "\": \"string\"\n"
+				+ "}"))), responses = {
+						@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = PasswordBody.class))),
+						@ApiResponse(responseCode = "404", description = "Game not found."),
+						@ApiResponse(responseCode = "500", description = "Internal Server Error.") })
+	public void setPassword(final RoutingContext context) {
+		final String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
+		final UUID gameID = UUID.fromString(uuidAsString);
+		final String password = context.body().asJsonObject().getString(Constants.PASSWORD);
+		final boolean setted = this.gameService.setPassword(gameID, password);
+		if (setted) {
+			context.response().end(new JsonObject().put(Constants.PASSWORD, "Password impostata").toBuffer());
+		} else
+			context.response().setStatusCode(404).end(new JsonObject().put(Constants.ERROR, "Gioco non trovato").toBuffer());
 	}
 
 	@Operation(summary = "Exit the game", method = Constants.EXIT_GAME, operationId = Constants.GETGAME, tags = {

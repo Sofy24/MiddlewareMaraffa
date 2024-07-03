@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
 import com.google.gson.Gson;
 
 import game.service.User;
@@ -63,6 +64,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private int teamPos = 1;
 	private final double numberOfTricksInRound;
 	private boolean newGameCreated = false;
+	private Optional<String> password;
 
 	// public GameSchema getGameSchema() {
 	// return this.gameSchema0
@@ -71,7 +73,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	public GameVerticle(final UUID id, final User user, final int numberOfPlayers, final int expectedScore,
 			final GameMode gameMode,
-			final AbstractStatisticManager statisticManager, final WebSocketVertx webSocket) {
+			final AbstractStatisticManager statisticManager, final WebSocketVertx webSocket, final String password) {
 		this.id = id;
 		this.gameMode = gameMode;
 		this.expectedScore = expectedScore;
@@ -86,13 +88,14 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.gameSchema = new GameSchema(String.valueOf(id) + '-' + this.currentState.get() / 10, CardSuit.NONE);
 		this.statisticManager = statisticManager;
 		this.webSocket = webSocket;
+		this.password = Optional.fromNullable(password);
 		if (this.statisticManager != null)
 			this.statisticManager.createRecord(this.gameSchema); // TODO andrebbero usati gli UUID ma vediamo se mongo
 		// di aiuta con la questione _id
 	}
 
 	public GameVerticle(final UUID id, final User user, final int numberOfPlayers, final int expectedScore,
-			final GameMode gameMode) {
+			final GameMode gameMode, final String password) {
 		this.id = id;
 		this.gameMode = gameMode;
 		this.expectedScore = expectedScore;
@@ -105,6 +108,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.teams.add(new Team(List.of(), "B", 0));
 		this.users.add(user);
 		this.gameSchema = new GameSchema(String.valueOf(id) + '-' + this.currentState.get() / 10, CardSuit.NONE);
+		this.password = Optional.fromNullable(password);
 	}
 
 	/**
@@ -132,6 +136,13 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * @return true if the password is correct
+	 */
+	public boolean checkPasword(String pwd){
+		return this.password.isPresent() && this.password.get().equals(pwd);
 	}
 
 	/**
@@ -547,6 +558,14 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public int getMaxNumberOfPlayers() {
 		return this.numberOfPlayers;
+	}
+
+	
+	/**
+	 * @return the password of this game
+	 */
+	public Optional<String> getPassword() {
+		return password;
 	}
 
 	/**

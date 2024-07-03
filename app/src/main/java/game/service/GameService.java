@@ -50,14 +50,14 @@ public class GameService {
 	}
 
 	public JsonObject createGame(final Integer numberOfPlayers, final User user, final int expectedScore,
-			final String gameMode) {
+			final String gameMode, final String password) {
 		final JsonObject jsonGame = new JsonObject();
 		final UUID newId = UUID.randomUUID();
 		GameVerticle currentGame;
 		try {
 			currentGame = new GameVerticle(newId, user, numberOfPlayers, expectedScore,
 					GameMode.valueOf(gameMode.toUpperCase()),
-					this.statisticManager, this.webSocket);
+					this.statisticManager, this.webSocket, password);
 			// TODO migliore gestione qui perche e' terribile ma per testare OK
 		} catch (final IllegalArgumentException e) {
 			jsonGame.put(Constants.ERROR, "Invalida modalità di gioco " + gameMode);
@@ -84,9 +84,14 @@ public class GameService {
 		return jsonGame;
 	}
 
-	public JsonObject joinGame(final UUID gameID, final User user) {
+	public JsonObject joinGame(final UUID gameID, final User user, final String pwd) {
 		final JsonObject jsonJoin = new JsonObject();
 		if (this.games.get(gameID) != null) {
+			if (!this.games.get(gameID).checkPasword(pwd)) {
+				jsonJoin.put(Constants.JOIN_ATTR, false);
+				jsonJoin.put(Constants.ERROR, "Password errata");
+				return jsonJoin.put(Constants.MESSAGE, "Wrong password");
+			}
 			if (this.games.get(gameID).getNumberOfPlayersIn() < this.games.get(gameID).getMaxNumberOfPlayers()) {
 				if (this.games.get(gameID).addUser(user)) {
 					jsonJoin.put(Constants.JOIN_ATTR, true);
@@ -330,9 +335,7 @@ public class GameService {
 			final GameVerticle previousGame = this.getGames().get(gameID);
 			if (!previousGame.isNewGameCreated()) {
 				previousGame.setNewGameCreated();
-				final JsonObject newGameJson = this.createGame(previousGame.getNumberOfPlayersIn(),
-						previousGame.getUsers().get(0), previousGame.getExpectedScore(),
-						previousGame.getGameMode().name());
+				final JsonObject newGameJson = this.createGame(previousGame.getNumberOfPlayersIn(), previousGame.getUsers().get(0), previousGame.getExpectedScore(), previousGame.getGameMode().name(), previousGame.getPassword().get());
 				final String newGameID = newGameJson.getString(Constants.GAME_ID);
 				final GameVerticle newGame = this.getGames().get(UUID.fromString(newGameID));
 				previousGame.getUsers().stream()

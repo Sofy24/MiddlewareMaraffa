@@ -20,6 +20,7 @@ public class Constants {
     public static final String GUIID = "GUIID";
     public static final String POSITION = "position";
     public static final String AUTHOR = "author";
+    public static final String PASSWORD = "password";
     // routes
     public static final String CREATE_GAME = "game/create";
     public static final String JOIN_GAME = "game/join";

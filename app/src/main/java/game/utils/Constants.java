@@ -61,6 +61,7 @@ public class Constants {
     public static final String MAKE_CALL_METHOD = "POST";
     public static final String GAMES_METHOD = "GET";
     public static final String COINS_4_METHOD = "GET";
+    public static final String EXIT_GAME = "DELETE";
 
     // tags
     public static final String GAME_TAG = "Middleware.Game";
@@ -89,4 +90,5 @@ public class Constants {
     public static final int NUMBER_OF_CARDS = 40;
     public static final int MARAFFA_SCORE = 9;
     public static final int ELEVEN_ZERO_SCORE = 11;
+    public static final String CLOSED = "closed";
 }

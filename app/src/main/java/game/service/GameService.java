@@ -187,7 +187,8 @@ public class GameService {
 			System.out.println("inside");
 			game.getGameSchema().addTrick(game.getCurrentTrick());
 			if (this.statisticManager != null)
-				this.statisticManager.updateRecordWithTrick(String.valueOf(gameID) + '-' + game.getCurrentState().get() / 10 , game.getCurrentTrick());
+				this.statisticManager.updateRecordWithTrick(
+						String.valueOf(gameID) + '-' + game.getCurrentState().get() / 10, game.getCurrentTrick());
 			try {
 				game.onTrickCompleted(game.getCurrentTrick());
 				game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
@@ -242,7 +243,8 @@ public class GameService {
 			} else {
 				jsonTrump.put(Constants.TRUMP, false);
 				jsonTrump.put(Constants.NOT_ALLOWED, true);
-				jsonTrump.put(Constants.ERROR, "Il giocatore " + username + " non è autorizzato a scegliere la briscola");
+				jsonTrump.put(Constants.ERROR,
+						"Il giocatore " + username + " non è autorizzato a scegliere la briscola");
 				return jsonTrump.put(Constants.MESSAGE, "The user " + username + " is not allowed to choose the trump");
 			}
 		} else {
@@ -318,19 +320,24 @@ public class GameService {
 		return jsonCall.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
-	/**@param the id of the new game
+	/**
+	 * @param the id of the new game
 	 * @return true if the game has been created, false if the gameId is not found
 	 */
 	public JsonObject newGame(final UUID gameID) {
 		final JsonObject jsonNewGame = new JsonObject();
 		if (this.games.get(gameID) != null) {
 			final GameVerticle previousGame = this.getGames().get(gameID);
-			if (!previousGame.isNewGameCreated()){
+			if (!previousGame.isNewGameCreated()) {
 				previousGame.setNewGameCreated();
-				final JsonObject newGameJson = this.createGame(previousGame.getNumberOfPlayersIn(), previousGame.getUsers().get(0), previousGame.getExpectedScore(), previousGame.getGameMode().name());
+				final JsonObject newGameJson = this.createGame(previousGame.getNumberOfPlayersIn(),
+						previousGame.getUsers().get(0), previousGame.getExpectedScore(),
+						previousGame.getGameMode().name());
 				final String newGameID = newGameJson.getString(Constants.GAME_ID);
 				final GameVerticle newGame = this.getGames().get(UUID.fromString(newGameID));
-				previousGame.getUsers().stream().filter(user -> !user.username().equals(previousGame.getUsers().get(0).username())).forEach(newGame::addUser);
+				previousGame.getUsers().stream()
+						.filter(user -> !user.username().equals(previousGame.getUsers().get(0).username()))
+						.forEach(newGame::addUser);
 				// newGame.startGame();
 				newGame.onStartGame();
 				previousGame.onNewGame(newGameID);
@@ -341,7 +348,7 @@ public class GameService {
 			jsonNewGame.put(Constants.NEW_GAME_CREATION, false);
 			jsonNewGame.put(Constants.ERROR, "Nuovo game già creato");
 			return jsonNewGame.put(Constants.MESSAGE, "New game already created");
-		} 
+		}
 		jsonNewGame.put(Constants.NOT_FOUND, false);
 		jsonNewGame.put(Constants.ERROR, "Game " + gameID + " non trovato");
 		return jsonNewGame.put(Constants.MESSAGE, "Game " + gameID + " not found");
@@ -372,5 +379,19 @@ public class GameService {
 						.flatMap(List::stream).map(User::username).collect(Collectors.toList()))
 				.put("connected", this.webSocket.getActiveUsers());
 		return jsonPlayers;
+	}
+
+	public JsonObject exitGame(final UUID gameID) {
+		final JsonObject jsonResponse = new JsonObject();
+		if (this.games.get(gameID) != null) {
+			this.games.get(gameID).onExitGame();
+			this.games.remove(gameID);
+			jsonResponse.put(Constants.CLOSED, true);
+			return jsonResponse.put(Constants.MESSAGE, "Game " + gameID + " exited correctly");
+		}
+		jsonResponse.put(Constants.CLOSED, false);
+		jsonResponse.put(Constants.NOT_FOUND, false);
+		jsonResponse.put(Constants.ERROR, "Game " + gameID + " non trovato");
+		return jsonResponse.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 }

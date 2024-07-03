@@ -529,6 +529,23 @@ public class GameServiceDecorator {
 
 	}
 
+	@Operation(summary = "Exit the game", method = Constants.EXIT_GAME, operationId = Constants.GETGAME, tags = {
+			Constants.GAME_TAG }, responses = {
+					@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "new-game-creation", implementation = NewGameBody.class))),
+					@ApiResponse(responseCode = "404", description = "Game not found."),
+					@ApiResponse(responseCode = "500", description = "Internal Server Error.") })
+	public void exitGame(final RoutingContext context) {
+		final UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
+		final JsonObject jsonGame = this.gameService.exitGame(gameID);
+		System.out.println("new game decorator");
+		if (!jsonGame.containsKey(Constants.NOT_FOUND)) {
+			context.response().end();
+		} else {
+			context.response().setStatusCode(404).end(jsonGame.getString(Constants.ERROR));
+		}
+
+	}
+
 	public Map<UUID, GameVerticle> getGames() {
 		return this.games;
 	}

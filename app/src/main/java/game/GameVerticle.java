@@ -239,8 +239,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 			// ordering users
 			// this.users = playerNames.stream()
-			// 		.map(userMap::get)
-			// 		.collect(Collectors.toList());
+			// .map(userMap::get)
+			// .collect(Collectors.toList());
 
 			this.status = Status.PLAYING;
 			this.onStartGame();
@@ -485,7 +485,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public boolean changeTeam(final String username, final String team, final Integer pos) {
 		System.out.println("Change team: The team is " + team + " and the position is " + pos);
 		if (this.status == Status.WAITING_PLAYERS || this.status == Status.STARTING) {
-			// final List<User> users = this.teams.stream().flatMap(tm -> tm.players().stream()).toList();
+			// final List<User> users = this.teams.stream().flatMap(tm ->
+			// tm.players().stream()).toList();
 			final User deletedUser = this.teams.stream()
 					.flatMap(tm -> tm.players().stream().filter(u -> u.username().equals(username))).findFirst()
 					.orElseThrow();
@@ -531,9 +532,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.expectedScore;
 	}
 
-	/**@return the flag newGameCreated */
+	/** @return the flag newGameCreated */
 	public boolean isNewGameCreated() {
-		return newGameCreated;
+		return this.newGameCreated;
 	}
 
 	/** set the flag newGameCreated to true */
@@ -581,7 +582,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.teams.get(0).score() / 3 >= this.expectedScore
 				|| this.teams.get(1).score() / 3 >= this.expectedScore;
 	}
-
 
 	/**
 	 * @return a json with id, status and game mode
@@ -801,7 +801,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			}
 		}
 		// if (this.vertx != null)
-		// 	this.vertx.eventBus().send("user-component", this.toJson().toString());
+		// this.vertx.eventBus().send("user-component", this.toJson().toString());
 	}
 
 	public void handOutCards(final List<Integer> list) {
@@ -855,7 +855,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	@Override
-	public void onNewGame(String newGameID) {
+	public void onNewGame(final String newGameID) {
 		if (this.webSocket != null) {
 			for (final var user : this.users) {
 				this.webSocket.sendMessageToClient(user.clientID(),
@@ -903,6 +903,27 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 						throw new UnsupportedOperationException("Failed to check Maraffa");
 					}
 				});
+	}
+
+	public void onExitGame() {
+		LOGGER.info("game " + this.id + " is exiting");
+		if (this.webSocket != null) {
+			for (final var user : this.users) {
+				this.webSocket.sendMessageToClient(user.clientID(),
+						new JsonObject()
+								.put("event", "exitGame").toString());
+			}
+		}
+		this.vertx.setTimer(5000, event -> {
+			try {
+				this.stop();
+			} catch (final Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
+		// if (this.vertx != null)
+		// this.vertx.eventBus().send("user-component", this.toJson().toString());
 	}
 
 }

@@ -46,6 +46,7 @@ public class Controller implements IController {
 		this.routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.NEW_GAME, this.entityService::newGame));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GET_PLAYERS, this.entityService::getPlayers));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GETGAME, this.entityService::getGame));
+		this.routes.add(new RouteResponse(HttpMethod.DELETE, "/" + Constants.GETGAME, this.entityService::exitGame));
 		// TODO delete game
 		// user management
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/user/:nickname", this.userController::fetchUserInfo));

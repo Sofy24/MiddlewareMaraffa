@@ -67,6 +67,7 @@ public class GameServiceDecorator {
 					+ "  \"" + Constants.NUMBER_OF_PLAYERS + "\": 4,\n" + "  \"" + Constants.USERNAME
 					+ "\": \"sofi\",\n" + "  \"" + Constants.EXPECTED_SCORE + "\": 41,\n" + "  \"" + Constants.GAME_MODE
 					+ "\": \"CLASSIC\",\n"
+					+ "\": \"sofi\",\n" + "  \"" + Constants.PASSWORD + "\": \"\",\n" 
 					// TODO check perche scompare tutto
 					+ " \"" + Constants.GUIID + "\": \"c1bdcf34-e0f2-409c-aced-e00d4be32b00\"\n" + "}"))), responses = {
 							@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game-creation", implementation = CreateGameBody.class))),
@@ -78,10 +79,11 @@ public class GameServiceDecorator {
 		final Integer numberOfPlayers = context.body().asJsonObject().getInteger(Constants.NUMBER_OF_PLAYERS);
 		final String username = context.body().asJsonObject().getString(Constants.USERNAME);
 		final String gameMode = context.body().asJsonObject().getString(Constants.GAME_MODE);
+		final String password = context.body().asJsonObject().getString(Constants.PASSWORD);
 		final boolean isGuest = context.body().asJsonObject().getBoolean(Constants.GUEST, false);
 		final Integer expectedScore = context.body().asJsonObject().getInteger(Constants.EXPECTED_SCORE);
 		final JsonObject jsonGame = this.gameService.createGame(numberOfPlayers, new User(username, guiId, isGuest),
-				expectedScore, gameMode);
+				expectedScore, gameMode, password);
 		if (jsonGame.containsKey(Constants.INVALID)) {
 			context.response().setStatusCode(401).end("Invalid game mode");
 		}
@@ -94,6 +96,7 @@ public class GameServiceDecorator {
 					// ?
 					+ "  \"" + Constants.GUIID + "\": \"c1bdcf34-e0f2-409c-aced-e00d4be32b00\",\n" + "  \""
 					+ Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" + "  \""
+					+ Constants.PASSWORD + "\": \"\",\n" + "  \""
 					+ Constants.USERNAME + "\": \"james\"\n" + "}"))), responses = {
 							@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = JoinGameBody.class))),
 							@ApiResponse(responseCode = "404", description = "Game not found."),
@@ -105,8 +108,9 @@ public class GameServiceDecorator {
 		final boolean isGuest = context.body().asJsonObject().getBoolean(Constants.GUEST, false);
 		final UUID gameID = UUID.fromString(uuidAsString);
 		final UUID guiId = UUID.fromString(guiIdAsString);
+		final String pwd = context.body().asJsonObject().getString(Constants.PASSWORD);
 		final String username = context.body().asJsonObject().getString(Constants.USERNAME);
-		final JsonObject joinResponse = this.gameService.joinGame(gameID, new User(username, guiId, isGuest));
+		final JsonObject joinResponse = this.gameService.joinGame(gameID, new User(username, guiId, isGuest), pwd);
 		if (joinResponse.containsKey(Constants.NOT_FOUND)) {
 			context.response().setStatusCode(404).end(joinResponse.getString(Constants.MESSAGE));
 		} else if (joinResponse.containsKey(Constants.FULL)) {

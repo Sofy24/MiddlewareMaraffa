@@ -16,6 +16,9 @@ public class CreateGameBody {
 	@JsonProperty(Constants.GAME_MODE)
 	private String gameMode;
 
+	@JsonProperty(Constants.PASSWORD)
+	private String password;
+
 	@JsonProperty(Constants.GUIID)
 	private String GUIID;
 
@@ -49,6 +52,16 @@ public class CreateGameBody {
 
 	public void setNumberOfPlayers(final Integer numberOfPlayers) {
 		this.numberOfPlayers = numberOfPlayers;
+	}
+
+	
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	@Override

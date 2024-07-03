@@ -14,6 +14,9 @@ public class JoinGameBody {
 	@JsonProperty(Constants.GUIID)
 	private String GUIID;
 
+	@JsonProperty(Constants.PASSWORD)
+	private String password;
+
 	public String getGUIID() {
 		return this.GUIID;
 	}
@@ -37,6 +40,8 @@ public class JoinGameBody {
 	public void setUsername(final String username) {
 		this.username = username;
 	}
+
+	
 
 	@Override
 	public int hashCode() {
@@ -73,5 +78,13 @@ public class JoinGameBody {
 		} else if (!this.GUIID.equals(other.GUIID))
 			return false;
 		return true;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 }

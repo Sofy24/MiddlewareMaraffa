@@ -43,6 +43,7 @@ public class BusinessLogicTestIntegration {
 
 	private static final User TEST_USER = new User("testUser", UUID.randomUUID(), false);
 	private static final int MARAFFA_PLAYERS = 4;
+	private static final String PASSWORD = "1234";
 	private GameService gameService;
 	private Vertx vertx;
 	private BusinessLogicController businessLogicController;
@@ -79,7 +80,7 @@ public class BusinessLogicTestIntegration {
 	@Test
 	public void testgetShuffledDeckOK(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame((Integer) 4, TEST_USER, 41,
-				GameMode.CLASSIC.toString());
+				GameMode.CLASSIC.toString(), PASSWORD);
 		this.businessLogicController
 				.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), 4)
 				.whenComplete((res, err) -> {
@@ -94,11 +95,11 @@ public class BusinessLogicTestIntegration {
 	@Test
 	public void testCheckUserHandOK(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame((Integer) 4, TEST_USER, 41,
-				GameMode.CLASSIC.toString());
+				GameMode.CLASSIC.toString(), PASSWORD);
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					new User(TEST_USER.username() + i, TEST_USER.clientID(), false));
+					new User(TEST_USER.username() + i, TEST_USER.clientID(), false), PASSWORD);
 		}
 
 		this.businessLogicController
@@ -119,11 +120,11 @@ public class BusinessLogicTestIntegration {
 	@Test
 	public void testUserPlayedCardIsRemoved(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame((Integer) 4, TEST_USER, 41,
-				GameMode.CLASSIC.toString());
+				GameMode.CLASSIC.toString(), PASSWORD);
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					new User(TEST_USER.username() + i, TEST_USER.clientID(), false));
+					new User(TEST_USER.username() + i, TEST_USER.clientID(), false), PASSWORD);
 		}
 
 		this.businessLogicController
@@ -201,11 +202,11 @@ public class BusinessLogicTestIntegration {
 		final CardSuit trump = CardSuit.COINS;
 		final Trick trick = new TrickImpl(4, trump);
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, 41,
-				GameMode.CLASSIC.toString());
+				GameMode.CLASSIC.toString(), PASSWORD);
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					new User(TEST_USER.username() + i, TEST_USER.clientID(), false));
+					new User(TEST_USER.username() + i, TEST_USER.clientID(), false), PASSWORD);
 		}
 
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
@@ -247,11 +248,11 @@ public class BusinessLogicTestIntegration {
 		final CardSuit trump = CardSuit.COINS;
 		final Trick trick = new TrickImpl(4, trump);
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, 41,
-				GameMode.CLASSIC.toString());
+				GameMode.CLASSIC.toString(), PASSWORD);
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					new User(TEST_USER.username() + i, TEST_USER.clientID(), false));
+					new User(TEST_USER.username() + i, TEST_USER.clientID(), false), PASSWORD);
 		}
 
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
@@ -282,11 +283,11 @@ public class BusinessLogicTestIntegration {
 		final CardSuit trump = CardSuit.CUPS;
 		final Trick trick = new TrickImpl(4, trump);
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, 41,
-				GameMode.CLASSIC.toString());
+				GameMode.CLASSIC.toString(), PASSWORD);
 		for (int i = 1; i < MARAFFA_PLAYERS; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					new User(TEST_USER.username() + i, TEST_USER.clientID(), false));
+					new User(TEST_USER.username() + i, TEST_USER.clientID(), false), PASSWORD);
 		}
 		this.gameService.changeTeam(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 				TEST_USER.username() + "2", "B", 0);

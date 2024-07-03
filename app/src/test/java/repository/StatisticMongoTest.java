@@ -28,6 +28,7 @@ public class StatisticMongoTest {
 	private final User userTest = new User("user", UUID.randomUUID(), false);
 	private static final int MARAFFA_PLAYERS = 4;
 	private static final int EXPECTED_SCORE = 11;
+	private static final String PASSWORD = "1234";
 	private static final GameMode GAME_MODE = GameMode.CLASSIC;
 	private Vertx vertx;
 	private GameService gameService;
@@ -66,7 +67,7 @@ public class StatisticMongoTest {
 	@Test
 	public void prepareGame() {
 		final String gameID = this.gameService
-				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString())
+				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString(), PASSWORD)
 				.getString(Constants.GAME_ID);
 		final var doc = this.mongoStatisticManager.getRecord(gameID + "-0");
 		assertNotNull(doc);
@@ -76,12 +77,12 @@ public class StatisticMongoTest {
 	public void playCard() {
 		//TODO not finished
 		final String gameID = this.gameService
-				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString())
+				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString(), PASSWORD)
 				.getString(Constants.GAME_ID);
 		final UUID gameId = UUID.fromString(gameID);
 		for (int i = 2; i < MARAFFA_PLAYERS + 1; i++) {
 			System.out.println(this.gameService.joinGame(gameId,
-					new User(this.userTest.username() + i, this.userTest.clientID(), false)));
+					new User(this.userTest.username() + i, this.userTest.clientID(), false), PASSWORD));
 		}
 
 		this.gameService.chooseTrump(gameId, this.cardTest.cardSuit().toString(), this.userTest.username());

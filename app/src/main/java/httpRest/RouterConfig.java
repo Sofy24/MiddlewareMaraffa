@@ -120,7 +120,12 @@ public class RouterConfig {
 
 		// Generate the SCHEMA section of Swagger, using the definitions in the Model
 		// folder
-		final ImmutableSet<ClassPath.ClassInfo> modelClasses = this.getClassesInPackage("org.example.service");
+		final ImmutableSet<ClassPath.ClassInfo> modelClasses = ImmutableSet.<ClassPath.ClassInfo>builder()
+				.addAll(this.getClassesInPackage("game"))
+				.addAll(this.getClassesInPackage("userModule"))
+				.addAll(this.getClassesInPackage("BLManagement"))
+				.addAll(this.getClassesInPackage("chatModule"))
+				.build();
 
 		Map<String, Object> map = new HashMap<String, Object>();
 

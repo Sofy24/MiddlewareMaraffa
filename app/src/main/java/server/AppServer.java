@@ -27,8 +27,7 @@ public class AppServer extends AbstractVerticle {
 	// Integer.parseInt(Dotenv.load().get("MONGO_PORT", "27127")),
 	// Dotenv.load().get("MONGO_DATABASE", "maraffa")
 	// );
-	private final String host = System.getenv().getOrDefault("MIDDLEWARE_HOST", "localhost");// Dotenv.load().get("MIDDLEWARE_HOST",
-																								// "localhost");
+	// "localhost");
 	AbstractStatisticManager mongoStatisticManager = new MongoStatisticManager(
 			System.getenv().getOrDefault("MONGO_USER", "your_mongo_user"),
 			System.getenv().getOrDefault("MONGO_PASSWORD", "your_mongo_password"),
@@ -41,10 +40,6 @@ public class AppServer extends AbstractVerticle {
 
 	@Override
 	public void start() throws Exception {
-		System.out.println("host: " + System.getenv("MONGO_HOST"));
-		System.getenv().forEach((k, v) -> {
-			System.out.println(k + ":" + v);
-		});
 		final WebSocketVertx webSocket = new WebSocketVertx();
 		final GameServiceDecorator gameServiceDecorator = new GameServiceDecorator(this.vertx,
 				this.mongoStatisticManager, webSocket);

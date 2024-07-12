@@ -122,6 +122,27 @@ public class UserService extends AbstractRestAPI {
 		return future;
 	}
 
+	public CompletableFuture<JsonObject> resetUserPassword(final String nickname, final String password) {
+		final JsonObject requestBody = new JsonObject().put("nickname", nickname).put("password", password);
+		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
+		System.out.println("Calling login user at " + this.getHost() + ":" + this.getPort());
+		WebClient.create(this.vertx).request(HttpMethod.POST, this.getPort(), this.getHost(), "/reset-password")
+				.putHeader("Content-type", "application/json").putHeader("Accept", "application/json")
+				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
+					if (handler.succeeded()) {
+						System.out.println("Login response: " + handler.result().body().toString());
+						if (handler.result().statusCode() == 200)
+							future.complete(JsonObject.of().put("status", String.valueOf(handler.result().statusCode()))
+									.put("token", encryptThisString(nickname)));
+						else
+							future.complete(
+									new JsonObject().put("status", String.valueOf(handler.result().statusCode()))
+											.put("error", handler.result().body().getString("message")));
+					}
+				});
+		return future;
+	}
+
 	private static String encryptThisString(final String input) {
 		try {
 			final MessageDigest md = MessageDigest.getInstance("SHA-512");
@@ -135,6 +156,27 @@ public class UserService extends AbstractRestAPI {
 		} catch (final NoSuchAlgorithmException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public CompletableFuture<JsonObject> logOutUser(final String nickname) {
+		final JsonObject requestBody = new JsonObject().put("nickname", nickname);
+		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
+		System.out.println("Calling login user at " + this.getHost() + ":" + this.getPort());
+		WebClient.create(this.vertx).request(HttpMethod.POST, this.getPort(), this.getHost(), "/logout")
+				.putHeader("Content-type", "application/json").putHeader("Accept", "application/json")
+				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
+					if (handler.succeeded()) {
+						System.out.println("Login response: " + handler.result().body().toString());
+						if (handler.result().statusCode() == 200)
+							future.complete(
+									JsonObject.of().put("status", String.valueOf(handler.result().statusCode())));
+						else
+							future.complete(
+									new JsonObject().put("status", String.valueOf(handler.result().statusCode()))
+											.put("error", handler.result().body().getString("message")));
+					}
+				});
+		return future;
 	}
 
 }

@@ -13,7 +13,6 @@ COPY --from=build /home/gradle/src/app/build/libs/ /app/
 COPY --from=build /home/gradle/src/app/log /app/log
 
 EXPOSE 3003
-CMD [ "ls", "-Rlh", "/app" ]
 ENTRYPOINT ["java","-jar","/app/Middleware.jar"]
 # Use an official OpenJDK runtime as a parent image
 # FROM openjdk:11

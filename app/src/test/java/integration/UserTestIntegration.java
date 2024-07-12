@@ -81,8 +81,51 @@ public class UserTestIntegration {
 		});
 	}
 
-	// context.verify(() -> {
-	// });
+	@Timeout(value = 10, unit = TimeUnit.SECONDS)
+	@Test
+	public void testResetPasswordEvent(final VertxTestContext context) {
+		this.userService.registerUser("userReset", "password", "email@gmail.com").whenComplete((res, err) -> {
+			context.verify(() -> {
+				assertNull(res.getString("error"));
+				assertEquals(res.getString("nickname"), "userReset");
+				this.userService.loginUser("userReset", "password").whenComplete((resL, errL) -> {
+					context.verify(() -> {
+						assertNull(resL.getString("error"));
+						assertNotNull(resL.getString("token"));
+						this.userService.resetUserPassword("userReset", "passwordChanged")
+								.whenComplete((resReset, errReset) -> {
+									context.verify(() -> {
+										assertNull(resReset.getString("error"));
+										assertNotNull(resReset.getString("token"));
+										this.userService.loginUser("userReset", "passwordChanged")
+												.whenComplete((resLogin2, errLogin2) -> {
+													context.verify(() -> {
+														assertNull(resLogin2.getString("error"));
+														assertNotNull(resLogin2.getString("token"));
+														context.completeNow();
+													});
+												});
+
+									});
+
+								});
+					});
+				});
+			});
+		});
+
+	}
+
+	@Timeout(value = 10, unit = TimeUnit.MINUTES)
+	@Test
+	public void testLogOutEvent(final VertxTestContext context) {
+		this.userService.logOutUser("user1").whenComplete((res, err) -> {
+			context.verify(() -> {
+				assertNull(res.getString("error"));
+				context.completeNow();
+			});
+		});
+	}
 
 	@Timeout(value = 10, unit = TimeUnit.MINUTES)
 	@Test

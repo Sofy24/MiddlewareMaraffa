@@ -176,8 +176,6 @@ spotless {
         googleJavaFormat() // has its own section below
         eclipse()          // has its own section below
     }
-
-
 }
 checkstyle {
     toolVersion = "8.44" // Versione di Checkstyle

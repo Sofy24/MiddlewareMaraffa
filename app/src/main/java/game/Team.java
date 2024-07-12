@@ -2,26 +2,29 @@ package game;
 
 import java.util.List;
 
+import game.service.User;
+
 /** A record modelling the concept of "team" */
-public record Team(List<String> players, String nameOfTeam, Integer score) {
+public record Team(List<User> players, String nameOfTeam, Integer score) {
 
 	@Override
-	public List<String> players() {
-		return players;
+	public List<User> players() {
+		return this.players;
 	}
 
 	@Override
 	public String nameOfTeam() {
-		return nameOfTeam;
+		return this.nameOfTeam;
 	}
 
 	@Override
 	public Integer score() {
-		return score;
+		return this.score;
 	}
 
 	@Override
 	public String toString() {
-		return "Team{" + "players=" + players + ", nameOfTeam='" + nameOfTeam + '\'' + ", score='" + score + '\'' + '}';
+		return "Team{" + "players=" + this.players + ", nameOfTeam='" + this.nameOfTeam + '\'' + ", score='"
+				+ this.score + '\'' + '}';
 	}
 }

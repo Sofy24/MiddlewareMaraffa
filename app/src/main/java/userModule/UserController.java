@@ -19,9 +19,14 @@ import userModule.schema.UserRegisterSchema;
 @Api(tags = "User Operations", description = "APIs for user management")
 public class UserController {
 	private final UserService userService;
+	// final static Dotenv dotenv = Dotenv.configure().load();
+	private static int port = Integer.parseInt(System.getenv().getOrDefault("USER_PORT", "3001"));
+	private static String host = System.getenv().getOrDefault("USER_HOST", "localhost");
 
 	public UserController(final Vertx vertx) {
-		this.userService = new UserService(vertx);
+		System.out.println("host: " + System.getenv("USER_HOST"));
+		System.out.println("port: " + System.getenv("USER_PORT"));
+		this.userService = new UserService(vertx, host, port);
 	}
 
 	@Operation(summary = "Single user info", description = "Get User info", method = "GET", operationId = "user/:nickname", tags = {
@@ -65,8 +70,10 @@ public class UserController {
 							@ApiResponse(responseCode = "401", description = "Wrong password"),
 							@ApiResponse(responseCode = "500", description = "Internal Server Error") })
 	public void loginRoute(final RoutingContext context) {
+		System.out.println("Login route called !");
 		this.userService.loginUser(context.body().asJsonObject().getString("nickname"),
 				context.body().asJsonObject().getString("password")).whenComplete((response, error) -> {
+					System.out.println("Response from service: " + response.toString());
 					if (error != null) {
 						context.response().setStatusCode(500).end(error.getMessage());
 					} else {
@@ -91,16 +98,40 @@ public class UserController {
 				});
 	}
 
-	@Operation(summary = "Reset password operation", description = "Reset the password", method = "POST", operationId = "reset", tags = {
+	@Operation(summary = "Reset password operation", description = "Reset the password", method = "POST", operationId = "reset-password", tags = {
 			"User Operations" }, requestBody = @RequestBody(description = "User's credentials", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = UserLoginSchema.class, example = "{\n"
 					+ "\"nickname" + "\": \"user\",\n" + "  \"" + "password" + "\": \"password\"\n"
 					+ "}"))), responses = {
 							@ApiResponse(responseCode = "200", description = "Login successful"),
 							@ApiResponse(responseCode = "401", description = "Unauthorized"),
 							@ApiResponse(responseCode = "500", description = "Internal Server Error") })
-	public void resetRoute(final RoutingContext context) {
-		context.response().setStatusCode(500)
-				.end(new JsonObject().put("message", "To be impplemenented !").toBuffer());
+	public void resetPasswordRoute(final RoutingContext context) {
+		System.out.println("Reset pwd route called !");
+		this.userService.resetUserPassword(context.body().asJsonObject().getString("nickname"),
+				context.body().asJsonObject().getString("password")).whenComplete((response, error) -> {
+					System.out.println("Response from service: " + response.toString());
+					if (error != null) {
+						context.response().setStatusCode(500).end(error.getMessage());
+					} else {
+						switch (response.getString("status")) {
+							case "404":
+								context.response().setStatusCode(404)
+										.end(new JsonObject()
+												.put("error", response.getString("error"))
+												.toBuffer());
+								break;
+							case "401":
+								context.response().setStatusCode(401)
+										.end(new JsonObject()
+												.put("error", response.getString("error"))
+												.toBuffer());
+								break;
+							default:
+								context.response().setStatusCode(201).end(response.encode());
+								break;
+						}
+					}
+				});
 	}
 
 	@Operation(summary = "Register operation", description = "Create a new user account", method = "POST", operationId = "register", tags = {
@@ -128,9 +159,31 @@ public class UserController {
 					@ApiResponse(responseCode = "401", description = "Unauthorized"),
 					@ApiResponse(responseCode = "500", description = "Internal Server Error") })
 	public void logoutRoute(final RoutingContext context) {
-		// TODO: Implement logout logic
-		context.response().setStatusCode(500)
-				.end(new JsonObject().put("message", "To be impplemenented !").toBuffer());
+		System.out.println("Log out route called !");
+		this.userService.logOutUser(context.body().asJsonObject().getString("nickname"))
+				.whenComplete((response, error) -> {
+					System.out.println("Response from service: " + response.toString());
+					if (error != null) {
+						context.response().setStatusCode(500).end(error.getMessage());
+					} else {
+						switch (response.getString("status")) {
+							case "404":
+								context.response().setStatusCode(404)
+										.end(new JsonObject()
+												.put("error", response.getString("error"))
+												.toBuffer());
+								break;
+							case "401":
+								context.response().setStatusCode(401)
+										.end(new JsonObject()
+												.put("error", response.getString("error"))
+												.toBuffer());
+								break;
+							default:
+								context.response().setStatusCode(201).end(response.encode());
+								break;
+						}
+					}
+				});
 	}
-
 }

@@ -1,6 +1,7 @@
 package server;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -8,10 +9,15 @@ import io.vertx.core.http.ServerWebSocket;
 
 public class WebSocketVertx {
     private final Map<UUID, ServerWebSocket> activeConnections;
-    // private final Map<InGameUser, Optional<ServerWebSocket>> activeConnections;
+    private final Set<String> activeUsers;
+
+    public Set<String> getActiveUsers() {
+        return this.activeUsers;
+    }
 
     public WebSocketVertx() {
         this.activeConnections = new ConcurrentHashMap<>();
+        this.activeUsers = ConcurrentHashMap.newKeySet();
     }
 
     public void handleWebSocket(final ServerWebSocket webSocket) {
@@ -22,19 +28,26 @@ public class WebSocketVertx {
         // un po' cagare ma non avevo
         // grandi idee....
         webSocket.accept();
+        System.out.println("New WebSocket connection with ID: " + webSocket.path().split("/")[1]);
         this.activeConnections.put(UUID.fromString(webSocket.path().split("/")[1]), webSocket);
+        this.activeUsers.add(webSocket.path().split("/")[2]);
+
+        System.out.println("New WebSocket connection with : " + webSocket.path());
+        System.out.println("New WebSocket connection from user: " + webSocket.path().split("/")[2]);
+        System.out.println("Active users: " + this.activeUsers.toString());
         // this.getUsersToUpdate(webSocket);
         webSocket.handler(buffer -> {
             // Handle incoming message
             final String message = buffer.toString();
             System.out.println("Received message from " + webSocket.path().split("/")[1] + ": " + message);
-            
+
             // Echo the message back to the client
             // webSocket.writeTextMessage("Echo: " + message);
         });
 
         webSocket.closeHandler(v -> {
             // activeConnections.remove(connectionId);
+            this.activeUsers.remove(webSocket.path().split("/")[2]);
             System.out.println("WebSocket connection closed with ID: " + webSocket.path().split("/")[1]);
         });
 

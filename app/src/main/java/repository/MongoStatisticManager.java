@@ -7,6 +7,8 @@ import static com.mongodb.client.model.Updates.set;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
+import java.util.Date;
+
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
@@ -25,8 +27,11 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 
 	// TODO andranno passati a costruttore tanti parametri quanti sono i parametri
 	// di connessione
-	public MongoStatisticManager() {
-		final String uri = "mongodb://your_mongo_user:your_mongo_password@127.0.0.1:27012";
+	public MongoStatisticManager(final String user, final String password, final String host, final int port, final String databaseName) {
+		// final String uri =
+		// "mongodb://your_mongo_user:your_mongo_password@127.0.0.1:27012";
+		final String uri = "mongodb://" + user + ":" + password + "@" + host + ":" + port;
+		System.out.println("MONGOOO: " + uri);
 		try {
 
 			final CodecProvider pojoCodecProvider = PojoCodecProvider.builder().automatic(true).build();
@@ -36,7 +41,7 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 			// fromProviders(pojoCodecProvider));
 
 			final MongoClient mongoClient = MongoClients.create(uri);
-			this.database = mongoClient.getDatabase("MaraffaStatisticsDB-test").withCodecRegistry(pojoCodecRegistry);
+			this.database = mongoClient.getDatabase(databaseName).withCodecRegistry(pojoCodecRegistry);
 		} catch (final Exception e) {
 			System.out.println("Error in MongoStatisticManager constructor: " + e.getMessage());
 		}
@@ -44,6 +49,7 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 
 	@Override
 	public void createRecord(final GameSchema schema) {
+		schema.setDate(new Date());
 		this.database.getCollection("MaraffaStatistics", GameSchema.class).insertOne(schema);
 	}
 

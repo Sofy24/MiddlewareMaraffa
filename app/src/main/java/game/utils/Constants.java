@@ -19,6 +19,8 @@ public class Constants {
     public static final String TEAM = "team";
     public static final String GUIID = "GUIID";
     public static final String POSITION = "position";
+    public static final String AUTHOR = "author";
+    public static final String PASSWORD = "password";
     // routes
     public static final String CREATE_GAME = "game/create";
     public static final String JOIN_GAME = "game/join";
@@ -38,9 +40,13 @@ public class Constants {
     public static final String GAMES = "game/getGames";
     public static final String GETGAME = "game/:" + GAME_ID;
     public static final String COINS_4 = "game/4Coins/:" + GAME_ID + "/username:" + COINS_4_USERNAME;
+    public static final String GET_PLAYERS = "player";
+    public static final String NEW_GAME = "game/newGame";
 
     // methods
+    public static final String PLAYERS_METHOD = "GET";
     public static final String CREATE_GAME_METHOD = "POST";
+    public static final String NEW_GAME_METHOD = "POST";
     public static final String JOIN_GAME_METHOD = "PATCH";
     public static final String START_GAME_METHOD = "PATCH";
     public static final String PLAY_CARD_METHOD = "POST";
@@ -56,6 +62,7 @@ public class Constants {
     public static final String MAKE_CALL_METHOD = "POST";
     public static final String GAMES_METHOD = "GET";
     public static final String COINS_4_METHOD = "GET";
+    public static final String EXIT_GAME = "DELETE";
 
     // tags
     public static final String GAME_TAG = "Middleware.Game";
@@ -78,8 +85,11 @@ public class Constants {
     public static final String RESULT = "result";
     public static final String VALUE = "value";
     public static final String ERROR = "error";
+    public static final String GUEST = "guest";
+    public static final String NEW_GAME_CREATION = "newGame";
     // game constants
     public static final int NUMBER_OF_CARDS = 40;
     public static final int MARAFFA_SCORE = 9;
     public static final int ELEVEN_ZERO_SCORE = 11;
+    public static final String CLOSED = "closed";
 }

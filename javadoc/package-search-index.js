@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"BLManagment"},{"l":"chatModule"},{"l":"chatModule.schema"},{"l":"game"},{"l":"game.service"},{"l":"game.service.schema"},{"l":"game.utils"},{"l":"generator"},{"l":"httpRest"},{"l":"repository"},{"l":"server"},{"l":"userModule"},{"l":"userModule.schema"}];updateSearchResults();

@@ -1,0 +1,13 @@
+BLManagment
+chatModule
+chatModule.schema
+game
+game.service
+game.service.schema
+game.utils
+generator
+httpRest
+repository
+server
+userModule
+userModule.schema

@@ -26,12 +26,13 @@ import io.vertx.ext.web.codec.BodyCodec;
 
 public class BusinessLogicController {
 	private final Vertx vertx;
-	private final int port; //= Integer.parseInt(Dotenv.load().get("BUSINESS_LOGIC_PORT", "3000"));
+	private final int port; // = Integer.parseInt(Dotenv.load().get("BUSINESS_LOGIC_PORT", "3000"));
 	private final String host;// = Dotenv.load().get("BUSINESS_LOGIC_HOST", "localhost");
 	private static final Logger LOGGER = LoggerFactory.getLogger(BusinessLogicController.class);
 	private final GameService gameService;
 
-	public BusinessLogicController(final Vertx vertx, final GameService gameService, final int port, final String host) {
+	public BusinessLogicController(final Vertx vertx, final GameService gameService, final int port,
+			final String host) {
 		this.vertx = vertx;
 		this.gameService = gameService;
 		this.port = port;
@@ -216,7 +217,8 @@ public class BusinessLogicController {
 			final int suit = body.getInteger(Constants.SUIT);
 			final String username = body.getString(Constants.USERNAME);
 			final UUID gameID = UUID.fromString(body.getString(Constants.GAME_ID));
-			final List<Card<CardValue, CardSuit>> userCardsTemp = this.gameService.getGames().get(gameID).getUserCards(username);
+			final List<Card<CardValue, CardSuit>> userCardsTemp = this.gameService.getGames().get(gameID)
+					.getUserCards(username);
 			userCardsTemp.add(new Card<>(CardValue.ONE, CardSuit.fromValue(suit)));
 			final int[] userCards = userCardsTemp.stream().mapToInt(card -> card.getCardValue().intValue()).toArray();
 			this.getMaraffa(userCards, suit).whenComplete((result, error) -> {

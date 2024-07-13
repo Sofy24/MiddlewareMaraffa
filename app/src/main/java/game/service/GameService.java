@@ -326,7 +326,8 @@ public class GameService {
 	}
 
 	/**
-	 * @param the id of the new game
+	 * @param gameID
+	 *            the id of the new game
 	 * @return true if the game has been created, false if the gameId is not found
 	 */
 	public JsonObject newGame(final UUID gameID) {
@@ -335,7 +336,9 @@ public class GameService {
 			final GameVerticle previousGame = this.getGames().get(gameID);
 			if (!previousGame.isNewGameCreated()) {
 				previousGame.setNewGameCreated();
-				final JsonObject newGameJson = this.createGame(previousGame.getNumberOfPlayersIn(), previousGame.getUsers().get(0), previousGame.getExpectedScore(), previousGame.getGameMode().name(), previousGame.getPassword().get());
+				final JsonObject newGameJson = this.createGame(previousGame.getNumberOfPlayersIn(),
+						previousGame.getUsers().get(0), previousGame.getExpectedScore(),
+						previousGame.getGameMode().name(), previousGame.getPassword().get());
 				final String newGameID = newGameJson.getString(Constants.GAME_ID);
 				final GameVerticle newGame = this.getGames().get(UUID.fromString(newGameID));
 				previousGame.getUsers().stream()

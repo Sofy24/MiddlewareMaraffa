@@ -6,11 +6,11 @@ import game.service.User;
 
 public record InGameUser(User user, UUID gameID) {
 
-    public User user() {
-        return this.user;
-    }
+	public User user() {
+		return this.user;
+	}
 
-    public UUID gameID() {
-        return this.gameID;
-    }
+	public UUID gameID() {
+		return this.gameID;
+	}
 }

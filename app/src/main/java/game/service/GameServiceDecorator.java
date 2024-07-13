@@ -67,7 +67,7 @@ public class GameServiceDecorator {
 					+ "  \"" + Constants.NUMBER_OF_PLAYERS + "\": 4,\n" + "  \"" + Constants.USERNAME
 					+ "\": \"sofi\",\n" + "  \"" + Constants.EXPECTED_SCORE + "\": 41,\n" + "  \"" + Constants.GAME_MODE
 					+ "\": \"CLASSIC\",\n"
-					+ "\": \"sofi\",\n" + "  \"" + Constants.PASSWORD + "\": \"\",\n" 
+					+ "\": \"sofi\",\n" + "  \"" + Constants.PASSWORD + "\": \"\",\n"
 					// TODO check perche scompare tutto
 					+ " \"" + Constants.GUIID + "\": \"c1bdcf34-e0f2-409c-aced-e00d4be32b00\"\n" + "}"))), responses = {
 							@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game-creation", implementation = CreateGameBody.class))),

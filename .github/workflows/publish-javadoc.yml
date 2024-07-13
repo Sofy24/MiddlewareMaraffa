@@ -1,0 +1,23 @@
+name: Deploy Javadoc
+
+on:
+  push:
+    branches: [ main, 'develop']
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write  # if you have a protection rule on your repository, you'll need to give write permission to the workflow.
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+      - name: Deploy JavaDoc 🚀
+        uses: MathieuSoysal/Javadoc-publisher.yml@v2.5.0
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          javadoc-source-folder: app/build/docs/javadoc
+          javadoc-branch: javadoc
+          java-version: 20
+          target-folder: javadoc 
+          project: gradle

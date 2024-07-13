@@ -1,3 +1,7 @@
+/**
+ * The `BusinessLogicController` class in the BLManagment package handles game logic operations such as
+ * starting rounds, completing tricks, checking for Maraffa, and validating card plays.
+ */
 package BLManagment;
 
 import java.util.Arrays;
@@ -236,6 +240,17 @@ public class BusinessLogicController {
 
 	}
 
+/**
+ * This Java method asynchronously sends a POST request with a JSON object to a specified endpoint and
+ * returns a CompletableFuture containing the response JsonObject or an error message.
+ * 
+ * @param deck The `deck` parameter is an array of integers representing a deck of cards. Each integer
+ * value in the array corresponds to a specific card in the deck.
+ * @param suit The `suit` parameter in the `getMaraffa` method represents the suit of the cards in the
+ * deck that you want to check for Maraffa. It is an integer value that typically corresponds to a
+ * specific suit in a standard deck of playing cards (e.g., Hearts, Diamonds,
+ * @return A CompletableFuture<JsonObject> is being returned from the getMaraffa method.
+ */
 	public CompletableFuture<JsonObject> getMaraffa(final int[] deck, final int suit) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		final JsonObject requestBody = new JsonObject()

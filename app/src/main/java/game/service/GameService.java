@@ -21,8 +21,10 @@ import io.vertx.core.json.JsonObject;
 import repository.AbstractStatisticManager;
 import server.WebSocketVertx;
 
+
 /**
- * TODO javadoc
+ * The `GameService` class in Java manages game-related operations such as creating games, joining
+ * games, playing cards, and handling game state.
  */
 public class GameService {
 	private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();

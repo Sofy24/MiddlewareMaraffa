@@ -1,81 +1,81 @@
 package game;
 
-
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bson.codecs.pojo.annotations.BsonIgnore;
 
 public class TrickImpl implements Trick {
-    // private final Map<String, Pair<Integer, String>> cards = new HashMap<>();
-    private final Map<String, String> cards = new LinkedHashMap<>(); // linked to keep the order of the cards
-    private final AtomicInteger currentUser;
+	// private final Map<String, Pair<Integer, String>> cards = new HashMap<>();
+	@BsonIgnore
+	private final Map<String, String> cards = new LinkedHashMap<>(); // linked to keep the order of the cards
 
-    private Call call = Call.NONE;
-    @BsonIgnore
-    private final int numberOfPlayers;
+	private final AtomicInteger currentUser;
 
-    @BsonIgnore
-    private final CardSuit trump;
+	private Call call = Call.NONE;
+	@BsonIgnore
+	private final int numberOfPlayers;
 
-    public TrickImpl(int numberOfPlayers, final CardSuit trump) {
-        this.numberOfPlayers = numberOfPlayers;
-        this.trump = trump;
-        this.currentUser = new AtomicInteger(0);
-    }
+	@BsonIgnore
+	private final CardSuit trump;
 
-    /**
-     * @param card added to the trick, if not all the players has already played
-     */
-    @Override
-    public void addCard(Card<CardValue, CardSuit> card, String username) {
-        // this.cards.put(card.toString(), new Pair<>(this.currentUser.getAndIncrement(), username));
-        this.cards.put(String.valueOf(card.getCardValue()), username);
-    }
+	public TrickImpl(final int numberOfPlayers, final CardSuit trump) {
+		this.numberOfPlayers = numberOfPlayers;
+		this.trump = trump;
+		this.currentUser = new AtomicInteger(0);
+	}
 
-    public Call getCall() {
-        return call;
-    }
+	/**
+	 * @param card
+	 *             added to the trick, if not all the players has already played
+	 */
+	@Override
+	public void addCard(final Card<CardValue, CardSuit> card, final String username) {
+		// this.cards.put(card.toString(), new
+		// Pair<>(this.currentUser.getAndIncrement(), username));
+		this.cards.put(String.valueOf(card.getCardValue()), username);
+	}
 
-    @Override
-    public void setCall(Call call, String username) {
-        this.call = call;
-    }
+	public Call getCall() {
+		return this.call;
+	}
 
-    public List<String> getCards() {
-        return this.cards.keySet().stream().toList();
-    }
+	@Override
+	public void setCall(final Call call, final String username) {
+		this.call = call;
+	}
 
-    @Override
-    public Map<String, String> getCardsAndUsers() {
-        return this.cards;
-    }
+	@BsonIgnore
+	public List<String> getCards() {
+		return this.cards.keySet().stream().toList();
+	}
 
-    public int getNumberOfPlayers() {
-        return numberOfPlayers;
-    }
+	@Override
+	public Map<String, String> getCardsAndUsers() {
+		return this.cards;
+	}
 
-    public CardSuit getTrump() {
-        return trump;
-    }
+	public int getNumberOfPlayers() {
+		return this.numberOfPlayers;
+	}
 
-    /**
-     * @return true if all the players have played their card
-     */
-    @BsonIgnore
-    @Override
-    public boolean isCompleted() {
-        return this.cards.keySet().size() == this.numberOfPlayers;
-    }
+	public CardSuit getTrump() {
+		return this.trump;
+	}
 
-    @Override
-    public String toString() {
-        return "Trick{" +
-                "cards=" + cards +
-                ", trump=" + trump +
-                ", call=" + call +
-                '}';
-    }
+	/**
+	 * @return true if all the players have played their card
+	 */
+	@BsonIgnore
+	@Override
+	public boolean isCompleted() {
+		return this.cards.keySet().size() == this.numberOfPlayers;
+	}
+
+	@Override
+	public String toString() {
+		return "Trick{" + "cards=" + this.cards + ", trump=" + this.trump + ", call=" + this.call + '}';
+	}
 }

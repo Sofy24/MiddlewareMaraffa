@@ -5,7 +5,7 @@
 
 
 # Percorso del file di configurazione
-file="app\.env.example"
+file="app/env.example"
 
 declare -a config_array
 
@@ -22,5 +22,6 @@ done
 # Rimuovi la virgola iniziale
 formatted_config=${formatted_config:1}
 
+echo $formatted_config
 #act -s "$formatted_config"
-act -j deploy-attempt "$formatted_config"
+act -s "$formatted_config"

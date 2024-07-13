@@ -12,10 +12,12 @@ public class StateResponse {
 
 	@Override
 	public boolean equals(final Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
-		if (!(o instanceof StateResponse))
+		}
+		if (!(o instanceof StateResponse)) {
 			return false;
+		}
 		final StateResponse that = (StateResponse) o;
 		return this.trick.equals(that.trick);
 	}

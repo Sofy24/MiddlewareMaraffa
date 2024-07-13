@@ -1,5 +1,6 @@
 package game;
 
+/** An enum with the values of the calls in the game */
 public enum Call {
 	BUSSO, STRISCIO_LUNGO, STRISCIO_CORTO, VOLO, NONE;
 

@@ -4,6 +4,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.RoutingContext;
 
+/*
+ * This class is responsible for managing the routes structure of the application implementing RouteResponse.
+ */
 public class RouteResponse implements IRouteResponse {
 	HttpMethod method;
 	String route;

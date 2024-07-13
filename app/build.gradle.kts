@@ -17,10 +17,17 @@ plugins {
     // Spotless plugin to format code
     id("com.diffplug.spotless") version "6.25.0"
     id("checkstyle")
+    id("org.openrewrite.rewrite") version("6.16.2")
+
     // checkstyle
 }
 
 
+rewrite {
+    activeRecipe("org.openrewrite.staticanalysis.CodeCleanup")
+    checkstyleConfigFile =  file("${rootDir}/config/checkstyle/checkstyle.xml") 
+
+}
 
 repositories {
     // Use Maven Central for resolving dependencies.
@@ -40,6 +47,8 @@ dependencies {
     //TODO poco chiaro quale framework usiamo per i test.....
     // testImplementation("junit:junit:4.13.2") // Or 'org.junit.jupiter:junit-jupiter-api:5.10.1'
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
+
+    rewrite("org.openrewrite.recipe:rewrite-static-analysis:1.10.1")
 
 
     // Vert.x framework

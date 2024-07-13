@@ -26,6 +26,9 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import userModule.UserService;
 
+/*
+ * This class tests the correct integration beetween this component and user service.
+ */
 @TestInstance(Lifecycle.PER_CLASS)
 @ExtendWith(VertxExtension.class)
 public class UserTestIntegration {

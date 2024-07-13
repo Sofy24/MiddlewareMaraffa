@@ -25,6 +25,7 @@ import generator.Required;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.tags.Tag;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Router;
@@ -34,6 +35,9 @@ import io.vertx.ext.web.handler.ErrorHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import userModule.UserController;
 
+/*
+ * This class is responsible for defining the router of the application containing all the endopoints and the Swagger configuration.
+ */
 public class RouterConfig {
 	private static final String APPLICATION_JSON = "application/json";
 	private final int port;
@@ -114,8 +118,8 @@ public class RouterConfig {
 		 */
 		openAPIDoc
 				.addTagsItem(
-						new io.swagger.v3.oas.models.tags.Tag().name(Constants.GAME_TAG).description("Game operations"))
-				.addTagsItem(new io.swagger.v3.oas.models.tags.Tag().name(Constants.ROUND_TAG)
+						new Tag().name(Constants.GAME_TAG).description("Game operations"))
+				.addTagsItem(new Tag().name(Constants.ROUND_TAG)
 						.description("Round operations"));
 
 		// Generate the SCHEMA section of Swagger, using the definitions in the Model
@@ -141,8 +145,9 @@ public class RouterConfig {
 			fields = modelClass.load().getDeclaredFields();
 
 			for (final Field field : fields) {
-				if (field.getType() != null && field.getType().getComponentType() != null)
+				if (field.getType() != null && field.getType().getComponentType() != null) {
 					this.mapParameters(field, map);
+				}
 			}
 
 			openAPIDoc.schema(modelClass.getSimpleName(), new Schema().title(modelClass.getSimpleName()).type("object")

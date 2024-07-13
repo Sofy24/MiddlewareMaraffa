@@ -12,10 +12,12 @@ public class CanStartResponse {
 
 	@Override
 	public boolean equals(final Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
-		if (!(o instanceof CanStartResponse))
+		}
+		if (!(o instanceof CanStartResponse)) {
 			return false;
+		}
 		final CanStartResponse that = (CanStartResponse) o;
 		return this.gameID.equals(that.gameID);
 	}

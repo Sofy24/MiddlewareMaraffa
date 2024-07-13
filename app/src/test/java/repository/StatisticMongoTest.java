@@ -22,6 +22,9 @@ import io.github.cdimascio.dotenv.Dotenv;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 
+/*
+ * This class test che statistic are correctly saved in the db
+ */
 @TestInstance(Lifecycle.PER_CLASS)
 @ExtendWith(VertxExtension.class)
 public class StatisticMongoTest {
@@ -45,9 +48,6 @@ public class StatisticMongoTest {
 			Integer.parseInt(Dotenv.configure()
 					.filename("env.example").load().get("MONGO_PORT", "27127")),
 			Dotenv.configure().filename("env.example").load().get("MONGO_DATABASE", "maraffa-test"));
-
-	// contro il db
-	// {nome}_test
 
 	@BeforeAll
 	public void setUp() {
@@ -75,7 +75,7 @@ public class StatisticMongoTest {
 
 	@Test
 	public void playCard() {
-		//TODO not finished
+		// TODO not finished
 		final String gameID = this.gameService
 				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString(), PASSWORD)
 				.getString(Constants.GAME_ID);

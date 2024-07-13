@@ -1,3 +1,6 @@
+/**
+ * The `ChatMessageBody` class represents the body of a chat message with author information.
+ */
 package chatModule.schema;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,24 +15,29 @@ public class ChatMessageBody extends NotificationBody {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((this.author == null) ? 0 : this.author.hashCode());
+		result = prime * result + (this.author == null ? 0 : this.author.hashCode());
 		return result;
 	}
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (!super.equals(obj))
+		}
+		if (!super.equals(obj)) {
 			return false;
-		if (this.getClass() != obj.getClass())
+		}
+		if (this.getClass() != obj.getClass()) {
 			return false;
+		}
 		final ChatMessageBody other = (ChatMessageBody) obj;
 		if (this.author == null) {
-			if (other.author != null)
+			if (other.author != null) {
 				return false;
-		} else if (!this.author.equals(other.author))
+			}
+		} else if (!this.author.equals(other.author)) {
 			return false;
+		}
 		return true;
 	}
 

@@ -9,6 +9,9 @@ import game.utils.Constants;
 import io.vertx.core.http.HttpMethod;
 import userModule.UserController;
 
+/*
+ * This class is responsible for managing all the routes of the application.
+ */
 public class Controller implements IController {
 	private final GameServiceDecorator entityService;
 	private final List<IRouteResponse> routes = new ArrayList<>();

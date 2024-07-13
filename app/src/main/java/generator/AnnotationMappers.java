@@ -142,8 +142,9 @@ final class AnnotationMappers {
 			 */
 			final Schema schema = new Schema();
 			final io.swagger.v3.oas.annotations.media.Schema s = parameter.schema();
-			if (!s.ref().isEmpty())
+			if (!s.ref().isEmpty()) {
 				schema.set$ref(s.ref());
+			}
 			schema.setDeprecated(s.deprecated());
 			schema.setDescription(s.description());
 			schema.setName(s.name());
@@ -228,8 +229,9 @@ final class AnnotationMappers {
 	private static Parameter findAlreadyProcessedParamFromVertxRoute(final String name,
 			final List<Parameter> parameters) {
 		for (final Parameter parameter : parameters) {
-			if (name.equals(parameter.getName()))
+			if (name.equals(parameter.getName())) {
 				return parameter;
+			}
 		}
 		return null;
 	}
@@ -240,12 +242,16 @@ final class AnnotationMappers {
 		if (body.content().length == 1) {
 			final Content c = getContent(body.content()[0]);
 			final io.swagger.v3.oas.annotations.media.Content content = body.content()[0];
-			if (!Void.class.equals(content.array().schema().implementation()))
+			if (!Void.class.equals(content.array().schema().implementation())) {
 				c.get(content.mediaType()).getSchema().setExample(clean(content.array().schema().example()));
-			else if (!Void.class.equals(content.schema().implementation()))
+			} else if (!Void.class.equals(content.schema().implementation())) {
 				c.get(content.mediaType()).getSchema().setExample(content.schema().example());
+			}
 			rb.setContent(c);
 		}
 		return rb;
+	}
+
+	private AnnotationMappers() {
 	}
 }

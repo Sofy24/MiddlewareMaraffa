@@ -92,4 +92,7 @@ public class Constants {
 	public static final int MARAFFA_SCORE = 9;
 	public static final int ELEVEN_ZERO_SCORE = 11;
 	public static final String CLOSED = "closed";
+
+	private Constants() {
+	}
 }

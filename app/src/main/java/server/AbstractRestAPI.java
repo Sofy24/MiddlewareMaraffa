@@ -8,6 +8,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
 
+/*
+ * This class is responsible for defining the abstract REST API methods that may be used by the application.
+ */
 public abstract class AbstractRestAPI {
 	private final Vertx vertx;
 	private final int port;

@@ -18,6 +18,10 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
 import server.AbstractRestAPI;
 
+/**
+ * The UserService class extends AbstractRestAPI and utilizes the Vertx
+ * framework
+ */
 public class UserService extends AbstractRestAPI {
 	private final Vertx vertx;
 
@@ -91,10 +95,11 @@ public class UserService extends AbstractRestAPI {
 		WebClient.create(this.vertx).request(HttpMethod.GET, this.getPort(), this.getHost(), "/user/" + nickname)
 				.putHeader("Accept", "application/json").as(BodyCodec.jsonObject()).send(handler -> {
 					if (handler.succeeded()) {
-						if (handler.result().statusCode() == 404)
+						if (handler.result().statusCode() == 404) {
 							this.askServiceWithFuture(requestBody, HttpMethod.POST, "/user", future);
-						else if (handler.result().body().getString("nickname").equals(nickname))
+						} else if (handler.result().body().getString("nickname").equals(nickname)) {
 							future.complete(new JsonObject().put("status", "409").put("error", "User already exists"));
+						}
 						// future.completeExceptionally(new RuntimeException("User already exists"));
 					}
 				});
@@ -110,13 +115,14 @@ public class UserService extends AbstractRestAPI {
 				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
 						System.out.println("Login response: " + handler.result().body().toString());
-						if (handler.result().statusCode() == 200)
+						if (handler.result().statusCode() == 200) {
 							future.complete(JsonObject.of().put("status", String.valueOf(handler.result().statusCode()))
 									.put("token", encryptThisString(nickname)));
-						else
+						} else {
 							future.complete(
 									new JsonObject().put("status", String.valueOf(handler.result().statusCode()))
 											.put("error", handler.result().body().getString("message")));
+						}
 					}
 				});
 		return future;
@@ -131,13 +137,14 @@ public class UserService extends AbstractRestAPI {
 				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
 						System.out.println("Login response: " + handler.result().body().toString());
-						if (handler.result().statusCode() == 200)
+						if (handler.result().statusCode() == 200) {
 							future.complete(JsonObject.of().put("status", String.valueOf(handler.result().statusCode()))
 									.put("token", encryptThisString(nickname)));
-						else
+						} else {
 							future.complete(
 									new JsonObject().put("status", String.valueOf(handler.result().statusCode()))
 											.put("error", handler.result().body().getString("message")));
+						}
 					}
 				});
 		return future;
@@ -167,13 +174,14 @@ public class UserService extends AbstractRestAPI {
 				.as(BodyCodec.jsonObject()).sendJsonObject(requestBody, handler -> {
 					if (handler.succeeded()) {
 						System.out.println("Login response: " + handler.result().body().toString());
-						if (handler.result().statusCode() == 200)
+						if (handler.result().statusCode() == 200) {
 							future.complete(
 									JsonObject.of().put("status", String.valueOf(handler.result().statusCode())));
-						else
+						} else {
 							future.complete(
 									new JsonObject().put("status", String.valueOf(handler.result().statusCode()))
 											.put("error", handler.result().body().getString("message")));
+						}
 					}
 				});
 		return future;

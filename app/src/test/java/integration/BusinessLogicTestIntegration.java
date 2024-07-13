@@ -37,6 +37,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
+/*
+ * This class tests the correct integration beetween this component and business logic.
+ */
 @TestInstance(Lifecycle.PER_CLASS)
 @ExtendWith(VertxExtension.class)
 public class BusinessLogicTestIntegration {
@@ -300,7 +303,7 @@ public class BusinessLogicTestIntegration {
 		}
 		final List<Boolean> isSuitFinishedList = List.of(true, true, true, true);
 		this.businessLogicController
-				.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trick.getCardsAndUsers() ,trump.value.toString(),
+				.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trick.getCardsAndUsers(), trump.value.toString(),
 						GameMode.ELEVEN2ZERO.name(),
 						isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 				.whenComplete((res, err) -> {

@@ -20,10 +20,12 @@ public class PlayCardBody {
 
 	@Override
 	public boolean equals(final Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
-		if (!(o instanceof PlayCardBody))
+		}
+		if (!(o instanceof PlayCardBody)) {
 			return false;
+		}
 		final PlayCardBody that = (PlayCardBody) o;
 		return this.gameID.equals(that.gameID) && Objects.equals(this.username, that.username)
 				&& Objects.equals(this.cardValue, that.cardValue) && Objects.equals(this.cardSuit, that.cardSuit);

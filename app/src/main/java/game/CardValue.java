@@ -16,15 +16,17 @@ public enum CardValue {
 
 	public static CardValue fromValue(final int value) {
 		for (final CardValue v : values())
-			if (v.value.equals(value))
+			if (v.value.equals(value)) {
 				return v;
+			}
 		throw new IllegalArgumentException();
 	}
 
 	public static CardValue getName(final String value) {
 		for (final CardValue v : values())
-			if (v.toString().equals(value))
+			if (v.toString().equals(value)) {
 				return v;
+			}
 		throw new IllegalArgumentException();
 	}
 }

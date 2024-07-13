@@ -69,12 +69,13 @@ public class GameService {
 		this.vertx.deployVerticle(currentGame);
 		currentGame.onCreateGame(user);
 		// TODO molto poco bello..... ma per ora funziona
-		if (this.webSocket != null)
+		if (this.webSocket != null) {
 			this.webSocket
 					.broadcastToEveryone(new JsonObject()
 							.put("event", "gameList")
 							.put(Constants.GAME, this.games.values().stream().map(GameVerticle::toJson).toList())
 							.toString());
+		}
 		// this.webSocket.addConnetedUser(user, newId);
 		// this.vertx.setPeriodic(2000, id -> {
 		// // Invia un messaggio a un client specifico (usa un ID di esempio qui)
@@ -193,9 +194,10 @@ public class GameService {
 		if (play && game.getLatestTrick().isCompleted()) {
 			System.out.println("inside");
 			game.getGameSchema().addTrick(game.getCurrentTrick());
-			if (this.statisticManager != null)
+			if (this.statisticManager != null) {
 				this.statisticManager.updateRecordWithTrick(
 						String.valueOf(gameID) + '-' + game.getCurrentState().get() / 10, game.getCurrentTrick());
+			}
 			try {
 				game.onTrickCompleted(game.getCurrentTrick());
 				game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
@@ -304,8 +306,9 @@ public class GameService {
 		if (this.games.get(gameID) != null) {
 			final Boolean isEnded = this.games.get(gameID).isGameEnded();
 			jsonEnd.put(Constants.ENDED, isEnded);
-			if (!isEnded)
+			if (!isEnded) {
 				jsonEnd.put(Constants.ERROR, "Il game " + gameID + " non è concluso");
+			}
 			return jsonEnd;
 		}
 		jsonEnd.put(Constants.ENDED, false);
@@ -318,8 +321,9 @@ public class GameService {
 		if (this.games.get(gameID) != null) {
 			final boolean success = this.games.get(gameID).makeCall(Call.fromUppercaseString(call.toUpperCase()),
 					username);
-			if (!success)
+			if (!success) {
 				jsonCall.put(Constants.ERROR, "La chiamata " + call + " non è andata a buon fine");
+			}
 			return jsonCall.put(Constants.MESSAGE, success);
 		}
 		jsonCall.put(Constants.NOT_FOUND, false);

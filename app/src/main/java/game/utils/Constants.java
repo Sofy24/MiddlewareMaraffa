@@ -1,68 +1,70 @@
 package game.utils;
 
 public class Constants {
-	// params
-	public static final String USERNAME = "username";
-	public static final String GAME_ID = "gameID";
-	public static final String NUMBER_OF_PLAYERS = "numberOfPlayers";
-	public static final String CARD_VALUE = "cardValue";
-	public static final String CARD_SUIT = "cardSuit";
-	public static final String TRICK = "trick";
-	public static final String CALL = "call";
-	public static final String ENDED = "isEnded";
-	public static final String EXPECTED_SCORE = "expectedScore";
-	public static final String GAME = "games";
-	public static final String STATUS = "status";
-	public static final String GAME_MODE = "mode";
-	public static final String IS_SUIT_FINISHED = "isSuitFinished";
-	public static final String COINS_4_USERNAME = "coins4";
-	public static final String TEAM = "team";
-	public static final String GUIID = "GUIID";
-	public static final String POSITION = "position";
-	public static final String AUTHOR = "author";
-	public static final String PASSWORD = "password";
-	// routes
-	public static final String CREATE_GAME = "game/create";
-	public static final String JOIN_GAME = "game/join";
-	public static final String START_GAME = "game/start";
-	public static final String PLAYER_CARDS = "game/:" + GAME_ID + "/:" + USERNAME + "/cards";
-	public static final String PLAY_CARD = "round/playCard";
-	public static final String CAN_START = "round/canStart/:" + GAME_ID;
-	public static final String CHOOSE_TRUMP = "round/chooseTrump";
-	public static final String START_NEW_ROUND = "round/startNewRound";
-	public static final String CHANGE_TEAM = "game/changeTeam";
-	public static final String STATE = "game/state/:" + GAME_ID;
-	public static final String CARDS_ON_HAND = "round/cardsOnHand/:" + GAME_ID;
-	public static final String CARDS_ON_TABLE = "round/cardsOnTable/:" + GAME_ID;
-	public static final String END_ROUND = "round/end/:" + GAME_ID;
-	public static final String END_GAME = "game/end/:" + GAME_ID;
-	public static final String MAKE_CALL = "round/makeCall";
-	public static final String GAMES = "game/getGames";
-	public static final String GETGAME = "game/:" + GAME_ID;
-	public static final String COINS_4 = "game/4Coins/:" + GAME_ID + "/username:" + COINS_4_USERNAME;
-	public static final String GET_PLAYERS = "player";
-	public static final String NEW_GAME = "game/newGame";
+    // params
+    public static final String USERNAME = "username";
+    public static final String GAME_ID = "gameID";
+    public static final String NUMBER_OF_PLAYERS = "numberOfPlayers";
+    public static final String CARD_VALUE = "cardValue";
+    public static final String CARD_SUIT = "cardSuit";
+    public static final String TRICK = "trick";
+    public static final String CALL = "call";
+    public static final String ENDED = "isEnded";
+    public static final String EXPECTED_SCORE = "expectedScore";
+    public static final String GAME = "games";
+    public static final String STATUS = "status";
+    public static final String GAME_MODE = "mode";
+    public static final String IS_SUIT_FINISHED = "isSuitFinished";
+    public static final String COINS_4_USERNAME = "coins4";
+    public static final String TEAM = "team";
+    public static final String GUIID = "GUIID";
+    public static final String POSITION = "position";
+    public static final String AUTHOR = "author";
+    public static final String PASSWORD = "password";
+    // routes
+    public static final String CREATE_GAME = "game/create";
+    public static final String JOIN_GAME = "game/join";
+    public static final String START_GAME = "game/start";
+    public static final String PLAYER_CARDS = "game/:" + GAME_ID + "/:" + USERNAME + "/cards";
+    public static final String PLAY_CARD = "round/playCard";
+    public static final String CAN_START = "round/canStart/:" + GAME_ID;
+    public static final String CHOOSE_TRUMP = "round/chooseTrump";
+    public static final String START_NEW_ROUND = "round/startNewRound";
+    public static final String CHANGE_TEAM = "game/changeTeam";
+    public static final String STATE = "game/state/:" + GAME_ID;
+    public static final String CARDS_ON_HAND = "round/cardsOnHand/:" + GAME_ID;
+    public static final String CARDS_ON_TABLE = "round/cardsOnTable/:" + GAME_ID;
+    public static final String END_ROUND = "round/end/:" + GAME_ID;
+    public static final String END_GAME = "game/end/:" + GAME_ID;
+    public static final String MAKE_CALL = "round/makeCall";
+    public static final String GAMES = "game/getGames";
+    public static final String GETGAME = "game/:" + GAME_ID;
+    public static final String COINS_4 = "game/4Coins/:" + GAME_ID + "/username:" + COINS_4_USERNAME;
+    public static final String GET_PLAYERS = "player";
+    public static final String NEW_GAME = "game/newGame";
+    public static final String SET_PASSWORD = "game/password";
 
-	// methods
-	public static final String PLAYERS_METHOD = "GET";
-	public static final String CREATE_GAME_METHOD = "POST";
-	public static final String NEW_GAME_METHOD = "POST";
-	public static final String JOIN_GAME_METHOD = "PATCH";
-	public static final String START_GAME_METHOD = "PATCH";
-	public static final String PLAY_CARD_METHOD = "POST";
-	public static final String CAN_START_METHOD = "GET";
-	public static final String GET_PLAYER_CARD_METHOD = "GET";
-	public static final String CHOOSE_TRUMP_METHOD = "POST";
-	public static final String START_NEW_ROUND_METHOD = "PATCH";
-	public static final String CHANGE_TEAM_METHOD = "PATCH";
-	public static final String STATE_METHOD = "GET";
-	public static final String CARDS_ON_HAND_METHOD = "GET";
-	public static final String CARDS_ON_TABLE_METHOD = "GET";
-	public static final String END_METHOD = "GET";
-	public static final String MAKE_CALL_METHOD = "POST";
-	public static final String GAMES_METHOD = "GET";
-	public static final String COINS_4_METHOD = "GET";
-	public static final String EXIT_GAME = "DELETE";
+    // methods
+    public static final String PLAYERS_METHOD = "GET";
+    public static final String CREATE_GAME_METHOD = "POST";
+    public static final String NEW_GAME_METHOD = "POST";
+    public static final String JOIN_GAME_METHOD = "PATCH";
+    public static final String START_GAME_METHOD = "PATCH";
+    public static final String PLAY_CARD_METHOD = "POST";
+    public static final String CAN_START_METHOD = "GET";
+    public static final String GET_PLAYER_CARD_METHOD = "GET";
+    public static final String CHOOSE_TRUMP_METHOD = "POST";
+    public static final String START_NEW_ROUND_METHOD = "PATCH";
+    public static final String CHANGE_TEAM_METHOD = "PATCH";
+    public static final String STATE_METHOD = "GET";
+    public static final String CARDS_ON_HAND_METHOD = "GET";
+    public static final String CARDS_ON_TABLE_METHOD = "GET";
+    public static final String END_METHOD = "GET";
+    public static final String MAKE_CALL_METHOD = "POST";
+    public static final String GAMES_METHOD = "GET";
+    public static final String COINS_4_METHOD = "GET";
+    public static final String EXIT_GAME = "DELETE";
+    public static final String PASSOWRD_METHOD = "PATCH";
 
 	// tags
 	public static final String GAME_TAG = "Middleware.Game";
@@ -93,6 +95,4 @@ public class Constants {
 	public static final int ELEVEN_ZERO_SCORE = 11;
 	public static final String CLOSED = "closed";
 
-	private Constants() {
-	}
 }

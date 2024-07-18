@@ -83,7 +83,7 @@ public class BusinessLogicTestIntegration {
 	@Test
 	public void testgetShuffledDeckOK(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame((Integer) 4, TEST_USER, 41,
-				GameMode.CLASSIC.toString(), PASSWORD);
+				GameMode.CLASSIC.toString());
 		this.businessLogicController
 				.getShuffledDeck(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), 4)
 				.whenComplete((res, err) -> {
@@ -98,7 +98,7 @@ public class BusinessLogicTestIntegration {
 	@Test
 	public void testCheckUserHandOK(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame((Integer) 4, TEST_USER, 41,
-				GameMode.CLASSIC.toString(), PASSWORD);
+				GameMode.CLASSIC.toString());
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
@@ -123,7 +123,7 @@ public class BusinessLogicTestIntegration {
 	@Test
 	public void testUserPlayedCardIsRemoved(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame((Integer) 4, TEST_USER, 41,
-				GameMode.CLASSIC.toString(), PASSWORD);
+				GameMode.CLASSIC.toString());
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
@@ -205,7 +205,7 @@ public class BusinessLogicTestIntegration {
 		final CardSuit trump = CardSuit.COINS;
 		final Trick trick = new TrickImpl(4, trump);
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, 41,
-				GameMode.CLASSIC.toString(), PASSWORD);
+				GameMode.CLASSIC.toString());
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
@@ -251,7 +251,7 @@ public class BusinessLogicTestIntegration {
 		final CardSuit trump = CardSuit.COINS;
 		final Trick trick = new TrickImpl(4, trump);
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, 41,
-				GameMode.CLASSIC.toString(), PASSWORD);
+				GameMode.CLASSIC.toString());
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
@@ -286,7 +286,7 @@ public class BusinessLogicTestIntegration {
 		final CardSuit trump = CardSuit.CUPS;
 		final Trick trick = new TrickImpl(4, trump);
 		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, 41,
-				GameMode.CLASSIC.toString(), PASSWORD);
+				GameMode.CLASSIC.toString());
 		for (int i = 1; i < MARAFFA_PLAYERS; i++) {
 			this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),

@@ -364,8 +364,8 @@ public class GameService {
 		return jsonNewGame.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
 
-	/**@param the id of the new game
-	 * @param the password of the game
+	/**@param gameID the id of the new game
+	 * @param password of the game
 	 * @return true if the password has been set, false if the gameId is not found
 	 */
 	public boolean setPassword(final UUID gameID, final String password) {

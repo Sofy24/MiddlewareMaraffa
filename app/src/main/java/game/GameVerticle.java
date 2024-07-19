@@ -978,6 +978,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 						new JsonObject()
 								.put("event", "exitGame").toString());
 			}
+			this.webSocket.broadcastToEveryone(new JsonObject()
+			.put("event", "gameRemoved").toString());
 		}
 		this.vertx.setTimer(5000, event -> {
 			try {

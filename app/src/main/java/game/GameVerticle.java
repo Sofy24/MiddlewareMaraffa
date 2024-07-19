@@ -64,7 +64,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private int teamPos = 1;
 	private final double numberOfTricksInRound;
 	private boolean newGameCreated = false;
-	private Optional<String> password = Optional.of("1234");
+	private Optional<String> password = Optional.absent();
 
 	// public GameSchema getGameSchema() {
 	// return this.gameSchema0
@@ -149,7 +149,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * @return true if the password is correct
 	 */
 	public boolean checkPasword(String pwd) {
-		return this.password.isPresent() && this.password.get().equals(pwd);
+		return !this.password.isPresent() || (this.password.isPresent() && this.password.get().equals(pwd));
 	}
 
 	/**
@@ -623,6 +623,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.put("playerTurn", this.users.get(this.turn >= 0 ? this.turn : 0).username())
 				.put("turn", this.turn)
 				.put("state", this.currentState.get())
+				.put("password", this.password.isPresent())
 				.put("trumpSelected", this.trump.toString())
 				.put("trumpSelectorUsername", this.users.get(this.initialTurn >= 0 ? this.initialTurn : 0).username())
 				.put("teamA", this.teams.get(0))

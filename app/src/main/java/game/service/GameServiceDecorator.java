@@ -21,6 +21,7 @@ import game.service.schema.MakeCallBody;
 import game.service.schema.NewGameBody;
 import game.service.schema.PasswordBody;
 import game.service.schema.PlayCardBody;
+import game.service.schema.RemoveUserBody;
 import game.service.schema.StartBody;
 import game.service.schema.StateResponse;
 import game.utils.Constants;
@@ -184,47 +185,6 @@ public class GameServiceDecorator {
 					.end(new JsonObject().put(Constants.MESSAGE, "Game " + gameID + " not found").toBuffer());
 		}
 	}
-
-	// @Operation(summary = "User change team in a specific game", method =
-	// Constants.CHANGE_TEAM_METHOD, operationId = Constants.CHANGE_TEAM, tags = {
-	// Constants.GAME_TAG }, requestBody = @RequestBody(description = "id of the
-	// game, username, team and position are required", required = true, content =
-	// @Content(mediaType = "application/json", encoding = @Encoding(contentType =
-	// "application/json"), schema = @Schema(implementation = ChangeTeamBody.class,
-	// example = "{\n"
-	// + " \"" + Constants.GAME_ID + "\":
-	// \"123e4567-e89b-12d3-a456-426614174000\",\n" +
-	// " \"" + Constants.USERNAME + "\": \"sofi\",\n" +
-	// " \"" + Constants.TEAM + "\": \"A\",\n" +
-	// " \"" + Constants.POSITION + "\": 0\n" + "}"))), responses = {
-	// @ApiResponse(responseCode = "200", description = "OK", content =
-	// @Content(mediaType = "application/json", encoding = @Encoding(contentType =
-	// "application/json"), schema = @Schema(name = "game", implementation =
-	// ChangeTeamBody.class))),
-	// @ApiResponse(responseCode = "404", description = "Game not found."),
-	// @ApiResponse(responseCode = "417", description = "Game already started."),
-	// @ApiResponse(responseCode = "500", description = "Internal Server Error.") })
-	// public void changeTeam(final RoutingContext context) {
-	// final String uuidAsString =
-	// context.body().asJsonObject().getString(Constants.GAME_ID);
-	// final UUID gameID = UUID.fromString(uuidAsString);
-	// final String username =
-	// context.body().asJsonObject().getString(Constants.USERNAME);
-	// final String team = context.body().asJsonObject().getString(Constants.TEAM);
-	// final Integer position =
-	// context.body().asJsonObject().getInteger(Constants.POSITION);
-	// JsonObject teamResponse = this.gameService.changeTeam(gameID, username, team,
-	// position);
-	// if (!teamResponse.containsKey(Constants.NOT_FOUND)) {
-	// if(teamResponse.getBoolean(Constants.TEAM)){
-	// context.response().end("Team changed");
-	// } else {
-	// context.response().setStatusCode(417).end("The game is already started");
-	// }
-	// } else {
-	// context.response().setStatusCode(404).end("Game " + gameID + " not found");
-	// }
-	// }
 
 	@Operation(summary = "Get player card", method = Constants.GET_PLAYER_CARD_METHOD, operationId = Constants.PLAYER_CARDS, tags = {
 			Constants.GAME_TAG}, parameters = {
@@ -559,6 +519,30 @@ public class GameServiceDecorator {
 		final UUID gameID = UUID.fromString(context.pathParam(Constants.GAME_ID));
 		final JsonObject jsonGame = this.gameService.exitGame(gameID);
 		System.out.println("new game decorator");
+		if (!jsonGame.containsKey(Constants.NOT_FOUND)) {
+			context.response().end();
+		} else {
+			context.response().setStatusCode(404).end(jsonGame.getString(Constants.ERROR));
+		}
+
+	}
+
+	@Operation(summary = "Remove a specific user of a specific game", method = Constants.REMOVE_USER_METHOD, operationId = Constants.REMOVE_USER, tags = {
+		// Constants.GAME_TAG}, requestBody = @RequestBody(description = "username and id of the game are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = RemoveUserBody.class, example = "{\n" + "  \""
+		// 		+ Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" + "  \""
+		// 		+ Constants.USERNAME + "\": \"sofi\"\n" + "}"))), responses = {
+			Constants.GAME_TAG}, requestBody = @RequestBody(description = "username and id of the game are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = RemoveUserBody.class, example = "{\n"
+			+ "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n"
+			+ "  \"" + Constants.USERNAME + "\": \"sofi\"\n"
+			+ "}"))), responses = {
+						@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = RemoveUserBody.class))),
+						@ApiResponse(responseCode = "404", description = "Game not found."),
+						@ApiResponse(responseCode = "500", description = "Internal Server Error.")})
+	public void removeUser(final RoutingContext context) {
+		final String uuidAsString = (String) context.body().asJsonObject().getValue(Constants.GAME_ID);
+		final UUID gameID = UUID.fromString(uuidAsString);
+		final String username = context.body().asJsonObject().getString(Constants.USERNAME);
+		final JsonObject jsonGame = this.gameService.removeUser(gameID, username);
 		if (!jsonGame.containsKey(Constants.NOT_FOUND)) {
 			context.response().end();
 		} else {

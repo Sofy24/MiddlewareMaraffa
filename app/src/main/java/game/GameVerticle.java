@@ -611,6 +611,27 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	/**
+	 * @param username to be removed
+	 * @return true if the user is removed
+	 */
+	public void removeUser(final String username){
+		List<User> usersToRemove = this.users.stream()
+		.filter(u -> u.username().equals(username))
+		.collect(Collectors.toList());
+		this.users.removeAll(usersToRemove);
+		List<Team> updatedTeams = teams.stream()
+		.map(team -> new Team(team.players().stream()
+			.filter(user -> !username.equals(user.username()))
+			.collect(Collectors.toList()),
+			team.nameOfTeam(),
+			team.score()
+		))
+		.collect(Collectors.toList());
+		this.teams = updatedTeams;
+		onRemoveUser();
+    }
+
+	/**
 	 * @return a json with id, status and game mode
 	 */
 	public JsonObject toJson() {
@@ -901,6 +922,17 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	public void setTurnWithUser(final String username) {
 		this.turn = this.users.stream().map(User::username).toList().indexOf(username);
+	}
+
+	@Override
+	public void onRemoveUser() {
+		if (this.webSocket != null) {
+			for (final var user : this.users) {
+				this.webSocket.sendMessageToClient(user.clientID(),
+						new JsonObject().put("gameID", this.id.toString())
+								.put("event", "userRemoved").toString());
+			}
+		}
 	}
 
 	public void messageReceived(final String msg, final String type, final UUID gameID, final String author) {

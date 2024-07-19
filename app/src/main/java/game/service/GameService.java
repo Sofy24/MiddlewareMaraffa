@@ -416,4 +416,15 @@ public class GameService {
 		jsonResponse.put(Constants.ERROR, "Game " + gameID + " non trovato");
 		return jsonResponse.put(Constants.MESSAGE, "Game " + gameID + " not found");
 	}
+
+	public JsonObject removeUser(final UUID gameID, final String username) {
+		final JsonObject jsonResponse = new JsonObject();
+		if (this.games.get(gameID) != null) {
+			this.games.get(gameID).removeUser(username);
+			return jsonResponse.put(Constants.MESSAGE, "Username " + username + " removed from the game");
+		} 
+		jsonResponse.put(Constants.NOT_FOUND, false);
+		jsonResponse.put(Constants.ERROR, "Game " + gameID + " non trovato");
+		return jsonResponse.put(Constants.MESSAGE, "Game " + gameID + " not found");
+	}
 }

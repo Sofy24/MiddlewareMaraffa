@@ -1064,4 +1064,22 @@ public class GameTest {
 		assertTrue(newGameResponse.getBoolean(Constants.NEW_GAME_CREATION));
 		context.completeNow();
 	}
+
+	/**
+	 * Check if the user is removed from the game
+	 * 
+	 * @param context
+	 *            vertx test context
+	 */
+	@Test
+	public void removeUserTest(final VertxTestContext context) {
+		final JsonObject gameResponse = this.gameService.createGame(MARAFFA_PLAYERS, TEST_USER, EXPECTED_SCORE,
+		GAME_MODE.toString());
+		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
+		this.gameService.joinGame(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+					new User(TEST_USER.username() + 0, TEST_USER.clientID(), false), PASSWORD);
+		final JsonObject removeResponse = this.gameService.removeUser(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username() + 0);
+		assertFalse(removeResponse.containsKey(Constants.NOT_FOUND));
+		context.completeNow();
+	}
 }

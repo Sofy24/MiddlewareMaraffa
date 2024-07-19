@@ -33,4 +33,6 @@ public interface IGameAgent {
 	void onChangeTeam();
 
 	void onMakeCall(final Call call);
+
+	void onRemoveUser();
 }

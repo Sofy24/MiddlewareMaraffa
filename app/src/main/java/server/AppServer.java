@@ -23,8 +23,8 @@ public class AppServer extends AbstractVerticle {
 	private HttpServer server;
 
 	AbstractStatisticManager mongoStatisticManager = new MongoStatisticManager(
-			System.getenv().getOrDefault("MONGO_USER", "your_mongo_user"),
-			System.getenv().getOrDefault("MONGO_PASSWORD", "your_mongo_password"),
+			System.getenv().getOrDefault("MONGO_USER", "mongo_user"),
+			System.getenv().getOrDefault("MONGO_PASSWORD", "mongo_password"),
 			System.getenv().getOrDefault("MONGO_HOST", "127.0.0.1"),
 			Integer.parseInt(System.getenv().getOrDefault("MONGO_PORT", "27012")),
 			System.getenv().getOrDefault("MONGO_DATABASE", "MaraffaStatisticsDB"));

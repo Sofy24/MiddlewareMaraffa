@@ -22,6 +22,9 @@ import io.github.cdimascio.dotenv.Dotenv;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 
+/*
+ * This class test che statistic are correctly saved in the db
+ */
 @TestInstance(Lifecycle.PER_CLASS)
 @ExtendWith(VertxExtension.class)
 public class StatisticMongoTest {
@@ -46,9 +49,6 @@ public class StatisticMongoTest {
 					.filename("env.example").load().get("MONGO_PORT", "27127")),
 			Dotenv.configure().filename("env.example").load().get("MONGO_DATABASE", "maraffa-test"));
 
-	// contro il db
-	// {nome}_test
-
 	@BeforeAll
 	public void setUp() {
 		this.vertx = Vertx.vertx();
@@ -67,7 +67,7 @@ public class StatisticMongoTest {
 	@Test
 	public void prepareGame() {
 		final String gameID = this.gameService
-				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString(), PASSWORD)
+				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString())
 				.getString(Constants.GAME_ID);
 		final var doc = this.mongoStatisticManager.getRecord(gameID + "-0");
 		assertNotNull(doc);
@@ -75,9 +75,9 @@ public class StatisticMongoTest {
 
 	@Test
 	public void playCard() {
-		//TODO not finished
+		// TODO not finished
 		final String gameID = this.gameService
-				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString(), PASSWORD)
+				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString())
 				.getString(Constants.GAME_ID);
 		final UUID gameId = UUID.fromString(gameID);
 		for (int i = 2; i < MARAFFA_PLAYERS + 1; i++) {

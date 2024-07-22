@@ -21,8 +21,10 @@ import io.vertx.core.json.JsonObject;
 import repository.AbstractStatisticManager;
 import server.WebSocketVertx;
 
+
 /**
- * TODO javadoc
+ * The `GameService` class in Java manages game-related operations such as creating games, joining
+ * games, playing cards, and handling game state.
  */
 public class GameService {
 	private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
@@ -50,14 +52,14 @@ public class GameService {
 	}
 
 	public JsonObject createGame(final Integer numberOfPlayers, final User user, final int expectedScore,
-			final String gameMode, final String password) {
+			final String gameMode) {
 		final JsonObject jsonGame = new JsonObject();
 		final UUID newId = UUID.randomUUID();
 		GameVerticle currentGame;
 		try {
 			currentGame = new GameVerticle(newId, user, numberOfPlayers, expectedScore,
 					GameMode.valueOf(gameMode.toUpperCase()),
-					this.statisticManager, this.webSocket, password);
+					this.statisticManager, this.webSocket);
 			// TODO migliore gestione qui perche e' terribile ma per testare OK
 		} catch (final IllegalArgumentException e) {
 			jsonGame.put(Constants.ERROR, "Invalida modalità di gioco " + gameMode);
@@ -67,12 +69,13 @@ public class GameService {
 		this.vertx.deployVerticle(currentGame);
 		currentGame.onCreateGame(user);
 		// TODO molto poco bello..... ma per ora funziona
-		if (this.webSocket != null)
+		if (this.webSocket != null) {
 			this.webSocket
 					.broadcastToEveryone(new JsonObject()
 							.put("event", "gameList")
 							.put(Constants.GAME, this.games.values().stream().map(GameVerticle::toJson).toList())
 							.toString());
+		}
 		// this.webSocket.addConnetedUser(user, newId);
 		// this.vertx.setPeriodic(2000, id -> {
 		// // Invia un messaggio a un client specifico (usa un ID di esempio qui)
@@ -191,9 +194,10 @@ public class GameService {
 		if (play && game.getLatestTrick().isCompleted()) {
 			System.out.println("inside");
 			game.getGameSchema().addTrick(game.getCurrentTrick());
-			if (this.statisticManager != null)
+			if (this.statisticManager != null) {
 				this.statisticManager.updateRecordWithTrick(
 						String.valueOf(gameID) + '-' + game.getCurrentState().get() / 10, game.getCurrentTrick());
+			}
 			try {
 				game.onTrickCompleted(game.getCurrentTrick());
 				game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
@@ -302,8 +306,9 @@ public class GameService {
 		if (this.games.get(gameID) != null) {
 			final Boolean isEnded = this.games.get(gameID).isGameEnded();
 			jsonEnd.put(Constants.ENDED, isEnded);
-			if (!isEnded)
+			if (!isEnded) {
 				jsonEnd.put(Constants.ERROR, "Il game " + gameID + " non è concluso");
+			}
 			return jsonEnd;
 		}
 		jsonEnd.put(Constants.ENDED, false);
@@ -316,8 +321,9 @@ public class GameService {
 		if (this.games.get(gameID) != null) {
 			final boolean success = this.games.get(gameID).makeCall(Call.fromUppercaseString(call.toUpperCase()),
 					username);
-			if (!success)
+			if (!success) {
 				jsonCall.put(Constants.ERROR, "La chiamata " + call + " non è andata a buon fine");
+			}
 			return jsonCall.put(Constants.MESSAGE, success);
 		}
 		jsonCall.put(Constants.NOT_FOUND, false);
@@ -326,7 +332,8 @@ public class GameService {
 	}
 
 	/**
-	 * @param the id of the new game
+	 * @param gameID
+	 *            the id of the new game
 	 * @return true if the game has been created, false if the gameId is not found
 	 */
 	public JsonObject newGame(final UUID gameID) {
@@ -335,7 +342,7 @@ public class GameService {
 			final GameVerticle previousGame = this.getGames().get(gameID);
 			if (!previousGame.isNewGameCreated()) {
 				previousGame.setNewGameCreated();
-				final JsonObject newGameJson = this.createGame(previousGame.getNumberOfPlayersIn(), previousGame.getUsers().get(0), previousGame.getExpectedScore(), previousGame.getGameMode().name(), previousGame.getPassword().get());
+				final JsonObject newGameJson = this.createGame(previousGame.getNumberOfPlayersIn(), previousGame.getUsers().get(0), previousGame.getExpectedScore(), previousGame.getGameMode().name());
 				final String newGameID = newGameJson.getString(Constants.GAME_ID);
 				final GameVerticle newGame = this.getGames().get(UUID.fromString(newGameID));
 				previousGame.getUsers().stream()
@@ -355,6 +362,18 @@ public class GameService {
 		jsonNewGame.put(Constants.NOT_FOUND, false);
 		jsonNewGame.put(Constants.ERROR, "Game " + gameID + " non trovato");
 		return jsonNewGame.put(Constants.MESSAGE, "Game " + gameID + " not found");
+	}
+
+	/**@param gameID the id of the new game
+	 * @param password of the game
+	 * @return true if the password has been set, false if the gameId is not found
+	 */
+	public boolean setPassword(final UUID gameID, final String password) {
+		if (this.games.get(gameID) != null) {
+			this.games.get(gameID).setPassword(password);
+			return true;
+		}
+		return false;
 	}
 
 	public Map<UUID, GameVerticle> getGames() {
@@ -393,6 +412,17 @@ public class GameService {
 			return jsonResponse.put(Constants.MESSAGE, "Game " + gameID + " exited correctly");
 		}
 		jsonResponse.put(Constants.CLOSED, false);
+		jsonResponse.put(Constants.NOT_FOUND, false);
+		jsonResponse.put(Constants.ERROR, "Game " + gameID + " non trovato");
+		return jsonResponse.put(Constants.MESSAGE, "Game " + gameID + " not found");
+	}
+
+	public JsonObject removeUser(final UUID gameID, final String username) {
+		final JsonObject jsonResponse = new JsonObject();
+		if (this.games.get(gameID) != null) {
+			this.games.get(gameID).removeUser(username);
+			return jsonResponse.put(Constants.MESSAGE, "Username " + username + " removed from the game");
+		} 
 		jsonResponse.put(Constants.NOT_FOUND, false);
 		jsonResponse.put(Constants.ERROR, "Game " + gameID + " non trovato");
 		return jsonResponse.put(Constants.MESSAGE, "Game " + gameID + " not found");

@@ -47,36 +47,45 @@ public class JoinGameBody {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((this.gameID == null) ? 0 : this.gameID.hashCode());
-		result = prime * result + ((this.username == null) ? 0 : this.username.hashCode());
-		result = prime * result + ((this.GUIID == null) ? 0 : this.GUIID.hashCode());
+		result = prime * result + (this.gameID == null ? 0 : this.gameID.hashCode());
+		result = prime * result + (this.username == null ? 0 : this.username.hashCode());
+		result = prime * result + (this.GUIID == null ? 0 : this.GUIID.hashCode());
 		return result;
 	}
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (this.getClass() != obj.getClass())
+		}
+		if (this.getClass() != obj.getClass()) {
 			return false;
+		}
 		final JoinGameBody other = (JoinGameBody) obj;
 		if (this.gameID == null) {
-			if (other.gameID != null)
+			if (other.gameID != null) {
 				return false;
-		} else if (!this.gameID.equals(other.gameID))
+			}
+		} else if (!this.gameID.equals(other.gameID)) {
 			return false;
+		}
 		if (this.username == null) {
-			if (other.username != null)
+			if (other.username != null) {
 				return false;
-		} else if (!this.username.equals(other.username))
+			}
+		} else if (!this.username.equals(other.username)) {
 			return false;
+		}
 		if (this.GUIID == null) {
-			if (other.GUIID != null)
+			if (other.GUIID != null) {
 				return false;
-		} else if (!this.GUIID.equals(other.GUIID))
+			}
+		} else if (!this.GUIID.equals(other.GUIID)) {
 			return false;
+		}
 		return true;
 	}
 

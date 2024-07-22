@@ -16,15 +16,17 @@ import server.AbstractRestAPI;
 import server.WebSocketVertx;
 
 /**
- * TODO javadoc
+ * The ChatService class extends AbstractRestAPI and utilizes the Vertx
+ * framework for handling
+ * chat-related functionalities.
  */
 public class ChatService extends AbstractRestAPI {
 	private final Vertx vertx;
 	// private static final int PORT = 3004;
 	// private static final String LOCALHOST = "127.0.0.1";
 	private static final String FE_HOST = "127.0.0.1:80";
-	private static int port = Integer.parseInt(System.getenv().getOrDefault("CHAT_PORT", "3004"));
-	private static String host = System.getenv().getOrDefault("CHAT_HOST", "localhost");
+	private static final int port = Integer.parseInt(System.getenv().getOrDefault("CHAT_PORT", "3004"));
+	private static final String host = System.getenv().getOrDefault("CHAT_HOST", "localhost");
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChatService.class);
 	private final WebSocketVertx webSocketVertx;
 	private final Map<UUID, GameVerticle> gamesMap;

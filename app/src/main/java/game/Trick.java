@@ -3,6 +3,9 @@ package game;
 import java.util.List;
 import java.util.Map;
 
+/*
+ * An interface with the methods of the trick 
+ */
 public interface Trick {
 	/**
 	 * add a card played by a player

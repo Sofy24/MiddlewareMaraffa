@@ -190,4 +190,7 @@ public final class OpenApiSpecGenerator {
 			return Collections.emptyList();
 		}
 	}
+
+	private OpenApiSpecGenerator() {
+	}
 }

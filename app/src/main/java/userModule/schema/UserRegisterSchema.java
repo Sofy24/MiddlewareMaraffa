@@ -2,6 +2,9 @@ package userModule.schema;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/*
+ * The `UserRegisterSchema` class represents the schema of a user registration.
+ */
 public class UserRegisterSchema extends UserLoginSchema {
 
 	@JsonProperty("email")
@@ -19,24 +22,29 @@ public class UserRegisterSchema extends UserLoginSchema {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((this.email == null) ? 0 : this.email.hashCode());
+		result = prime * result + (this.email == null ? 0 : this.email.hashCode());
 		return result;
 	}
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (!super.equals(obj))
+		}
+		if (!super.equals(obj)) {
 			return false;
-		if (this.getClass() != obj.getClass())
+		}
+		if (this.getClass() != obj.getClass()) {
 			return false;
+		}
 		final UserRegisterSchema other = (UserRegisterSchema) obj;
 		if (this.email == null) {
-			if (other.email != null)
+			if (other.email != null) {
 				return false;
-		} else if (!this.email.equals(other.email))
+			}
+		} else if (!this.email.equals(other.email)) {
 			return false;
+		}
 		return true;
 	}
 

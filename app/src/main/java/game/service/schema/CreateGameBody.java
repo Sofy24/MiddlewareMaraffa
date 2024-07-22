@@ -68,48 +68,61 @@ public class CreateGameBody {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((this.username == null) ? 0 : this.username.hashCode());
-		result = prime * result + ((this.numberOfPlayers == null) ? 0 : this.numberOfPlayers.hashCode());
-		result = prime * result + ((this.expectedScore == null) ? 0 : this.expectedScore.hashCode());
-		result = prime * result + ((this.gameMode == null) ? 0 : this.gameMode.hashCode());
-		result = prime * result + ((this.GUIID == null) ? 0 : this.GUIID.hashCode());
+		result = prime * result + (this.username == null ? 0 : this.username.hashCode());
+		result = prime * result + (this.numberOfPlayers == null ? 0 : this.numberOfPlayers.hashCode());
+		result = prime * result + (this.expectedScore == null ? 0 : this.expectedScore.hashCode());
+		result = prime * result + (this.gameMode == null ? 0 : this.gameMode.hashCode());
+		result = prime * result + (this.GUIID == null ? 0 : this.GUIID.hashCode());
 		return result;
 	}
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (this.getClass() != obj.getClass())
+		}
+		if (this.getClass() != obj.getClass()) {
 			return false;
+		}
 		final CreateGameBody other = (CreateGameBody) obj;
 		if (this.username == null) {
-			if (other.username != null)
+			if (other.username != null) {
 				return false;
-		} else if (!this.username.equals(other.username))
+			}
+		} else if (!this.username.equals(other.username)) {
 			return false;
+		}
 		if (this.numberOfPlayers == null) {
-			if (other.numberOfPlayers != null)
+			if (other.numberOfPlayers != null) {
 				return false;
-		} else if (!this.numberOfPlayers.equals(other.numberOfPlayers))
+			}
+		} else if (!this.numberOfPlayers.equals(other.numberOfPlayers)) {
 			return false;
+		}
 		if (this.expectedScore == null) {
-			if (other.expectedScore != null)
+			if (other.expectedScore != null) {
 				return false;
-		} else if (!this.expectedScore.equals(other.expectedScore))
+			}
+		} else if (!this.expectedScore.equals(other.expectedScore)) {
 			return false;
+		}
 		if (this.gameMode == null) {
-			if (other.gameMode != null)
+			if (other.gameMode != null) {
 				return false;
-		} else if (!this.gameMode.equals(other.gameMode))
+			}
+		} else if (!this.gameMode.equals(other.gameMode)) {
 			return false;
+		}
 		if (this.GUIID == null) {
-			if (other.GUIID != null)
+			if (other.GUIID != null) {
 				return false;
-		} else if (!this.GUIID.equals(other.GUIID))
+			}
+		} else if (!this.GUIID.equals(other.GUIID)) {
 			return false;
+		}
 		return true;
 	}
 }

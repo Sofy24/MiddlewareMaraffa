@@ -42,6 +42,8 @@ public class Constants {
     public static final String COINS_4 = "game/4Coins/:" + GAME_ID + "/username:" + COINS_4_USERNAME;
     public static final String GET_PLAYERS = "player";
     public static final String NEW_GAME = "game/newGame";
+    public static final String SET_PASSWORD = "game/password";
+    public static final String REMOVE_USER = "game/remove";
 
     // methods
     public static final String PLAYERS_METHOD = "GET";
@@ -63,33 +65,36 @@ public class Constants {
     public static final String GAMES_METHOD = "GET";
     public static final String COINS_4_METHOD = "GET";
     public static final String EXIT_GAME = "DELETE";
+    public static final String PASSOWRD_METHOD = "PATCH";
+    public static final String REMOVE_USER_METHOD = "PATCH";
 
-    // tags
-    public static final String GAME_TAG = "Middleware.Game";
-    public static final String ROUND_TAG = "Middleware.Round";
-    // json attributes
-    public static final String START_ATTR = "start";
-    public static final String JOIN_ATTR = "join";
-    public static final String NOT_FOUND = "not found";
-    public static final String FULL = "full";
-    public static final String MESSAGE = "message";
-    public static final String ALREADY_JOINED = "alreadyJoined";
-    public static final String ILLEGAL_TRUMP = "illegalTrump";
-    public static final String TRUMP = "trump";
-    public static final String SUIT = "suit";
-    public static final String PLAY = "play";
-    public static final String DECK = "deck";
-    public static final String INVALID = "invalid";
-    public static final String NOT_ALLOWED = "notAllowed";
-    public static final String TURN = "turn";
-    public static final String RESULT = "result";
-    public static final String VALUE = "value";
-    public static final String ERROR = "error";
-    public static final String GUEST = "guest";
-    public static final String NEW_GAME_CREATION = "newGame";
-    // game constants
-    public static final int NUMBER_OF_CARDS = 40;
-    public static final int MARAFFA_SCORE = 9;
-    public static final int ELEVEN_ZERO_SCORE = 11;
-    public static final String CLOSED = "closed";
+	// tags
+	public static final String GAME_TAG = "Middleware.Game";
+	public static final String ROUND_TAG = "Middleware.Round";
+	// json attributes
+	public static final String START_ATTR = "start";
+	public static final String JOIN_ATTR = "join";
+	public static final String NOT_FOUND = "not found";
+	public static final String FULL = "full";
+	public static final String MESSAGE = "message";
+	public static final String ALREADY_JOINED = "alreadyJoined";
+	public static final String ILLEGAL_TRUMP = "illegalTrump";
+	public static final String TRUMP = "trump";
+	public static final String SUIT = "suit";
+	public static final String PLAY = "play";
+	public static final String DECK = "deck";
+	public static final String INVALID = "invalid";
+	public static final String NOT_ALLOWED = "notAllowed";
+	public static final String TURN = "turn";
+	public static final String RESULT = "result";
+	public static final String VALUE = "value";
+	public static final String ERROR = "error";
+	public static final String GUEST = "guest";
+	public static final String NEW_GAME_CREATION = "newGame";
+	// game constants
+	public static final int NUMBER_OF_CARDS = 40;
+	public static final int MARAFFA_SCORE = 9;
+	public static final int ELEVEN_ZERO_SCORE = 11;
+	public static final String CLOSED = "closed";
+
 }

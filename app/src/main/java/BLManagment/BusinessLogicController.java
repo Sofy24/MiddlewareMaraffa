@@ -1,3 +1,7 @@
+/**
+ * The `BusinessLogicController` class in the BLManagment package handles game logic operations such as
+ * starting rounds, completing tricks, checking for Maraffa, and validating card plays.
+ */
 package BLManagment;
 
 import java.util.Arrays;
@@ -26,12 +30,13 @@ import io.vertx.ext.web.codec.BodyCodec;
 
 public class BusinessLogicController {
 	private final Vertx vertx;
-	private final int port; //= Integer.parseInt(Dotenv.load().get("BUSINESS_LOGIC_PORT", "3000"));
+	private final int port; // = Integer.parseInt(Dotenv.load().get("BUSINESS_LOGIC_PORT", "3000"));
 	private final String host;// = Dotenv.load().get("BUSINESS_LOGIC_HOST", "localhost");
 	private static final Logger LOGGER = LoggerFactory.getLogger(BusinessLogicController.class);
 	private final GameService gameService;
 
-	public BusinessLogicController(final Vertx vertx, final GameService gameService, final int port, final String host) {
+	public BusinessLogicController(final Vertx vertx, final GameService gameService, final int port,
+			final String host) {
 		this.vertx = vertx;
 		this.gameService = gameService;
 		this.port = port;
@@ -216,7 +221,8 @@ public class BusinessLogicController {
 			final int suit = body.getInteger(Constants.SUIT);
 			final String username = body.getString(Constants.USERNAME);
 			final UUID gameID = UUID.fromString(body.getString(Constants.GAME_ID));
-			final List<Card<CardValue, CardSuit>> userCardsTemp = this.gameService.getGames().get(gameID).getUserCards(username);
+			final List<Card<CardValue, CardSuit>> userCardsTemp = this.gameService.getGames().get(gameID)
+					.getUserCards(username);
 			userCardsTemp.add(new Card<>(CardValue.ONE, CardSuit.fromValue(suit)));
 			final int[] userCards = userCardsTemp.stream().mapToInt(card -> card.getCardValue().intValue()).toArray();
 			this.getMaraffa(userCards, suit).whenComplete((result, error) -> {
@@ -234,6 +240,24 @@ public class BusinessLogicController {
 
 	}
 
+	/**
+	 * This Java method asynchronously sends a POST request with a JSON object to a
+	 * specified endpoint and
+	 * returns a CompletableFuture containing the response JsonObject or an error
+	 * message.
+	 * 
+	 * @param deck
+	 *            The `deck` parameter is an array of integers representing a deck
+	 *            of cards. Each integer
+	 *            value in the array corresponds to a specific card in the deck.
+	 * @param suit
+	 *            The `suit` parameter in the `getMaraffa` method represents the
+	 *            suit of the cards in the
+	 *            deck that you want to check for Maraffa. It is an integer value
+	 *            that typically corresponds to a
+	 *            specific suit in a standard deck of playing cards (e.g., Hearts,
+	 *            Diamonds,
+	 */
 	public CompletableFuture<JsonObject> getMaraffa(final int[] deck, final int suit) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		final JsonObject requestBody = new JsonObject()

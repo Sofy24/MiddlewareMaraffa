@@ -15,7 +15,10 @@ import io.vertx.ext.web.RoutingContext;
 import userModule.schema.UserLoginSchema;
 import userModule.schema.UserRegisterSchema;
 
-// @Api(tags = "login", description = "APIs for user management")
+/**
+ * The UserController class is used for managing user operations through its
+ * APIs.
+ */
 @Api(tags = "User Operations", description = "APIs for user management")
 public class UserController {
 	private final UserService userService;

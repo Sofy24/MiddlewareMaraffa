@@ -18,10 +18,12 @@ public class StartBody {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
-		if (!(o instanceof StartBody))
+		}
+		if (!(o instanceof StartBody)) {
 			return false;
+		}
 		StartBody startBody = (StartBody) o;
 		return gameID.equals(startBody.gameID);
 	}

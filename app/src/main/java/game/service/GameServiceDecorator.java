@@ -59,7 +59,7 @@ public class GameServiceDecorator {
 		this.gameService = new GameService(vertx, statisticManager, webSocket);
 		this.webSocket = webSocket;
 		this.businessLogicController = new BusinessLogicController(vertx, this.gameService,
-				Integer.parseInt(System.getenv().getOrDefault("BUSINESS_LOGIC_PORT", "3005")),
+				Integer.parseInt(System.getenv().getOrDefault("BUSINESS_LOGIC_PORT", "3000")),
 				System.getenv().getOrDefault("BUSINESS_LOGIC_HOST", "localhost"));
 
 	}

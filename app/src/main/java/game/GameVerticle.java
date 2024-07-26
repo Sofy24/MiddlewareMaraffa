@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,7 +19,6 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
 import com.google.gson.Gson;
 
 import game.service.User;
@@ -64,7 +64,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	private int teamPos = 1;
 	private final double numberOfTricksInRound;
 	private boolean newGameCreated = false;
-	private Optional<String> password = Optional.absent();
+	private Optional<String> password = Optional.empty();
 
 	// public GameSchema getGameSchema() {
 	// return this.gameSchema0
@@ -160,6 +160,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public boolean addCard(final Card<CardValue, CardSuit> card, final String username) {
 		if (this.turn >= 0) {
+			LOGGER.info("GAME " + this.id + " addCard: " + card.toString() + " by " + username);
 			if (this.canStart() && this.users.get(this.turn).username().equals(username)) {
 				if (this.currentTrick == null) {
 					this.currentTrick = this.states.getOrDefault(this.currentState.get(),
@@ -177,6 +178,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				}
 
 				this.currentTrick.addCard(card, username);
+				LOGGER.info("GAME " + this.id + " currentTrick: " + this.currentTrick.toString());
 				this.turn = (this.turn + 1) % this.numberOfPlayers;
 				this.removeFromHand(card, username);
 				if (this.currentTrick.isCompleted()) {
@@ -344,8 +346,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return this.initialTurn;
 	}
 
-	public void setInitialTurn(final int initialTurn) {
-		this.initialTurn = initialTurn % this.numberOfPlayers;
+	public void setInitialTurn(final int initTurn) {
+		this.initialTurn = initTurn % this.numberOfPlayers;
 		this.turn = this.initialTurn;
 	}
 
@@ -433,7 +435,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			LOGGER.info(
 				"The fucking game is done, user: " + this.users.get(this.initialTurn) + " is not your turn anymore !"
 			);
-			this.setInitialTurn(this.initialTurn++);
+			this.initialTurn += 1;
+			this.setInitialTurn(this.initialTurn);
 			this.checkMaraffa = true;
 			LOGGER.info(
 				"I choose you : " + this.users.get(this.initialTurn) + ", pick a trump"
@@ -451,24 +454,24 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		}
 	}
 
-	/**
-	 * update the score of the teams for 11-0 mode
-	 *
-	 * @param isTeamA true if team A committed the mistake
-	 */
-	public void setScore(final boolean isTeamA) {
-		int index11 = 1;
-		int index0 = 0;
-		if (!isTeamA) {
-			index11 = 0;
-			index0 = 1;
-		}
-		this.teams.set(index0,
-				new Team(this.teams.get(index0).players(), this.teams.get(index0).nameOfTeam(), 0));
-		this.teams.set(index11,
-				new Team(this.teams.get(index11).players(), this.teams.get(index11).nameOfTeam(),
-						Constants.ELEVEN_ZERO_SCORE));
-	}
+	// /**
+	//  * update the score of the teams for 11-0 mode
+	//  *
+	//  * @param isTeamA true if team A committed the mistake
+	//  */
+	// public void setScore(final boolean isTeamA) {
+	// 	int index11 = 1;
+	// 	int index0 = 0;
+	// 	if (!isTeamA) {
+	// 		index11 = 0;
+	// 		index0 = 1;
+	// 	}
+	// 	this.teams.set(index0,
+	// 			new Team(this.teams.get(index0).players(), this.teams.get(index0).nameOfTeam(), 0));
+	// 	this.teams.set(index11,
+	// 			new Team(this.teams.get(index11).players(), this.teams.get(index11).nameOfTeam(),
+	// 					Constants.ELEVEN_ZERO_SCORE * 3));
+	// }
 
 	public CardSuit getTrump() {
 		return this.trump;
@@ -589,7 +592,18 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public void endRoundByMistake(final boolean firstTeam) {
 		this.elevenZeroTeam = firstTeam ? 0 : 1;
-		this.setInitialTurn(this.initialTurn++);
+		LOGGER.info(
+				"Some dumbass made a mistake: " + this.users.get(this.initialTurn) + " is not your turn anymore !"
+			);
+		LOGGER.info(
+				"The fucking game is done, user: " + this.users.get(this.initialTurn) + " is not your turn anymore !"
+			);
+		this.initialTurn += 1;
+		this.setInitialTurn(this.initialTurn);
+			LOGGER.info(
+				"I choose you : " + this.users.get(this.initialTurn) + ", pick a trump"
+			);
+
 		this.checkMaraffa = true;
 	}
 

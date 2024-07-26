@@ -190,7 +190,9 @@ public class GameService {
 		final GameVerticle game = this.games.get(gameID);
 		final Boolean play = game.addCard(card, username);
 		jsonPlayCard.put(Constants.PLAY, play);
-		System.out.println("(service), play" + play);
+		System.out.println("(service), play: " + play);
+		System.out.println("after play card trick is : " + game.getLatestTrick().toString());
+		System.out.println("completed : " + game.getLatestTrick().isCompleted());
 		if (play && game.getLatestTrick().isCompleted()) {
 			System.out.println("inside");
 			game.getGameSchema().addTrick(game.getCurrentTrick());

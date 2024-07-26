@@ -268,6 +268,7 @@ public class GameServiceDecorator {
 					this.businessLogicController.validatePlayCard(trick, card.getCardValue(), userCards, isCardTrump)
 							.whenComplete((res, err) -> {
 								if (err == null) {
+									response.put("mode", this.gameService.getGames().get(gameID).getGameMode() );
 									if (GameMode.ELEVEN2ZERO
 											.equals(this.gameService.getGames().get(gameID).getGameMode())
 											|| res.getBoolean("valid")) {

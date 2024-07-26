@@ -52,24 +52,24 @@ public class BusinessLogicController {
 	 */
 	public CompletableFuture<JsonObject> getShuffledDeck(final UUID gameID, final Integer numberOfPlayers) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-		final JsonObject startResponse = new JsonObject();
+		// final JsonObject startResponse = new JsonObject();
 		WebClient.create(this.vertx).get(this.port, this.host, "/games/startRound")
 				.putHeader("Accept", "application/json")
 				.as(BodyCodec.jsonObject()).send(handler -> {
 					if (handler.succeeded()) {
 						final JsonArray deck = handler.result().body().getJsonArray("deck");
 						final Integer firstPlayer = handler.result().body().getInteger("firstPlayer");
-						startResponse.put("deck", deck);
+						// startResponse.put("deck", deck);
 						LOGGER.info("The deck is: " + deck);
-						startResponse.put("firstPlayer", firstPlayer);
-						LOGGER.info("The first player is: " + firstPlayer);
-						startResponse.put(Constants.START_ATTR, true);
+						// startResponse.put("firstPlayer", firstPlayer);
+						// startResponse.put(Constants.START_ATTR, true);
 						if (this.gameService.getGames().get(gameID).getInitialTurn() == -1) {
+							LOGGER.info("Round started");
+							LOGGER.info("The first player is: " + firstPlayer);
 							this.gameService.getGames().get(gameID).setInitialTurn(firstPlayer);
 						}
 						this.gameService.getGames().get(gameID)
 								.handOutCards(deck.stream().map(el -> (Integer) el).toList());
-						LOGGER.info("Round started");
 						this.gameService.getGames().get(gameID).onNewRound();
 						future.complete(handler.result().body());
 					} else {
@@ -102,7 +102,7 @@ public class BusinessLogicController {
 					final Integer firstPlayer = result.getInteger("firstPlayer");
 					startResponse.put("deck", deck);
 					startResponse.put("firstPlayer", firstPlayer);
-					LOGGER.info("The first player is: " + firstPlayer);
+					// LOGGER.info("The first player is: " + firstPlayer);
 					startResponse.put(Constants.START_ATTR, true);
 					// this.gameService.getGames().get(gameID).setInitialTurn(firstPlayer);
 				}
@@ -223,7 +223,7 @@ public class BusinessLogicController {
 			final UUID gameID = UUID.fromString(body.getString(Constants.GAME_ID));
 			final List<Card<CardValue, CardSuit>> userCardsTemp = this.gameService.getGames().get(gameID)
 					.getUserCards(username);
-			userCardsTemp.add(new Card<>(CardValue.ONE, CardSuit.fromValue(suit)));
+			userCardsTemp.add(new Card<>(CardValue.ONE, CardSuit.fromValue(suit))); //TODo check if can be passed into the json
 			final int[] userCards = userCardsTemp.stream().mapToInt(card -> card.getCardValue().intValue()).toArray();
 			this.getMaraffa(userCards, suit).whenComplete((result, error) -> {
 				if (error != null) {

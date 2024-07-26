@@ -167,7 +167,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					this.tricks.add(this.currentTrick);
 				}
 
-				if (card.cardValue() == CardValue.ONE && this.checkMaraffa) {
+				if (card.cardValue() == CardValue.ONE && this.checkMaraffa) { //TODO SISTEMARE
 					this.onCheckMaraffa(card.cardSuit().value, username);
 				}
 				this.checkMaraffa = false;
@@ -430,6 +430,14 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 							(invTeam.score() - invTeam.score() % 3)));
 			currentTeam = this.teams.get(index);
 			invTeam = this.teams.get(invIndex);
+			LOGGER.info(
+				"The fucking game is done, user: " + this.users.get(this.initialTurn) + " is not your turn anymore !"
+			);
+			this.setInitialTurn(this.initialTurn++);
+			this.checkMaraffa = true;
+			LOGGER.info(
+				"I choose you : " + this.users.get(this.initialTurn) + ", pick a trump"
+			);
 			System.out.println("after +1 score: " + currentTeam.score());
 			System.out.println("after +1 score, but other team: " + invTeam.score());
 			// ??? currentTeam.score() + (currentTeam.score() % 3 == 0 ? 1 :
@@ -581,6 +589,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public void endRoundByMistake(final boolean firstTeam) {
 		this.elevenZeroTeam = firstTeam ? 0 : 1;
+		this.setInitialTurn(this.initialTurn++);
+		this.checkMaraffa = true;
 	}
 
 	/**
@@ -591,13 +601,13 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		if (this.elevenZeroTeam != -1) {
 			this.setCurrentState((int) this.numberOfTricksInRound);
 		}
-		if (this.currentState.get() == this.numberOfTricksInRound) {
-			this.setInitialTurn(this.initialTurn++);
-			this.checkMaraffa = true;
-		}
+		// if (this.currentState.get() == this.numberOfTricksInRound) {
+		// 	this.setInitialTurn(this.initialTurn++);
+		// 	this.checkMaraffa = true;
+		// }
 		LOGGER.info(
 				"GAME " + this.id + " currentState : " + this.currentState.get() + " is round ended: "
-						+ (this.currentState.get() == (int) this.numberOfTricksInRound));
+						+ (this.currentState.get() == (int) this.numberOfTricksInRound) + " turn making trumps:  index(" + this.initialTurn+ ") -> user: " + this.users.get(this.initialTurn));
 		return this.currentState.get() == (int) this.numberOfTricksInRound;
 	}
 

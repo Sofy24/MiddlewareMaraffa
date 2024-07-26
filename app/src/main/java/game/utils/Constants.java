@@ -44,6 +44,7 @@ public class Constants {
     public static final String NEW_GAME = "game/newGame";
     public static final String SET_PASSWORD = "game/password";
     public static final String REMOVE_USER = "game/remove";
+	public static final String GET_TOTAL_GAMES = "game/count";
 
     // methods
     public static final String PLAYERS_METHOD = "GET";
@@ -64,6 +65,7 @@ public class Constants {
     public static final String MAKE_CALL_METHOD = "POST";
     public static final String GAMES_METHOD = "GET";
     public static final String COINS_4_METHOD = "GET";
+    public static final String GET_TOTAL_GAMES_METHOD = "GET";
     public static final String EXIT_GAME = "DELETE";
     public static final String PASSOWRD_METHOD = "PATCH";
     public static final String REMOVE_USER_METHOD = "PATCH";
@@ -90,6 +92,7 @@ public class Constants {
 	public static final String VALUE = "value";
 	public static final String ERROR = "error";
 	public static final String GUEST = "guest";
+	public static final String TOTAL = "total";
 	public static final String NEW_GAME_CREATION = "newGame";
 	// game constants
 	public static final int NUMBER_OF_CARDS = 40;

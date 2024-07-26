@@ -50,6 +50,7 @@ public class Controller implements IController {
 		this.routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.SET_PASSWORD, this.entityService::setPassword));
 		this.routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.REMOVE_USER, this.entityService::removeUser));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GET_PLAYERS, this.entityService::getPlayers));
+		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GET_TOTAL_GAMES, this.entityService::getCountGames));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GETGAME, this.entityService::getGame));
 		this.routes.add(new RouteResponse(HttpMethod.DELETE, "/" + Constants.GETGAME, this.entityService::exitGame));
 		// TODO delete game

@@ -104,7 +104,7 @@ public class BusinessLogicController {
 					startResponse.put("firstPlayer", firstPlayer);
 					LOGGER.info("The first player is: " + firstPlayer);
 					startResponse.put(Constants.START_ATTR, true);
-					this.gameService.getGames().get(gameID).setInitialTurn(firstPlayer);
+					// this.gameService.getGames().get(gameID).setInitialTurn(firstPlayer);
 				}
 				if (error != null) {
 					LOGGER.error("Error when starting the round");

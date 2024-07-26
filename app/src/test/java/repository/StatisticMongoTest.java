@@ -1,5 +1,6 @@
 package repository;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.UUID;
@@ -28,6 +29,7 @@ import io.vertx.junit5.VertxExtension;
 @TestInstance(Lifecycle.PER_CLASS)
 @ExtendWith(VertxExtension.class)
 public class StatisticMongoTest {
+	private static final int TRICKS = 10;
 	private final User userTest = new User("user", UUID.randomUUID(), false);
 	private static final int MARAFFA_PLAYERS = 4;
 	private static final int EXPECTED_SCORE = 11;
@@ -96,5 +98,13 @@ public class StatisticMongoTest {
 				this.isSuitFinished);
 		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.KING, CardSuit.CLUBS),
 				this.isSuitFinished);
+	}
+
+
+	@Test
+	public void getGamesCompleted() {
+		final var numGames = this.mongoStatisticManager.getGamesCompleted(TRICKS);
+		assertNotNull(numGames);
+		assertInstanceOf(Long.class, numGames);
 	}
 }

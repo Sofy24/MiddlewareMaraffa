@@ -607,7 +607,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		// 		"current state before: " + this.currentState.get()
 		// 	);
 
-		// 		while (this.currentState.get() / 10 == 0) {
 		// 	this.incrementCurrentState();
 		// }
 		// 	LOGGER.info(
@@ -647,7 +646,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	/**
 	 * @param username to be removed
-	 * @return true if the user is removed
 	 */
 	public void removeUser(final String username){
 		final List<User> usersToRemove = this.users.stream()

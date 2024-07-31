@@ -604,7 +604,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				"I choose you : " + this.users.get(this.initialTurn) + ", pick a trump"
 			);
 
-		this.checkMaraffa = true;
+			this.checkMaraffa = true;
+		while (this.currentState.get() % 10 == 0) {
+			this.incrementCurrentState();
+		}
 	}
 
 	/**

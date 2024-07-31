@@ -51,6 +51,15 @@ dependencies {
     rewrite("org.openrewrite.recipe:rewrite-static-analysis:1.10.1")
 
 
+    implementation ("io.socket:socket.io-server:3.0.2")
+    implementation("commons-io:commons-io:2.11.0")
+    implementation("org.eclipse.jetty:jetty-server:9.4.19.v20190610")
+    implementation("org.eclipse.jetty:jetty-servlet:9.4.19.v20190610")
+    implementation("org.eclipse.jetty:jetty-servlets:9.4.19.v20190610")
+    implementation("org.eclipse.jetty.websocket:websocket-server:9.4.19.v20190610")
+    implementation("io.socket:engine.io-server:5.0.0")
+    implementation("io.socket:engine.io-server-jetty:5.0.0")
+
     // Vert.x framework
     implementation("io.vertx:vertx-web:${vertxVersion}")
     implementation("io.vertx:vertx-core:${vertxVersion}")

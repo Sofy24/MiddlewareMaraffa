@@ -25,8 +25,10 @@ public class WebSocketVertx {
 
 	public void handleWebSocket(final ServerWebSocket webSocket) {
 		webSocket.accept();
+
+		System.out.println("New fucking WebSocket connection with path: " + webSocket.path());
 		System.out.println("New WebSocket connection with ID: " + webSocket.path().split("/")[1]);
-		this.activeConnections.put(UUID.fromString(webSocket.path().split("/")[1]), webSocket);
+		this.activeConnections.replace(UUID.fromString(webSocket.path().split("/")[1]), webSocket);
 		this.activeUsers.add(webSocket.path().split("/")[2]);
 
 		System.out.println("New WebSocket connection with : " + webSocket.path());

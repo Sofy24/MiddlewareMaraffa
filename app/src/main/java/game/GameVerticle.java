@@ -603,7 +603,18 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			LOGGER.info(
 				"I choose you : " + this.users.get(this.initialTurn) + ", pick a trump"
 			);
+		// 	LOGGER.info(
+		// 		"current state before: " + this.currentState.get()
+		// 	);
 
+		// 		while (this.currentState.get() / 10 == 0) {
+		// 	this.incrementCurrentState();
+		// }
+		// 	LOGGER.info(
+		// 		"current state after: " + this.currentState.get() 
+		// 	);
+
+			this.elevenZeroTeam = -1;
 		this.checkMaraffa = true;
 	}
 

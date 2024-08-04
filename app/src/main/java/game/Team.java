@@ -29,10 +29,10 @@ public record Team(List<User> players, String nameOfTeam, Integer score, Integer
 
 	@Override
 	public String toString() {
-		return "Team{" + "players=" + this.players + ", nameOfTeam='" + this.nameOfTeam + '\'' + ", score='"
+		return "Team{" + "players=" + this.players.stream().map(User::username).toList() + ", nameOfTeam='" + this.nameOfTeam + '\'' + ", score='"
 				+ this.score + '\''
 				+ ", currentScore='"
-				+ this.currentScore+ '\'' +
+				+ this.currentScore + '\'' +
 				+ '}';
 	}
 }

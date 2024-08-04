@@ -180,7 +180,7 @@ public class BusinessLogicController {
 										+ handler.result().body().getInteger("score"));
 						if (winningPosition == -1) {
 							this.gameService.getGames().get(gameID).setScoreAfterMistake(handler.result().body().getInteger("score") ,firstTeam);
-							LOGGER.info("ELeven zero because of mistake by team " + (firstTeam == true ? "1" : "2"));
+							LOGGER.info("ELeven zero because of mistake by team " + (firstTeam == true ? "A" : "B"));
 							this.gameService.getGames().get(gameID).endRoundByMistake(firstTeam);
 
 							this.gameService.getGames().get(gameID).clearIsSuitFinished();
@@ -192,6 +192,9 @@ public class BusinessLogicController {
 							this.gameService.getGames().get(gameID).setScore(handler.result().body().getInteger("score") ,firstTeam);
 							this.gameService.getGames().get(gameID)
 									.setTurnWithUser(users.get(String.valueOf(cards[winningPosition])));
+// 							this.gameService.getGames().get(gameID)
+// this.teams.stream().filter(t -> t.players().contains(this.users.get(this.turn)))
+// 							.findFirst();
 							LOGGER.info("Score computed");
 						}
 

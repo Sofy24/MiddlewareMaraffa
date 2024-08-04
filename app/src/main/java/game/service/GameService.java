@@ -201,20 +201,21 @@ public class GameService {
 						String.valueOf(gameID) + '-' + game.getCurrentState().get() / 10, game.getCurrentTrick());
 			}
 			try {
-				game.onTrickCompleted(game.getCurrentTrick());
-				game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
-				game.getTricks().add(game.getCurrentTrick());
-				game.incrementCurrentState();
-				System.out.println("la seconda, prima = incremeted game service" + game.getCurrentState());
-				game.onPlayCard();
-				if (game.isRoundEnded()) {
-					System.out.println("RoundEnded");
-					game.onEndRound();
-					game.startNewRound();
-					System.out.println("game ended" + game.isGameEnded());
-					game.onStartGame();
-				}
-				System.out.println("incremeted game service" + game.getCurrentState());
+				game.onTrickCompleted(game.getCurrentTrick()).whenComplete((result, error) -> {
+					game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
+					game.getTricks().add(game.getCurrentTrick());
+					game.incrementCurrentState();
+					System.out.println("la seconda, prima = incremeted game service" + game.getCurrentState());
+					game.onPlayCard();
+					if (game.isRoundEnded()) {
+						System.out.println("RoundEnded");
+						game.onEndRound();
+						game.startNewRound();
+						System.out.println("game ended" + game.isGameEnded());
+						game.onStartGame();
+					}
+					System.out.println("incremeted game service" + game.getCurrentState());
+				});
 			} catch (final Exception e) {
 				jsonPlayCard.put(Constants.PLAY, false);
 				jsonPlayCard.put(Constants.ERROR, "La presa non è stata completata correttamente");

@@ -1,7 +1,8 @@
 package game;
 
+import java.util.concurrent.CompletableFuture;
+
 import game.service.User;
-import java.util.List;
 
 /*
  * An interface for the game agent 
@@ -20,7 +21,7 @@ public interface IGameAgent {
 
 	void onPlayCard();
 
-	void onTrickCompleted(Trick latestTrick);
+	CompletableFuture<Void> onTrickCompleted(Trick latestTrick);
 
 	void onMessage();
 

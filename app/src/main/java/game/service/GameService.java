@@ -190,7 +190,9 @@ public class GameService {
 		final GameVerticle game = this.games.get(gameID);
 		final Boolean play = game.addCard(card, username);
 		jsonPlayCard.put(Constants.PLAY, play);
-		System.out.println("(service), play" + play);
+		// System.out.println("(service), play: " + play);
+		// System.out.println("after play card trick is : " + game.getLatestTrick().toString());
+		// System.out.println("completed : " + game.getLatestTrick().isCompleted());
 		if (play && game.getLatestTrick().isCompleted()) {
 			System.out.println("inside");
 			game.getGameSchema().addTrick(game.getCurrentTrick());
@@ -200,19 +202,21 @@ public class GameService {
 			}
 			try {
 				game.onTrickCompleted(game.getCurrentTrick());
-				game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
-				game.getTricks().add(game.getCurrentTrick());
-				game.incrementCurrentState();
-				System.out.println("la seconda, prima = incremeted game service" + game.getCurrentState());
-				game.onPlayCard();
-				if (game.isRoundEnded()) {
-					System.out.println("RoundEnded");
-					game.onEndRound();
-					game.startNewRound();
-					System.out.println("game ended" + game.isGameEnded());
-					game.onStartGame();
-				}
-				System.out.println("incremeted game service" + game.getCurrentState());
+				// .whenComplete((result, error) -> {
+					game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
+					game.getTricks().add(game.getCurrentTrick());
+					game.incrementCurrentState();
+					System.out.println("la seconda, prima = incremeted game service" + game.getCurrentState());
+					game.onPlayCard();
+					if (game.isRoundEnded()) {
+						System.out.println("RoundEnded");
+						game.onEndRound();
+						game.startNewRound();
+						System.out.println("game ended" + game.isGameEnded());
+						game.onStartGame();
+					}
+					System.out.println("incremented game service" + game.getCurrentState());
+				// });
 			} catch (final Exception e) {
 				jsonPlayCard.put(Constants.PLAY, false);
 				jsonPlayCard.put(Constants.ERROR, "La presa non è stata completata correttamente");

@@ -69,4 +69,9 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 				eq("gameID", gameSchema.getGameID()), set("leadingSuit", gameSchema.getTrump()),
 				new UpdateOptions().upsert(true));
 	}
+
+	@Override
+	public long getGamesCompleted() {
+		return this.database.getCollection(this.collectionName, GameSchema.class).countDocuments();
+	}
 }

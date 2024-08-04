@@ -49,6 +49,7 @@ public class GameServiceDecorator {
 	private final Map<UUID, GameVerticle> games = new ConcurrentHashMap<>();
 	private final GameService gameService;
 	private final BusinessLogicController businessLogicController;
+	private final AbstractStatisticManager statisticManager;
 	private static final Logger LOGGER = LoggerFactory.getLogger(GameServiceDecorator.class);
 	private final WebSocketVertx webSocket;
 	// private final static Boolean DEBUG = true;
@@ -57,6 +58,7 @@ public class GameServiceDecorator {
 	public GameServiceDecorator(final Vertx vertx, final AbstractStatisticManager statisticManager,
 			final WebSocketVertx webSocket) {
 		this.gameService = new GameService(vertx, statisticManager, webSocket);
+		this.statisticManager = statisticManager;
 		this.webSocket = webSocket;
 		this.businessLogicController = new BusinessLogicController(vertx, this.gameService,
 				Integer.parseInt(System.getenv().getOrDefault("BUSINESS_LOGIC_PORT", "3000")),
@@ -266,6 +268,7 @@ public class GameServiceDecorator {
 					this.businessLogicController.validatePlayCard(trick, card.getCardValue(), userCards, isCardTrump)
 							.whenComplete((res, err) -> {
 								if (err == null) {
+									response.put("mode", this.gameService.getGames().get(gameID).getGameMode() );
 									if (GameMode.ELEVEN2ZERO
 											.equals(this.gameService.getGames().get(gameID).getGameMode())
 											|| res.getBoolean("valid")) {
@@ -468,6 +471,15 @@ public class GameServiceDecorator {
 		}
 	}
 
+	@Operation(summary = "Get total games played", method = Constants.GET_TOTAL_GAMES_METHOD, operationId = Constants.GET_TOTAL_GAMES, tags = {
+			Constants.GAME_TAG }, responses = {
+							@ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(name = "game", implementation = GameCount.class))),
+							@ApiResponse(responseCode = "404", description = "Game not found."),
+							@ApiResponse(responseCode = "500", description = "Internal Server Error.")})
+	public void getCountGames(final RoutingContext context) {
+			context.response().end(new JsonObject()
+					.put(Constants.TOTAL, this.statisticManager.getGamesCompleted()).toBuffer());
+	}
 	@Operation(summary = "Create new game", method = Constants.NEW_GAME_METHOD, operationId = Constants.NEW_GAME, tags = {
 			Constants.GAME_TAG}, requestBody = @RequestBody(description = "the id of the previous game is required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = NewGameBody.class, example = "{\n"
 					+ " \"" + Constants.GAME_ID + "\": \"c1bdcf34-e0f2-409c-aced-e00d4be32b00\"\n"

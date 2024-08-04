@@ -52,24 +52,24 @@ public class BusinessLogicController {
 	 */
 	public CompletableFuture<JsonObject> getShuffledDeck(final UUID gameID, final Integer numberOfPlayers) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-		final JsonObject startResponse = new JsonObject();
+		// final JsonObject startResponse = new JsonObject();
 		WebClient.create(this.vertx).get(this.port, this.host, "/games/startRound")
 				.putHeader("Accept", "application/json")
 				.as(BodyCodec.jsonObject()).send(handler -> {
 					if (handler.succeeded()) {
 						final JsonArray deck = handler.result().body().getJsonArray("deck");
 						final Integer firstPlayer = handler.result().body().getInteger("firstPlayer");
-						startResponse.put("deck", deck);
+						// startResponse.put("deck", deck);
 						LOGGER.info("The deck is: " + deck);
-						startResponse.put("firstPlayer", firstPlayer);
-						LOGGER.info("The first player is: " + firstPlayer);
-						startResponse.put(Constants.START_ATTR, true);
+						// startResponse.put("firstPlayer", firstPlayer);
+						// startResponse.put(Constants.START_ATTR, true);
 						if (this.gameService.getGames().get(gameID).getInitialTurn() == -1) {
+							LOGGER.info("Round started");
+							LOGGER.info("The first player is: " + firstPlayer);
 							this.gameService.getGames().get(gameID).setInitialTurn(firstPlayer);
 						}
 						this.gameService.getGames().get(gameID)
 								.handOutCards(deck.stream().map(el -> (Integer) el).toList());
-						LOGGER.info("Round started");
 						this.gameService.getGames().get(gameID).onNewRound();
 						future.complete(handler.result().body());
 					} else {
@@ -102,9 +102,9 @@ public class BusinessLogicController {
 					final Integer firstPlayer = result.getInteger("firstPlayer");
 					startResponse.put("deck", deck);
 					startResponse.put("firstPlayer", firstPlayer);
-					LOGGER.info("The first player is: " + firstPlayer);
+					// LOGGER.info("The first player is: " + firstPlayer);
 					startResponse.put(Constants.START_ATTR, true);
-					this.gameService.getGames().get(gameID).setInitialTurn(firstPlayer);
+					// this.gameService.getGames().get(gameID).setInitialTurn(firstPlayer);
 				}
 				if (error != null) {
 					LOGGER.error("Error when starting the round");
@@ -179,8 +179,8 @@ public class BusinessLogicController {
 								"GAME " + gameID.toString() + " score of last trick: " + cards.toString() + " -> "
 										+ handler.result().body().getInteger("score"));
 						if (winningPosition == -1) {
-							LOGGER.info("ELeven zero because of mistake by team " + (firstTeam ? "1" : "2"));
-							this.gameService.getGames().get(gameID).setScore(firstTeam);
+							this.gameService.getGames().get(gameID).setScoreAfterMistake(handler.result().body().getInteger("score") ,firstTeam);
+							LOGGER.info("ELeven zero because of mistake by team " + (firstTeam == true ? "A" : "B"));
 							this.gameService.getGames().get(gameID).endRoundByMistake(firstTeam);
 
 							this.gameService.getGames().get(gameID).clearIsSuitFinished();
@@ -189,11 +189,12 @@ public class BusinessLogicController {
 							LOGGER.info("Game: " + gameID + " ended: cause 11 to zero");
 							this.gameService.getGames().get(gameID).onStartGame();
 						} else {
+							this.gameService.getGames().get(gameID).setScore(handler.result().body().getInteger("score") ,firstTeam);
 							this.gameService.getGames().get(gameID)
 									.setTurnWithUser(users.get(String.valueOf(cards[winningPosition])));
-							this.gameService.getGames().get(gameID).setScore(
-									handler.result().body().getInteger("score"),
-									firstTeam);
+// 							this.gameService.getGames().get(gameID)
+// this.teams.stream().filter(t -> t.players().contains(this.users.get(this.turn)))
+// 							.findFirst();
 							LOGGER.info("Score computed");
 						}
 
@@ -223,7 +224,7 @@ public class BusinessLogicController {
 			final UUID gameID = UUID.fromString(body.getString(Constants.GAME_ID));
 			final List<Card<CardValue, CardSuit>> userCardsTemp = this.gameService.getGames().get(gameID)
 					.getUserCards(username);
-			userCardsTemp.add(new Card<>(CardValue.ONE, CardSuit.fromValue(suit)));
+			userCardsTemp.add(new Card<>(CardValue.ONE, CardSuit.fromValue(suit))); //TODo check if can be passed into the json
 			final int[] userCards = userCardsTemp.stream().mapToInt(card -> card.getCardValue().intValue()).toArray();
 			this.getMaraffa(userCards, suit).whenComplete((result, error) -> {
 				if (error != null) {

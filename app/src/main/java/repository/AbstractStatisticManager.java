@@ -12,4 +12,6 @@ public abstract class AbstractStatisticManager {
 	public abstract void updateRecordWithTrick(String recordID, Trick trick);
 
 	public abstract void updateSuit(GameSchema gameSchema);
+
+	public abstract long getGamesCompleted();
 }

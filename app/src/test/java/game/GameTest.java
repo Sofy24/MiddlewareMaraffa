@@ -303,7 +303,7 @@ public class GameTest {
 	 * The card can be played only when the game is started
 	 * 
 	 * @param context
-	 *            vertx test context
+	 * vertx test context
 	 * 
 	 */
 	@Test
@@ -435,7 +435,7 @@ public class GameTest {
 		// this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).onEndRound();
 		assertFalse(this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 				.isRoundEnded());
-
+		//TODO 
 		for (int i = 0; i < Constants.NUMBER_OF_CARDS; i++) {
 			assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))

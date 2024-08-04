@@ -195,9 +195,9 @@ public class UserTestIntegration {
 		this.userService.registerUser("user3", "pwd", "mail").join();
 		this.userService.registerUser("user4", "pwd", "mail").join();
 		final Team team1 = new Team(List.of(new User("user1", clientID, false), new User("user2", clientID, false)),
-				"teamA", 8);
+				"teamA", 8, 0);
 		final Team team2 = new Team(List.of(new User("user3", clientID, false), new User("user4", clientID, false)),
-				"teamB", 3);
+				"teamB", 3, 0);
 		/** testing only the necessary part of the after round body */
 		final JsonObject requestBody = new JsonObject().put("teamA", team1).put("teamB", team2);
 		/**

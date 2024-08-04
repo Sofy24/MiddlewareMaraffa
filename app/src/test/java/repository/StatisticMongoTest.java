@@ -103,7 +103,7 @@ public class StatisticMongoTest {
 
 	@Test
 	public void getGamesCompleted() {
-		final var numGames = this.mongoStatisticManager.getGamesCompleted(TRICKS);
+		final var numGames = this.mongoStatisticManager.getGamesCompleted();
 		assertNotNull(numGames);
 		assertInstanceOf(Long.class, numGames);
 	}

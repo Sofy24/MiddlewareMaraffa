@@ -190,9 +190,9 @@ public class GameService {
 		final GameVerticle game = this.games.get(gameID);
 		final Boolean play = game.addCard(card, username);
 		jsonPlayCard.put(Constants.PLAY, play);
-		System.out.println("(service), play: " + play);
-		System.out.println("after play card trick is : " + game.getLatestTrick().toString());
-		System.out.println("completed : " + game.getLatestTrick().isCompleted());
+		// System.out.println("(service), play: " + play);
+		// System.out.println("after play card trick is : " + game.getLatestTrick().toString());
+		// System.out.println("completed : " + game.getLatestTrick().isCompleted());
 		if (play && game.getLatestTrick().isCompleted()) {
 			System.out.println("inside");
 			game.getGameSchema().addTrick(game.getCurrentTrick());
@@ -201,7 +201,8 @@ public class GameService {
 						String.valueOf(gameID) + '-' + game.getCurrentState().get() / 10, game.getCurrentTrick());
 			}
 			try {
-				game.onTrickCompleted(game.getCurrentTrick()).whenComplete((result, error) -> {
+				game.onTrickCompleted(game.getCurrentTrick());
+				// .whenComplete((result, error) -> {
 					game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
 					game.getTricks().add(game.getCurrentTrick());
 					game.incrementCurrentState();
@@ -214,8 +215,8 @@ public class GameService {
 						System.out.println("game ended" + game.isGameEnded());
 						game.onStartGame();
 					}
-					System.out.println("incremeted game service" + game.getCurrentState());
-				});
+					System.out.println("incremented game service" + game.getCurrentState());
+				// });
 			} catch (final Exception e) {
 				jsonPlayCard.put(Constants.PLAY, false);
 				jsonPlayCard.put(Constants.ERROR, "La presa non è stata completata correttamente");

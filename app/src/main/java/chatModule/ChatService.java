@@ -92,12 +92,14 @@ public class ChatService {
 		}
 	}
 
-	public void messageReceived(final String msg, final Optional<UUID> gameID, final String author) {
+	public void messageReceived(final String msg, final Optional<UUID> gameID, final String author, final String environment) {
 		LOGGER.info("Received message: " + msg);
 		System.out.println(msg);
 		final JsonObject message = new JsonObject()
 				.put("event", "message")
-				.put("author", author).put("message", msg);
+				.put("environment", environment)
+				.put("author", author)
+				.put("message", msg);
 		if (gameID.isPresent()) {
 			this.gamesMap.get(gameID.get()).getUsers().forEach(user -> {
 				this.webSocketVertx.sendMessageToClient(user.clientID(), message.toString());

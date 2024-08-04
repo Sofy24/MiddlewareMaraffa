@@ -53,7 +53,8 @@ public class ChatController {
 				: Optional.empty();
 		final String author = context.body().asJsonObject().getString("author");
 		final String msg = context.body().asJsonObject().getString("message");
-		this.service.messageReceived(msg, gameID, author);
+		final String environment = context.body().asJsonObject().getString("environment");
+		this.service.messageReceived(msg, gameID, author, environment);
 		context.response().setStatusCode(HttpURLConnection.HTTP_ACCEPTED).end(); // TODO temp
 	}
 

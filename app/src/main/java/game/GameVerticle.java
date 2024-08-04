@@ -430,6 +430,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.teams.set(beginTeam == "A" ? invIndex : index, 
 				new Team(invTeam.players(), invTeam.nameOfTeam(), invTeam.score() + score , 0));
 		LOGGER.info("[Score 11toZero] Score situation: " + this.teams.toString());
+		if (this.isGameEnded()) {
+			LOGGER.info("Game ended with eleven to zero, somebody is quite a noob...");
+			this.onEndGame();
+		}
 	}
 	/**
 	 * update the score of the teams

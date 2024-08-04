@@ -82,8 +82,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.numberOfPlayers = numberOfPlayers;
 		this.numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
 		this.creatorName = user.username();
-		this.teams.add(new Team(List.of(user), "A", 0));
-		this.teams.add(new Team(List.of(), "B", 0));
+		this.teams.add(new Team(List.of(user), "A", 0, 0));
+		this.teams.add(new Team(List.of(), "B", 0, 0));
 		this.users.add(user);
 		this.gameSchema = new GameSchema(String.valueOf(id) + '-' + this.currentState.get() / 10, CardSuit.NONE);
 		this.statisticManager = statisticManager;
@@ -104,8 +104,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		this.creatorName = user.username();
 		this.numberOfPlayers = numberOfPlayers;
 		this.numberOfTricksInRound = floor((float) Constants.NUMBER_OF_CARDS / this.numberOfPlayers);
-		this.teams.add(new Team(List.of(user), "A", 0));
-		this.teams.add(new Team(List.of(), "B", 0));
+		this.teams.add(new Team(List.of(user), "A", 0, 0));
+		this.teams.add(new Team(List.of(), "B", 0, 0));
 		this.users.add(user);
 		this.gameSchema = new GameSchema(String.valueOf(id) + '-' + this.currentState.get() / 10, CardSuit.NONE);
 	}
@@ -129,7 +129,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			final Team currentTeam = this.teams.get(this.teamPos % 2);
 			final List<User> updatePlayers = new ArrayList<>(currentTeam.players());
 			updatePlayers.add(user);
-			this.teams.set(this.teamPos % 2, new Team(updatePlayers, currentTeam.nameOfTeam(), currentTeam.score()));
+			this.teams.set(this.teamPos % 2, new Team(updatePlayers, currentTeam.nameOfTeam(), currentTeam.score(), currentTeam.currentScore()));
 			LOGGER.info("GAME " + this.id + " joined: " + user.toString());
 			this.teamPos += 1;
 			return true;
@@ -160,7 +160,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public boolean addCard(final Card<CardValue, CardSuit> card, final String username) {
 		if (this.turn >= 0) {
-			LOGGER.info("GAME " + this.id + " addCard: " + card.toString() + " by " + username);
+			//TODO recap da qua..... non sembra capisca correttamente taglio e errore da 11 a zero !
+			LOGGER.info("GAME " + this.id + " addCard: " + card.toString() + " by " + username + " suitFinished arrat: " + this.isSuitFinished.toString());
 			if (this.canStart() && this.users.get(this.turn).username().equals(username)) {
 				if (this.currentTrick == null) {
 					this.currentTrick = this.states.getOrDefault(this.currentState.get(),
@@ -395,6 +396,25 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		return true;
 	}
 
+
+	public void setScoreAfterMistake(final int score, final boolean isTeamA) {
+		LOGGER.info("Calling:  setScoreAfterMistake" );
+		final int index = isTeamA ? 0 : 1;
+		final int invIndex = isTeamA ? 1 : 0;
+		final Team currentTeam = this.teams.get(index);
+		final Team invTeam = this.teams.get(invIndex);
+		LOGGER.info("GAME " + this.id + " turn : " + this.currentState.get());
+		LOGGER.info("Score situation: " + this.teams.toString());
+		// LOGGER.info(
+		// 		"GAME " + this.id + " score before compute: " + currentTeam.nameOfTeam() + " : " + currentTeam.score());
+		System.out.println("before score : " + currentTeam.score());
+		this.teams.set(index,
+				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + (score / 3), 0));
+
+		this.teams.set(invIndex,
+				new Team(invTeam.players(), invTeam.nameOfTeam(), invTeam.score(), 0));
+		LOGGER.info("Score situation: " + this.teams.toString());
+	}
 	/**
 	 * update the score of the teams
 	 *
@@ -406,17 +426,18 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		final int invIndex = isTeamA ? 1 : 0;
 		Team currentTeam = this.teams.get(index);
 		LOGGER.info("GAME " + this.id + " turn : " + this.currentState.get());
+		LOGGER.info("Score situation: " + this.teams.toString());
 		LOGGER.info(
 				"GAME " + this.id + " score before compute: " + currentTeam.nameOfTeam() + " : " + currentTeam.score());
-		System.out.println("before score : " + currentTeam.score());
 		this.teams.set(index,
-				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score() + score));
+				new Team(currentTeam.players(), currentTeam.nameOfTeam(), currentTeam.score(), currentTeam.currentScore() + score));
 		// LOGGER.info("GAME " + this.id + " score after compute: " +
 		// currentTeam.nameOfTeam() + " : "
 		// + (currentTeam.score() + score));
 		// LOGGER.info("GAME " + this.id + " teams : " + this.teams.toString());
 		Team invTeam = this.teams.get(invIndex);
 		currentTeam = this.teams.get(index);
+		LOGGER.info("Score situation: " + this.teams.toString());
 		// System.out.println("after score: " + currentTeam.score() +
 		// currentTeam.nameOfTeam());
 		// System.out.println("after score: " + invTeam.score() + invTeam.nameOfTeam());
@@ -426,23 +447,32 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			// + currentTeam.score());
 			this.teams.set(index,
 					new Team(currentTeam.players(), currentTeam.nameOfTeam(),
-							(currentTeam.score() - currentTeam.score() % 3) + 3));
+							currentTeam.score(), (currentTeam.currentScore() - currentTeam.currentScore() % 3) + 3));
 			this.teams.set(invIndex,
 					new Team(invTeam.players(), invTeam.nameOfTeam(),
-							(invTeam.score() - invTeam.score() % 3)));
+							invTeam.score(), (invTeam.currentScore() - invTeam.currentScore() % 3)));
+			LOGGER.info("Score situation: " + this.teams.toString());
 			currentTeam = this.teams.get(index);
 			invTeam = this.teams.get(invIndex);
+			this.teams.set(index,
+					new Team(currentTeam.players(), currentTeam.nameOfTeam(),
+							currentTeam.score() + currentTeam.currentScore(), 0));
+			this.teams.set(invIndex,
+					new Team(invTeam.players(), invTeam.nameOfTeam(),
+							invTeam.score() + invTeam.currentScore(), 0));
+
 			LOGGER.info(
 				"The fucking game is done, user: " + this.users.get(this.initialTurn) + " is not your turn anymore !"
 			);
+			LOGGER.info("Score situation: " + this.teams.toString());
 			this.initialTurn += 1;
 			this.setInitialTurn(this.initialTurn);
 			this.checkMaraffa = true;
 			LOGGER.info(
 				"I choose you : " + this.users.get(this.initialTurn) + ", pick a trump"
 			);
-			System.out.println("after +1 score: " + currentTeam.score());
-			System.out.println("after +1 score, but other team: " + invTeam.score());
+			// System.out.println("after +1 score: " + currentTeam.score());
+			// System.out.println("after +1 score, but other team: " + invTeam.score());
 			// ??? currentTeam.score() + (currentTeam.score() % 3 == 0 ? 1 :
 			// currentTeam.score() % 3)
 			// LOGGER.info("GAME " + this.id + " score after ultima presa: " +
@@ -524,7 +554,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				final List<User> updatedPlayers = new ArrayList<>(t.players());
 				// updatedPlayers.remove(updatedPlayers.stream().map(User::username).toList().indexOf(username));
 				updatedPlayers.remove(deletedUser);
-				return new Team(updatedPlayers, t.nameOfTeam(), t.score());
+				return new Team(updatedPlayers, t.nameOfTeam(), t.score(), t.currentScore());
 			}).collect(Collectors.toList());
 			final Team selectedteam = this.teams.stream().filter(t -> t.nameOfTeam().equals(team)).findFirst()
 					.orElseThrow();
@@ -532,7 +562,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				final int teamIndex = this.teams.indexOf(selectedteam);
 				final List<User> updatedPlayers = new ArrayList<>(selectedteam.players());
 				updatedPlayers.add(pos, deletedUser);
-				this.teams.set(teamIndex, new Team(updatedPlayers, selectedteam.nameOfTeam(), selectedteam.score()));
+				this.teams.set(teamIndex, new Team(updatedPlayers, selectedteam.nameOfTeam(), selectedteam.score(), selectedteam.currentScore()));
 				LOGGER.info("The team has been changed" + this.teams.toString());
 				this.onChangeTeam();
 				return true;
@@ -581,7 +611,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	
 	/**
-	 * @return the password of this game
+* @return the password of this game,
 	 */
 	public Optional<String> getPassword() {
 		return this.password;
@@ -657,7 +687,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			.filter(user -> !username.equals(user.username()))
 			.collect(Collectors.toList()),
 			team.nameOfTeam(),
-			team.score()
+			team.score(),
+			team.currentScore()
 		))
 		.collect(Collectors.toList());
 		this.teams = updatedTeams;
@@ -683,8 +714,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				.put("teamA", this.teams.get(0))
 				.put("teamB", this.teams.get(1))
 				.put("trick", this.currentTrick)
-				.put("teamAScore", this.teams.get(0).score() / 3)
-				.put("teamBScore", this.teams.get(1).score() / 3)
+				.put("teamAScore", this.teams.get(0).score() + this.teams.get(0).currentScore() / 3)
+				.put("teamBScore", this.teams.get(1).score() +this.teams.get(1).currentScore() / 3)
+				.put("teamAScoreCurrent", this.teams.get(0).currentScore() / 3)
+				.put("teamBScoreCurrent", this.teams.get(1).currentScore() / 3)
 				.put("mode", this.gameMode.toString());
 		System.out.println("json" + json.toString());
 		return json;
@@ -813,8 +846,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 												&& this.getCurrentState().get() - 1 >= 0
 														? this.tricks.get(this.getCurrentState().get() - 1)
 														: null)
-								.put("teamAScore", this.teams.get(0).score() / 3)
-								.put("teamBScore", this.teams.get(1).score() / 3)
+				.put("teamAScore", this.teams.get(0).score() + this.teams.get(0).currentScore() / 3)
+				.put("teamBScore", this.teams.get(1).score() +this.teams.get(1).currentScore() / 3)
 								.put("userTurn", this.users.get(this.turn).username()).toString());
 			}
 
@@ -871,8 +904,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.put("teamB", this.teams.get(1).players().stream().map(User::username).toList())
 								.put("trumpSelectorUsername",
 										this.users.get(this.initialTurn >= 0 ? this.initialTurn : 0).username())
-								.put("teamAScore", this.teams.get(0).score() / 3)
-								.put("teamBScore", this.teams.get(1).score() / 3).toString());
+				.put("teamAScore", this.teams.get(0).score() + this.teams.get(0).currentScore() / 3)
+				.put("teamBScore", this.teams.get(1).score() +this.teams.get(1).currentScore() / 3)
+								.toString());
 
 			}
 		}
@@ -887,8 +921,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.put("event", "endGame")
 								.put("teamA", this.teams.get(0).players().stream().map(User::username).toList())
 								.put("teamB", this.teams.get(1).players().stream().map(User::username).toList())
-								.put("teamAScore", this.teams.get(0).score() / 3)
-								.put("teamBScore", this.teams.get(1).score() / 3).toString());
+				.put("teamAScore", this.teams.get(0).score() + this.teams.get(0).currentScore() / 3)
+				.put("teamBScore", this.teams.get(1).score() +this.teams.get(1).currentScore() / 3)
+								.toString());
 			}
 		}
 		// if (this.vertx != null)

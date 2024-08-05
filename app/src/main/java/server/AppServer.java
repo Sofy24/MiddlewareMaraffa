@@ -14,20 +14,14 @@ import repository.AbstractStatisticManager;
 import repository.MongoStatisticManager;
 import userModule.UserController;
 
+/*
+ * This class is responsible for managing the server of the application. Reading and using the enviroment variables and start the application.
+ */
 public class AppServer extends AbstractVerticle {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AppServer.class);
 	private final int port = Integer.parseInt(System.getenv().getOrDefault("MIDDLEWARE_PORT", "3003"));
 	private HttpServer server;
-	// private final String host = Dotenv.load().get("MIDDLEWARE_HOST",
-	// "localhost");
-	// AbstractStatisticManager mongoStatisticManager = new MongoStatisticManager(
-	// Dotenv.load().get("MONGO_USER", "user"),
-	// Dotenv.load().get("MONGO_PASSWORD", "password"),
-	// Dotenv.load().get("MONGO_HOST", "localhost"),
-	// Integer.parseInt(Dotenv.load().get("MONGO_PORT", "27127")),
-	// Dotenv.load().get("MONGO_DATABASE", "maraffa")
-	// );
-	// "localhost");
+
 	AbstractStatisticManager mongoStatisticManager = new MongoStatisticManager(
 			System.getenv().getOrDefault("MONGO_USER", "your_mongo_user"),
 			System.getenv().getOrDefault("MONGO_PASSWORD", "your_mongo_password"),
@@ -64,7 +58,6 @@ public class AppServer extends AbstractVerticle {
 
 	private HttpServerOptions createOptions() {
 		final HttpServerOptions options = new HttpServerOptions();
-		// options.setHost(this.host);
 		options.setPort(this.port);
 		return options;
 	}

@@ -9,6 +9,9 @@ import game.utils.Constants;
 import io.vertx.core.http.HttpMethod;
 import userModule.UserController;
 
+/*
+ * This class is responsible for managing all the routes of the application.
+ */
 public class Controller implements IController {
 	private final GameServiceDecorator entityService;
 	private final List<IRouteResponse> routes = new ArrayList<>();
@@ -44,7 +47,10 @@ public class Controller implements IController {
 		this.routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.MAKE_CALL, this.entityService::makeCall));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GAMES, this.entityService::getGames));
 		this.routes.add(new RouteResponse(HttpMethod.POST, "/" + Constants.NEW_GAME, this.entityService::newGame));
+		this.routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.SET_PASSWORD, this.entityService::setPassword));
+		this.routes.add(new RouteResponse(HttpMethod.PATCH, "/" + Constants.REMOVE_USER, this.entityService::removeUser));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GET_PLAYERS, this.entityService::getPlayers));
+		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GET_TOTAL_GAMES, this.entityService::getCountGames));
 		this.routes.add(new RouteResponse(HttpMethod.GET, "/" + Constants.GETGAME, this.entityService::getGame));
 		this.routes.add(new RouteResponse(HttpMethod.DELETE, "/" + Constants.GETGAME, this.entityService::exitGame));
 		// TODO delete game

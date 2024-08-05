@@ -21,17 +21,17 @@ import com.mongodb.client.model.UpdateOptions;
 import game.GameSchema;
 import game.Trick;
 
-// TODO ma un bel singleton?
+/*
+ * A class implementing the statistic manager for mongoDB
+ */
 public class MongoStatisticManager extends AbstractStatisticManager {
 	private MongoDatabase database;
+	private final String collectionName;
 
-	// TODO andranno passati a costruttore tanti parametri quanti sono i parametri
-	// di connessione
-	public MongoStatisticManager(final String user, final String password, final String host, final int port, final String databaseName) {
-		// final String uri =
-		// "mongodb://your_mongo_user:your_mongo_password@127.0.0.1:27012";
+	public MongoStatisticManager(final String user, final String password, final String host, final int port,
+			final String collectionName) {
 		final String uri = "mongodb://" + user + ":" + password + "@" + host + ":" + port;
-		System.out.println("MONGOOO: " + uri);
+		this.collectionName = collectionName;
 		try {
 
 			final CodecProvider pojoCodecProvider = PojoCodecProvider.builder().automatic(true).build();
@@ -41,7 +41,7 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 			// fromProviders(pojoCodecProvider));
 
 			final MongoClient mongoClient = MongoClients.create(uri);
-			this.database = mongoClient.getDatabase(databaseName).withCodecRegistry(pojoCodecRegistry);
+			this.database = mongoClient.getDatabase(collectionName).withCodecRegistry(pojoCodecRegistry);
 		} catch (final Exception e) {
 			System.out.println("Error in MongoStatisticManager constructor: " + e.getMessage());
 		}
@@ -50,23 +50,28 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 	@Override
 	public void createRecord(final GameSchema schema) {
 		schema.setDate(new Date());
-		this.database.getCollection("MaraffaStatistics", GameSchema.class).insertOne(schema);
+		this.database.getCollection(this.collectionName, GameSchema.class).insertOne(schema);
 	}
 
 	@Override
 	public void updateRecordWithTrick(final String recordID, final Trick trick) {
-		final var res = this.database.getCollection("MaraffaStatistics", GameSchema.class)
+		final var res = this.database.getCollection(this.collectionName, GameSchema.class)
 				.updateOne(eq("gameID", recordID), push("tricks", trick), new UpdateOptions().upsert(true));
 		System.out.println("Update result: " + res);
 	}
 
 	public GameSchema getRecord(final String recordID) {
-		return this.database.getCollection("MaraffaStatistics", GameSchema.class).find(eq("gameID", recordID)).first();
+		return this.database.getCollection(this.collectionName, GameSchema.class).find(eq("gameID", recordID)).first();
 	}
 
 	public void updateSuit(final GameSchema gameSchema) {
-		this.database.getCollection("MaraffaStatistics", GameSchema.class).updateOne(
+		this.database.getCollection(this.collectionName, GameSchema.class).updateOne(
 				eq("gameID", gameSchema.getGameID()), set("leadingSuit", gameSchema.getTrump()),
 				new UpdateOptions().upsert(true));
+	}
+
+	@Override
+	public long getGamesCompleted() {
+		return this.database.getCollection(this.collectionName, GameSchema.class).countDocuments();
 	}
 }

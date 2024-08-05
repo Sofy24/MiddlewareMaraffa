@@ -1,5 +1,6 @@
 package chatModule;
 
+import java.net.HttpURLConnection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,7 +19,7 @@ import io.vertx.ext.web.RoutingContext;
 import server.WebSocketVertx;
 
 /**
- * TODO javadoc
+ * The ChatController class is used for managing chat operations through its APIs.
  */
 @Api(tags = "Chat Operations", description = "APIs for chat management")
 public class ChatController {
@@ -34,12 +35,11 @@ public class ChatController {
 	 * @param context
 	 */
 	@Operation(summary = "MSG rec operation", description = "Authenticate user and generate token", method = "POST", operationId = "chat", tags = {
-			"Chat Operations" }, requestBody = @RequestBody(description = "username, trump and id of the game are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = ChatMessageBody.class, example = "{\n"
-					+
-					"  \"" + Constants.AUTHOR + "\": \"mega\",\n" +
-					"  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
-					"  \"" + Constants.MESSAGE + "\": \"Ciao a tutti !\"" +
-					"}")))
+			"Chat Operations"}, requestBody = @RequestBody(description = "username, trump and id of the game are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = ChatMessageBody.class, example = "{\n"
+					+ "  \"" + Constants.AUTHOR + "\": \"mega\",\n"
+					+ "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n"
+					+ "  \"" + Constants.MESSAGE + "\": \"Ciao a tutti !\""
+					+ "}")))
 	// requestBody = @RequestBody(description = "User's credentials"), responses =
 	// {
 	// @ApiResponse(responseCode = "200", description = "Login successful"),
@@ -53,19 +53,19 @@ public class ChatController {
 				: Optional.empty();
 		final String author = context.body().asJsonObject().getString("author");
 		final String msg = context.body().asJsonObject().getString("message");
-		this.service.messageReceived(msg, gameID, author);
-		context.response().setStatusCode(java.net.HttpURLConnection.HTTP_ACCEPTED).end(); // TODO temp
+		final String environment = context.body().asJsonObject().getString("environment");
+		this.service.messageReceived(msg, gameID, author, environment);
+		context.response().setStatusCode(HttpURLConnection.HTTP_ACCEPTED).end(); // TODO temp
 	}
 
 	/**
 	 * @param context
 	 */
 	@Operation(summary = "notification operation", description = "Sends a notification to all the members of a team", method = "POST", operationId = "notification", tags = {
-			"Chat Operations" }, requestBody = @RequestBody(description = "username, trump and id of the game are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = NotificationBody.class, example = "{\n"
-					+
-					"  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n" +
-					"  \"" + Constants.MESSAGE + "\": \"Ciao a tutti !\"" +
-					"}")))
+			"Chat Operations"}, requestBody = @RequestBody(description = "username, trump and id of the game are required", required = true, content = @Content(mediaType = "application/json", encoding = @Encoding(contentType = "application/json"), schema = @Schema(implementation = NotificationBody.class, example = "{\n"
+					+ "  \"" + Constants.GAME_ID + "\": \"123e4567-e89b-12d3-a456-426614174000\",\n"
+					+ "  \"" + Constants.MESSAGE + "\": \"Ciao a tutti !\""
+					+ "}")))
 
 	// requestBody = @RequestBody(description = "User's credentials"), responses =
 	// {
@@ -80,6 +80,6 @@ public class ChatController {
 				: Optional.empty();
 		final String msg = context.body().asJsonObject().getString("message");
 		this.service.notificationReceived(msg, gameID);
-		context.response().setStatusCode(java.net.HttpURLConnection.HTTP_ACCEPTED).end(); // TODO temp
+		context.response().setStatusCode(HttpURLConnection.HTTP_ACCEPTED).end(); // TODO temp
 	}
 }

@@ -1,5 +1,6 @@
 package repository;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.UUID;
@@ -22,9 +23,13 @@ import io.github.cdimascio.dotenv.Dotenv;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 
+/*
+ * This class test che statistic are correctly saved in the db
+ */
 @TestInstance(Lifecycle.PER_CLASS)
 @ExtendWith(VertxExtension.class)
 public class StatisticMongoTest {
+	private static final int TRICKS = 10;
 	private final User userTest = new User("user", UUID.randomUUID(), false);
 	private static final int MARAFFA_PLAYERS = 4;
 	private static final int EXPECTED_SCORE = 11;
@@ -46,9 +51,6 @@ public class StatisticMongoTest {
 					.filename("env.example").load().get("MONGO_PORT", "27127")),
 			Dotenv.configure().filename("env.example").load().get("MONGO_DATABASE", "maraffa-test"));
 
-	// contro il db
-	// {nome}_test
-
 	@BeforeAll
 	public void setUp() {
 		this.vertx = Vertx.vertx();
@@ -67,7 +69,7 @@ public class StatisticMongoTest {
 	@Test
 	public void prepareGame() {
 		final String gameID = this.gameService
-				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString(), PASSWORD)
+				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString())
 				.getString(Constants.GAME_ID);
 		final var doc = this.mongoStatisticManager.getRecord(gameID + "-0");
 		assertNotNull(doc);
@@ -75,9 +77,9 @@ public class StatisticMongoTest {
 
 	@Test
 	public void playCard() {
-		//TODO not finished
+		// TODO not finished
 		final String gameID = this.gameService
-				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString(), PASSWORD)
+				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString())
 				.getString(Constants.GAME_ID);
 		final UUID gameId = UUID.fromString(gameID);
 		for (int i = 2; i < MARAFFA_PLAYERS + 1; i++) {
@@ -96,5 +98,13 @@ public class StatisticMongoTest {
 				this.isSuitFinished);
 		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.KING, CardSuit.CLUBS),
 				this.isSuitFinished);
+	}
+
+
+	@Test
+	public void getGamesCompleted() {
+		final var numGames = this.mongoStatisticManager.getGamesCompleted();
+		assertNotNull(numGames);
+		assertInstanceOf(Long.class, numGames);
 	}
 }

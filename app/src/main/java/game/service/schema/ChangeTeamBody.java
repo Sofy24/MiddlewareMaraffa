@@ -42,10 +42,12 @@ public class ChangeTeamBody {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
-		if (!(o instanceof ChangeTeamBody))
+		}
+		if (!(o instanceof ChangeTeamBody)) {
 			return false;
+		}
 			ChangeTeamBody changeTeamBody = (ChangeTeamBody) o;
 		return gameID.equals(changeTeamBody.gameID);
 	}

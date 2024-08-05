@@ -10,10 +10,12 @@ public class IsRoundEndedResponse {
 
 	@Override
 	public boolean equals(final Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
-		if (!(o instanceof IsRoundEndedResponse))
+		}
+		if (!(o instanceof IsRoundEndedResponse)) {
 			return false;
+		}
 		final IsRoundEndedResponse that = (IsRoundEndedResponse) o;
 		return isEnded == that.isEnded;
 	}

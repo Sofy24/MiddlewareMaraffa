@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/** TODO/Define the mongodb schema of the game */
+/*
+ * Java class named `GameSchema` in the `game` package. Defines the mongodb schema of the game
+*/
 public class GameSchema {
 	private String gameID;
 

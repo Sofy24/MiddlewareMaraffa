@@ -30,4 +30,7 @@ public final class OpenApiRoutePublisher {
 			return new OpenAPI();
 		}
 	}
+
+	private OpenApiRoutePublisher() {
+	}
 }

@@ -1,8 +1,12 @@
 package game;
 
-import game.service.User;
-import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
+import game.service.User;
+
+/*
+ * An interface for the game agent 
+ */
 public interface IGameAgent {
 
 	void onCreateGame(User user);
@@ -17,7 +21,7 @@ public interface IGameAgent {
 
 	void onPlayCard();
 
-	void onTrickCompleted(Trick latestTrick);
+	CompletableFuture<Void> onTrickCompleted(Trick latestTrick);
 
 	void onMessage();
 
@@ -30,4 +34,6 @@ public interface IGameAgent {
 	void onChangeTeam();
 
 	void onMakeCall(final Call call);
+
+	void onRemoveUser();
 }

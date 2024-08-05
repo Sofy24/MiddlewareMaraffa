@@ -2,8 +2,8 @@ package game.service;
 
 import java.util.UUID;
 
-/**
- * TODO javadoc
+/*
+ 	Java record class named `User` in the `game.service` package. The
  */
 public record User(String username, UUID clientID, boolean guest) {
 

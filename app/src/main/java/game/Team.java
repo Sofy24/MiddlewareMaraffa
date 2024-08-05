@@ -5,7 +5,7 @@ import java.util.List;
 import game.service.User;
 
 /** A record modelling the concept of "team" */
-public record Team(List<User> players, String nameOfTeam, Integer score) {
+public record Team(List<User> players, String nameOfTeam, Integer score, Integer currentScore) {
 
 	@Override
 	public List<User> players() {
@@ -23,8 +23,16 @@ public record Team(List<User> players, String nameOfTeam, Integer score) {
 	}
 
 	@Override
+	public Integer currentScore() {
+		return this.currentScore;
+	}
+
+	@Override
 	public String toString() {
-		return "Team{" + "players=" + this.players + ", nameOfTeam='" + this.nameOfTeam + '\'' + ", score='"
-				+ this.score + '\'' + '}';
+		return "Team{" + "players=" + this.players.stream().map(User::username).toList() + ", nameOfTeam='" + this.nameOfTeam + '\'' + ", score='"
+				+ this.score + '\''
+				+ ", currentScore='"
+				+ this.currentScore + '\'' +
+				+ '}';
 	}
 }

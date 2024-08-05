@@ -7,6 +7,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bson.codecs.pojo.annotations.BsonIgnore;
 
+/*
+ * A class implementing the Trick interface
+ */
 public class TrickImpl implements Trick {
 	// private final Map<String, Pair<Integer, String>> cards = new HashMap<>();
 	@BsonIgnore
@@ -29,7 +32,7 @@ public class TrickImpl implements Trick {
 
 	/**
 	 * @param card
-	 *             added to the trick, if not all the players has already played
+	 *            added to the trick, if not all the players has already played
 	 */
 	@Override
 	public void addCard(final Card<CardValue, CardSuit> card, final String username) {

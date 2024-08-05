@@ -18,15 +18,17 @@ public enum CardSuit {
 
 	public static CardSuit fromValue(final int value) {
 		for (final CardSuit v : values())
-			if (v.value.equals(value))
+			if (v.value.equals(value)) {
 				return v;
+			}
 		throw new IllegalArgumentException();
 	}
 
 	public static CardSuit getName(final String value) {
 		for (final CardSuit v : values())
-			if (v.toString().equals(value))
+			if (v.toString().equals(value)) {
 				return v;
+			}
 		throw new IllegalArgumentException();
 	}
 }

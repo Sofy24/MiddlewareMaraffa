@@ -172,10 +172,11 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					LOGGER.info("[Duplicate] Start of a new trick means first player is:" + this.users.get(this.turn).username() + " and the team is: " + this.teamAtTrick.get());
 				}
 
-				if (card.cardValue() == CardValue.ONE && this.checkMaraffa) { //TODO SISTEMARE
-					this.onCheckMaraffa(card.cardSuit().value, username);
-				}
-				this.checkMaraffa = false;
+				// if (card.cardValue() == CardValue.ONE && this.checkMaraffa) { //TODO SISTEMARE
+				// if (this.checkMaraffa) { //TODO SISTEMARE
+				this.onCheckMaraffa(card.cardSuit().value, card.cardValue().value, this.trump.value, username);
+				// }
+				// this.checkMaraffa = false;
 
 				if (this.currentTrick.getCardsAndUsers().containsValue(username)) {
 					return false;
@@ -813,12 +814,15 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	}
 
 	@Override
-	public void onCheckMaraffa(final int suit, final String username) {
+	// public void onCheckMaraffa(final int suit, final String username) {
+	public void onCheckMaraffa(final int suit, final int value, final int trump, final String username) {
 		final int user = this.turn;
 		if (this.getVertx() != null) {
 			this.getVertx().eventBus().request("game-maraffa:onCheckMaraffa",
 					new JsonObject()
+							.put(Constants.VALUE, value)
 							.put(Constants.SUIT, suit)
+							.put(Constants.TRUMP, trump)
 							.put(Constants.GAME_ID, this.id.toString())
 							.put(Constants.USERNAME, username)
 							.toString(),

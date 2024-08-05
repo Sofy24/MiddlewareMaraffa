@@ -17,7 +17,7 @@ public interface IGameAgent {
 
 	void onStartGame();
 
-	void onCheckMaraffa(int suit, String username);
+	void onCheckMaraffa(int suit, int value, int trump, String username);
 
 	void onPlayCard();
 

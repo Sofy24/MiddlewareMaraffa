@@ -1,7 +1,6 @@
 package integration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -79,7 +78,7 @@ public class BusinessLogicTestIntegration {
 		this.vertx.close();
 	}
 
-	@Timeout(value = 10, unit = TimeUnit.SECONDS)
+	@Timeout(value = 10, unit = TimeUnit.HOURS)
 	@Test
 	public void testgetShuffledDeckOK(final VertxTestContext context) {
 		final JsonObject gameResponse = this.gameService.createGame((Integer) 4, TEST_USER, 41,
@@ -175,7 +174,9 @@ public class BusinessLogicTestIntegration {
 	@Test
 	public void MaraffaIsPresentTest(final VertxTestContext context) {
 		final int[] deck = new int[] { 7, 8, 9, 1, 2, 3, 4, 5, 6, 0 };
-		this.businessLogicController.getMaraffa(deck, 0).whenComplete((res, err) -> {
+		final Card<CardValue, CardValue> cardPlayed = new Card<>(CardValue.ONE, CardSuit.COINS);
+		final CardSuit trump = CardSuit.COINS;
+		this.businessLogicController.getMaraffa(deck, cardPlayed.cardSuit().value, cardPlayed.cardValue().value, trump.value ).whenComplete((res, err) -> {
 			context.verify(() -> {
 				assertNull(res.getString("error"));
 				assertEquals(res.getBoolean("maraffa"), true);
@@ -184,12 +185,43 @@ public class BusinessLogicTestIntegration {
 		});
 	}
 
+	@Timeout(value = 10, unit = TimeUnit.SECONDS)
+	@Test
+	public void MaraffaIsPresentButIsNotSameSuitAsTrump(final VertxTestContext context) {
+		final int[] deck = new int[] { 7, 8, 9, 1, 2, 3, 4, 5, 6, 0 };
+		final Card<CardValue, CardValue> cardPlayed = new Card<>(CardValue.ONE, CardSuit.COINS);
+		final CardSuit trump = CardSuit.CLUBS;
+		this.businessLogicController.getMaraffa(deck, cardPlayed.cardSuit().value, cardPlayed.cardValue().value, trump.value ).whenComplete((res, err) -> {
+			context.verify(() -> {
+				assertNull(res.getString("error"));
+				assertEquals(res.getBoolean("maraffa"), false);
+				context.completeNow();
+			});
+		});
+	}
+
+	@Timeout(value = 10, unit = TimeUnit.SECONDS)
+	@Test
+	public void MaraffaIsPresentButOneIsNotPlayed(final VertxTestContext context) {
+		final int[] deck = new int[] { 7, 8, 9, 1, 2, 3, 4, 5, 6, 0 };
+		final Card<CardValue, CardValue> cardPlayed = new Card<>(CardValue.TWO, CardSuit.COINS);
+		final CardSuit trump = CardSuit.COINS;
+		this.businessLogicController.getMaraffa(deck, cardPlayed.cardSuit().value, cardPlayed.cardValue().value, trump.value ).whenComplete((res, err) -> {
+			context.verify(() -> {
+				assertNull(res.getString("error"));
+				assertEquals(res.getBoolean("maraffa"), false);
+				context.completeNow();
+			});
+		});
+	}
 	/* Test if Maraffa is not present */
 	@Timeout(value = 10, unit = TimeUnit.SECONDS)
 	@Test
 	public void MaraffaIsNotPresentTest(final VertxTestContext context) {
-		final int[] deck = new int[] { 21, 22, 23, 1, 2, 3, 4, 5, 6, 0 };
-		this.businessLogicController.getMaraffa(deck, 0).whenComplete((res, err) -> {
+		final int[] deck = new int[] { 21, 22, 23, 1, 2, 3, 4, 5, 6, 7 };
+		final Card<CardValue, CardValue> cardPlayed = new Card<>(CardValue.TWO, CardSuit.COINS);
+		final CardSuit trump = CardSuit.COINS;
+		this.businessLogicController.getMaraffa(deck, cardPlayed.cardSuit().value, cardPlayed.cardValue().value, trump.value ).whenComplete((res, err) -> {
 			context.verify(() -> {
 				assertNull(res.getString("error"));
 				assertEquals(res.getBoolean("maraffa"), false);

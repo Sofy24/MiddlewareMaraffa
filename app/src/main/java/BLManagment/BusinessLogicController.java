@@ -220,13 +220,15 @@ public class BusinessLogicController {
 			LOGGER.info("Received message: " + message.body());
 			final JsonObject body = new JsonObject(message.body().toString());
 			final int suit = body.getInteger(Constants.SUIT);
+			final int value = body.getInteger(Constants.VALUE);
+			final int trump = body.getInteger(Constants.TRUMP);
 			final String username = body.getString(Constants.USERNAME);
 			final UUID gameID = UUID.fromString(body.getString(Constants.GAME_ID));
 			final List<Card<CardValue, CardSuit>> userCardsTemp = this.gameService.getGames().get(gameID)
 					.getUserCards(username);
 			userCardsTemp.add(new Card<>(CardValue.ONE, CardSuit.fromValue(suit))); //TODo check if can be passed into the json
 			final int[] userCards = userCardsTemp.stream().mapToInt(card -> card.getCardValue().intValue()).toArray();
-			this.getMaraffa(userCards, suit).whenComplete((result, error) -> {
+			this.getMaraffa(userCards, suit, value, trump).whenComplete((result, error) -> {
 				if (error != null) {
 					LOGGER.error("Error when checking Maraffa");
 					message.fail(417, "Error when Error when checking Maraffa");
@@ -259,10 +261,12 @@ public class BusinessLogicController {
 	 *            specific suit in a standard deck of playing cards (e.g., Hearts,
 	 *            Diamonds,
 	 */
-	public CompletableFuture<JsonObject> getMaraffa(final int[] deck, final int suit) {
+	public CompletableFuture<JsonObject> getMaraffa(final int[] deck, final int suit, final int value, final int trump) {
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
 		final JsonObject requestBody = new JsonObject()
+		  		.put("trump", trump)
 				.put("deck", deck)
+				.put("value", value)
 				.put("suit", suit);
 		WebClient.create(this.vertx).post(this.port, this.host, "/games/checkMaraffa")
 				.putHeader("Accept", "application/json")

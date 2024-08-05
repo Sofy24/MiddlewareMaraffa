@@ -137,8 +137,10 @@ loadScripts(document, 'script');</script>
  <a href="https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/UUID.html" title="class or interface in java.util" class="external-link">UUID</a>&nbsp;gameID)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/concurrent/CompletableFuture.html" title="class or interface in java.util.concurrent" class="external-link">CompletableFuture</a>&lt;io.vertx.core.json.JsonObject&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getMaraffa(int%5B%5D,int)" class="member-name-link">getMaraffa</a><wbr>(int[]&nbsp;deck,
- int&nbsp;suit)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getMaraffa(int%5B%5D,int,int,int)" class="member-name-link">getMaraffa</a><wbr>(int[]&nbsp;deck,
+ int&nbsp;suit,
+ int&nbsp;value,
+ int&nbsp;trump)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">This Java method asynchronously sends a POST request with a JSON object to a
  specified endpoint and
@@ -243,10 +245,12 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="getMaraffa(int[],int)">
+<section class="detail" id="getMaraffa(int[],int,int,int)">
 <h3>getMaraffa</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/concurrent/CompletableFuture.html" title="class or interface in java.util.concurrent" class="external-link">CompletableFuture</a>&lt;io.vertx.core.json.JsonObject&gt;</span>&nbsp;<span class="element-name">getMaraffa</span><wbr><span class="parameters">(int[]&nbsp;deck,
- int&nbsp;suit)</span></div>
+ int&nbsp;suit,
+ int&nbsp;value,
+ int&nbsp;trump)</span></div>
 <div class="block">This Java method asynchronously sends a POST request with a JSON object to a
  specified endpoint and
  returns a CompletableFuture containing the response JsonObject or an error

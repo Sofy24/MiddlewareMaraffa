@@ -61,17 +61,17 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="repository/AbstractStatisticManager.html#%3Cinit%3E()" class="member-name-link">AbstractStatisticManager()</a> - Constructor for class repository.<a href="repository/AbstractStatisticManager.html" title="class in repository">AbstractStatisticManager</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="game/GameVerticle.html#addCard(game.Card,java.lang.String)" class="member-name-link">addCard(Card&lt;CardValue, CardSuit&gt;, String)</a> - Method in class game.<a href="game/GameVerticle.html" title="class in game">GameVerticle</a></dt>
-<dd>
-<div class="block">Adds the card if the trick is not completed, otherwise it adds the card to a
- new trick and updates the current state</div>
-</dd>
 <dt><a href="game/Trick.html#addCard(game.Card,java.lang.String)" class="member-name-link">addCard(Card&lt;CardValue, CardSuit&gt;, String)</a> - Method in interface game.<a href="game/Trick.html" title="interface in game">Trick</a></dt>
 <dd>
 <div class="block">add a card played by a player</div>
 </dd>
 <dt><a href="game/TrickImpl.html#addCard(game.Card,java.lang.String)" class="member-name-link">addCard(Card&lt;CardValue, CardSuit&gt;, String)</a> - Method in class game.<a href="game/TrickImpl.html" title="class in game">TrickImpl</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="game/GameVerticle.html#addCard(game.Card,java.lang.String,java.lang.Boolean)" class="member-name-link">addCard(Card&lt;CardValue, CardSuit&gt;, String, Boolean)</a> - Method in class game.<a href="game/GameVerticle.html" title="class in game">GameVerticle</a></dt>
+<dd>
+<div class="block">Adds the card if the trick is not completed, otherwise it adds the card to a
+ new trick and updates the current state</div>
+</dd>
 <dt><a href="game/GameSchema.html#addTrick(game.Trick)" class="member-name-link">addTrick(Trick)</a> - Method in class game.<a href="game/GameSchema.html" title="class in game">GameSchema</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="game/GameVerticle.html#addUser(game.service.User)" class="member-name-link">addUser(User)</a> - Method in class game.<a href="game/GameVerticle.html" title="class in game">GameVerticle</a></dt>
@@ -748,7 +748,7 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="game/utils/Constants.html#ILLEGAL_TRUMP" class="member-name-link">ILLEGAL_TRUMP</a> - Static variable in class game.utils.<a href="game/utils/Constants.html" title="class in game.utils">Constants</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="game/GameVerticle.html#incrementCurrentState()" class="member-name-link">incrementCurrentState()</a> - Method in class game.<a href="game/GameVerticle.html" title="class in game">GameVerticle</a></dt>
+<dt><a href="game/GameVerticle.html#incrementCurrentState(java.lang.String...)" class="member-name-link">incrementCurrentState(String...)</a> - Method in class game.<a href="game/GameVerticle.html" title="class in game">GameVerticle</a></dt>
 <dd>
 <div class="block">increment the current state</div>
 </dd>
@@ -1003,7 +1003,7 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="game/service/GameServiceDecorator.html#playCard(io.vertx.ext.web.RoutingContext)" class="member-name-link">playCard(RoutingContext)</a> - Method in class game.service.<a href="game/service/GameServiceDecorator.html" title="class in game.service">GameServiceDecorator</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="game/service/GameService.html#playCard(java.util.UUID,java.lang.String,game.Card,java.lang.Boolean)" class="member-name-link">playCard(UUID, String, Card&lt;CardValue, CardSuit&gt;, Boolean)</a> - Method in class game.service.<a href="game/service/GameService.html" title="class in game.service">GameService</a></dt>
+<dt><a href="game/service/GameService.html#playCard(java.util.UUID,java.lang.String,game.Card,java.lang.Boolean,java.lang.Boolean)" class="member-name-link">playCard(UUID, String, Card&lt;CardValue, CardSuit&gt;, Boolean, Boolean)</a> - Method in class game.service.<a href="game/service/GameService.html" title="class in game.service">GameService</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="game/service/schema/PlayCardBody.html" class="type-name-link" title="class in game.service.schema">PlayCardBody</a> - Class in <a href="game/service/schema/package-summary.html">game.service.schema</a></dt>
 <dd>&nbsp;</dd>
@@ -1111,7 +1111,7 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="game/GameVerticle.html#setInitialTurn(int)" class="member-name-link">setInitialTurn(int)</a> - Method in class game.<a href="game/GameVerticle.html" title="class in game">GameVerticle</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="game/GameVerticle.html#setIsSuitFinished(java.lang.Boolean)" class="member-name-link">setIsSuitFinished(Boolean)</a> - Method in class game.<a href="game/GameVerticle.html" title="class in game">GameVerticle</a></dt>
+<dt><a href="game/GameVerticle.html#setIsSuitFinished(java.lang.Boolean,java.lang.String,java.lang.Boolean)" class="member-name-link">setIsSuitFinished(Boolean, String, Boolean)</a> - Method in class game.<a href="game/GameVerticle.html" title="class in game">GameVerticle</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="game/GameVerticle.html#setNewGameCreated()" class="member-name-link">setNewGameCreated()</a> - Method in class game.<a href="game/GameVerticle.html" title="class in game">GameVerticle</a></dt>
 <dd>
@@ -1135,7 +1135,7 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="game/service/GameService.html#setPassword(java.util.UUID,java.lang.String)" class="member-name-link">setPassword(UUID, String)</a> - Method in class game.service.<a href="game/service/GameService.html" title="class in game.service">GameService</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="game/GameVerticle.html#setScore(int,boolean)" class="member-name-link">setScore(int, boolean)</a> - Method in class game.<a href="game/GameVerticle.html" title="class in game">GameVerticle</a></dt>
+<dt><a href="game/GameVerticle.html#setScore(int,boolean,boolean)" class="member-name-link">setScore(int, boolean, boolean)</a> - Method in class game.<a href="game/GameVerticle.html" title="class in game">GameVerticle</a></dt>
 <dd>
 <div class="block">update the score of the teams</div>
 </dd>

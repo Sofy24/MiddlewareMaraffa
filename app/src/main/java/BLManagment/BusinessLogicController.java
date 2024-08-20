@@ -127,7 +127,7 @@ public class BusinessLogicController {
 	 */
 	public void trickCompleted() {
 		this.vertx.eventBus().consumer("game-trickCommpleted:onTrickCommpleted", message -> {
-			LOGGER.info("Received message: " + message.body());
+			LOGGER.info("[trickCompleted] Received message: " + message.body());
 			final JsonObject body = new JsonObject(message.body().toString());
 			final UUID gameID = UUID.fromString(body.getString(Constants.GAME_ID));
 			final String trump = body.getString(Constants.TRUMP);
@@ -194,7 +194,7 @@ public class BusinessLogicController {
 							LOGGER.info("Game: " + gameID + " ended: cause 11 to zero");
 							this.gameService.getGames().get(gameID).onStartGame();
 						} else {
-							this.gameService.getGames().get(gameID).setScore(handler.result().body().getInteger("score") ,firstTeam);
+							this.gameService.getGames().get(gameID).setScore(handler.result().body().getInteger("score") ,firstTeam, true);
 							this.gameService.getGames().get(gameID)
 									.setTurnWithUser(users.get(String.valueOf(cards[winningPosition])));
 // 							this.gameService.getGames().get(gameID)

@@ -286,6 +286,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * reset the trump
 	 */
 	public void startNewRound() {
+		// this.initialTurn += 1;
+		// this.setInitialTurn(this.initialTurn);
 		this.chooseTrump(CardSuit.NONE);
 		this.elevenZeroTeam = -1;
 	}
@@ -350,7 +352,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public Trick getLatestTrick() {
 		System.out.println("tricks" + this.tricks);
 		System.out.println("currentState" + this.getCurrentState().get());
-		final Trick latestTrick = this.tricks.get(this.getCurrentState().get());
+		final Trick latestTrick = this.tricks.get(this.tricks.size() > 0 ? this.tricks.size() - 1 : 0);
 		return latestTrick;
 	}
 
@@ -400,7 +402,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * @return true if the value is setted
 	 */
 	public boolean setIsSuitFinished(final Boolean value) {
+		LOGGER.info("Calling:  setIsSuitFinished, " + this.isSuitFinished.toString());
 		if (this.isSuitFinished.size() == this.numberOfPlayers) {
+			LOGGER.info("isSuitFinished is full, clearing it");
 			this.isSuitFinished = new ArrayList<>();
 		}
 		try {
@@ -413,13 +417,21 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 
 	public void setScoreAfterMistake(final int score, final boolean isFirstTeam) {
-		LOGGER.info("Calling:  setScoreAfterMistake" );
+		LOGGER.info("Calling: setScoreAfterMistake" );
 		final String beginTeam = this.teamAtTrick.get().nameOfTeam();
 		final int index = isFirstTeam ? 0 : 1;
 		final int invIndex = isFirstTeam ? 1 : 0;
 		final Team currentTeam = beginTeam == "A" ? this.teams.get(index) : this.teams.get(invIndex);
 		final Team invTeam =beginTeam == "A" ? this.teams.get(invIndex) : this.teams.get(index);
+		do{
+			this.incrementCurrentState("DO while");
+			this.tricks.add(new TrickImpl(4, CardSuit.NONE));
+			LOGGER.info("number of tricks: " + this.tricks.size());
+		} while (this.currentState.get() % 9 != 0);
 		
+		this.incrementCurrentState("DO while SCRAUSO");
+		LOGGER.info("number of tricks: " + this.tricks.size());
+		LOGGER.info("Latest: " + this.getLatestTrick().toString());
 		LOGGER.info("GAME " + this.id + " turn : " + this.currentState.get());
 		LOGGER.info("[Score 11toZero] Score situation: " + this.teams.toString());
 		LOGGER.info("[Score 11toZero] Begin team: " + this.teamAtTrick.toString());
@@ -447,7 +459,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * @param score   of the team who won the trick
 	 * @param isTeamA true if team A won the trick
 	 */
-	public void setScore(final int score, final boolean isTeamA) {
+	public void setScore(final int score, final boolean isTeamA, final boolean increment) {
 		final int index = isTeamA ? 0 : 1;
 		final int invIndex = isTeamA ? 1 : 0;
 		Team currentTeam = this.teams.get(index);
@@ -464,13 +476,18 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		Team invTeam = this.teams.get(invIndex);
 		currentTeam = this.teams.get(index);
 		LOGGER.info("Score situation: " + this.teams.toString());
+		if(increment) this.incrementCurrentState("NON e' finito");
 		// System.out.println("after score: " + currentTeam.score() +
 		// currentTeam.nameOfTeam());
 		// System.out.println("after score: " + invTeam.score() + invTeam.nameOfTeam());
-		if (this.currentState.get() == (int) this.numberOfTricksInRound) { //TODO SOFY qui ho diminuito di 1 ma va bene ????
+		if (this.currentState.get() % (int) this.numberOfTricksInRound == 0) { //TODO SOFY qui ho diminuito di 1 ma va bene ????
+			LOGGER.info("MA TUA MADRE ? ");
 			// LOGGER.info("GAME " + this.id + " score before ultima presa: " +
 			// currentTeam.nameOfTeam() + " : "
 			// + currentTeam.score());
+			this.onEndRound();
+			this.startNewRound();
+			this.onStartGame();
 			this.teams.set(index,
 					new Team(currentTeam.players(), currentTeam.nameOfTeam(),
 							currentTeam.score(), (currentTeam.currentScore() - currentTeam.currentScore() % 3) + 3));
@@ -493,6 +510,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			LOGGER.info("Score situation: " + this.teams.toString());
 			this.initialTurn += 1;
 			this.setInitialTurn(this.initialTurn);
+			this.setTurn(this.initialTurn);
 			this.checkMaraffa = true;
 			LOGGER.info(
 				"I choose you : " + this.users.get(this.initialTurn) + ", pick a trump"
@@ -561,8 +579,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	/**
 	 * increment the current state
 	 */
-	public void incrementCurrentState() {
-		this.currentState.incrementAndGet();
+	public void incrementCurrentState(final String ...from) {
+		LOGGER.info("YOOO incrementing  currentState: from " + Arrays.toString(from));
+		LOGGER.info("current state : " + this.currentState.incrementAndGet());
 	}
 
 	/**
@@ -647,7 +666,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * Set the team who lose the game because of a mistake
 	 */
 	public void endRoundByMistake(final boolean firstTeam) {
+
 		this.elevenZeroTeam = firstTeam ? 0 : 1;
+		// this.currentState.decrementAndGet();
 		LOGGER.info(
 				"Some dumbass made a mistake: " + this.users.get(this.initialTurn) + " is not your turn anymore !"
 			);
@@ -656,6 +677,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			);
 		this.initialTurn += 1;
 		this.setInitialTurn(this.initialTurn);
+		this.setTurn(this.initialTurn);
 			LOGGER.info(
 				"I choose you : " + this.users.get(this.initialTurn) + ", pick a trump"
 			);
@@ -669,7 +691,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		// 		"current state after: " + this.currentState.get() 
 		// 	);
 
-			this.elevenZeroTeam = -1;
+		this.elevenZeroTeam = -1;
 		this.checkMaraffa = true;
 	}
 
@@ -678,17 +700,19 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public boolean isRoundEnded() {
 
-		if (this.elevenZeroTeam != -1) {
-			this.setCurrentState((int) this.numberOfTricksInRound);
-		}
 		// if (this.currentState.get() == this.numberOfTricksInRound) {
 		// 	this.setInitialTurn(this.initialTurn++);
 		// 	this.checkMaraffa = true;
 		// }
 		LOGGER.info(
 				"GAME " + this.id + " currentState : " + this.currentState.get() + " is round ended: "
-						+ (this.currentState.get() == (int) this.numberOfTricksInRound) + " turn making trumps:  index(" + this.initialTurn+ ") -> user: " + this.users.get(this.initialTurn));
-		return this.currentState.get() == (int) this.numberOfTricksInRound;
+						+ (this.currentState.get() % (int) this.numberOfTricksInRound == 0) + " turn making trumps:  index(" + this.initialTurn+ ") -> user: " + this.users.get(this.initialTurn));
+		final var res = this.currentState.get() % (int) this.numberOfTricksInRound == 0;
+		// if (error) {
+			this.incrementCurrentState("NON e' finito");
+			// this.setCurrentState((int) this.numberOfTricksInRound);
+		// }
+		return res;
 	}
 
 	/**
@@ -834,7 +858,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 					reply -> {
 						if (reply.succeeded()) {
 							if ((Boolean) reply.result().body()) {
-								this.setScore(Constants.MARAFFA_SCORE, user % 2 == 0);
+								this.setScore(Constants.MARAFFA_SCORE, user % 2 == 0, false);
 								LOGGER.info("You have Maraffa");
 							}
 							LOGGER.info("The game succeeded in checking Maraffa");

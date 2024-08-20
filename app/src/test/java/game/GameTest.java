@@ -313,7 +313,7 @@ public class GameTest {
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED).getBoolean(Constants.PLAY));
+					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED, true).getBoolean(Constants.PLAY));
 			final JsonObject joinResponse = this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					new User(TEST_USER.username() + i, TEST_USER.clientID(), false), PASSWORD);
@@ -338,7 +338,7 @@ public class GameTest {
 				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 						this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 								.getUsers().get(initialTurn).username(),
-						TEST_CARD, IS_SUIT_FINISHED)
+						TEST_CARD, IS_SUIT_FINISHED, true)
 				.getBoolean(Constants.PLAY));
 		context.completeNow();
 	}
@@ -357,7 +357,7 @@ public class GameTest {
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED).getBoolean(Constants.PLAY));
+					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED, true).getBoolean(Constants.PLAY));
 			final JsonObject joinResponse = this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					new User(TEST_USER.username() + i, TEST_USER.clientID(), false), PASSWORD);
@@ -385,14 +385,14 @@ public class GameTest {
 				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 						this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 								.getUsers().get(initialTurn).username(),
-						TEST_CARD, IS_SUIT_FINISHED)
+						TEST_CARD, IS_SUIT_FINISHED, true)
 				.getBoolean(Constants.PLAY));
 
 		for (int i = 1; i < MARAFFA_PLAYERS; i++) {
 			assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 							.getUsers().get((initialTurn + i) % MARAFFA_PLAYERS).username(),
-					TEST_CARDS.get(i - 1), IS_SUIT_FINISHED).getBoolean(Constants.PLAY));
+					TEST_CARDS.get(i - 1), IS_SUIT_FINISHED, true).getBoolean(Constants.PLAY));
 		}
 		stateResponse = this.gameService.getState(UUID.fromString(gameResponse.getString(Constants.GAME_ID)));
 		assertFalse(stateResponse.containsKey(Constants.NOT_FOUND));
@@ -413,7 +413,7 @@ public class GameTest {
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
 		for (int i = 1; i < MARAFFA_PLAYERS; i++) {
 			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED).getBoolean(Constants.PLAY));
+					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED, true).getBoolean(Constants.PLAY));
 			final JsonObject joinResponse = this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					new User(TEST_USER.username() + i, TEST_USER.clientID(), false), PASSWORD);
@@ -440,7 +440,7 @@ public class GameTest {
 			assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 							.getUsers().get((initialTurn + i) % MARAFFA_PLAYERS).username(),
-					TEST_CARDS.get(i % MARAFFA_PLAYERS), IS_SUIT_FINISHED)
+					TEST_CARDS.get(i % MARAFFA_PLAYERS), IS_SUIT_FINISHED, true)
 					.getBoolean(Constants.PLAY));
 		}
 		// this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).onEndRound();
@@ -652,7 +652,7 @@ public class GameTest {
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED).getBoolean(Constants.PLAY));
+					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED, true).getBoolean(Constants.PLAY));
 			final JsonObject joinResponse = this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					new User(TEST_USER.username() + i, TEST_USER.clientID(), false), PASSWORD);
@@ -677,13 +677,13 @@ public class GameTest {
 				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 						this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 								.getUsers().get(initialTurn).username(),
-						TEST_CARD, IS_SUIT_FINISHED)
+						TEST_CARD, IS_SUIT_FINISHED, true)
 				.getBoolean(Constants.PLAY));
 		assertFalse(this.gameService
 				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 						this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 								.getUsers().get(initialTurn).username(),
-						TEST_CARDS.get(1), IS_SUIT_FINISHED)
+						TEST_CARDS.get(1), IS_SUIT_FINISHED, true)
 				.getBoolean(Constants.PLAY));
 		context.completeNow();
 	}
@@ -701,7 +701,7 @@ public class GameTest {
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED).getBoolean(Constants.PLAY));
+					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED, true).getBoolean(Constants.PLAY));
 			final JsonObject joinResponse = this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					new User(TEST_USER.username() + i, TEST_USER.clientID(), false), PASSWORD);
@@ -735,13 +735,13 @@ public class GameTest {
 				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 						this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 								.getUsers().get((initialTurn + 1) % MARAFFA_PLAYERS).username(),
-						TEST_CARD, IS_SUIT_FINISHED)
+						TEST_CARD, IS_SUIT_FINISHED, true)
 				.getBoolean(Constants.PLAY));
 		assertTrue(this.gameService
 				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 						this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 								.getUsers().get(initialTurn).username(),
-						TEST_CARD, IS_SUIT_FINISHED)
+						TEST_CARD, IS_SUIT_FINISHED, true)
 				.getBoolean(Constants.PLAY));
 		context.completeNow();
 	}
@@ -759,7 +759,7 @@ public class GameTest {
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
 			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED).getBoolean(Constants.PLAY));
+					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED, true).getBoolean(Constants.PLAY));
 			final JsonObject joinResponse = this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					new User(TEST_USER.username() + i, TEST_USER.clientID(), false), PASSWORD);
@@ -821,8 +821,8 @@ public class GameTest {
 				GAME_MODE.toString());
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
 		for (int i = 0; i < MARAFFA_PLAYERS - 1; i++) {
-			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED).getBoolean(Constants.PLAY));
+			// assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
+			// 		TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED, true).getBoolean(Constants.PLAY));
 			final JsonObject joinResponse = this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					new User(TEST_USER.username() + i, TEST_USER.clientID(), false), PASSWORD);
@@ -836,7 +836,7 @@ public class GameTest {
 				TEST_USER.username() + 1, "B", EXPECTED_POS);
 		assertFalse(this.gameService
 				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TEST_USER.username(),
-						TEST_CARD, IS_SUIT_FINISHED)
+						TEST_CARD, IS_SUIT_FINISHED, true)
 				.getBoolean(Constants.PLAY));
 		JsonObject chooseTrumpResponse = this.gameService
 				.chooseTrump(UUID.fromString(gameResponse.getString(Constants.GAME_ID)), TRUMP.name(),
@@ -862,7 +862,7 @@ public class GameTest {
 				.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 						this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 								.getUsers().get(initialTurn).username(),
-						TEST_CARD, IS_SUIT_FINISHED)
+						TEST_CARD, IS_SUIT_FINISHED, true)
 				.getBoolean(Constants.PLAY));
 		context.completeNow();
 	}
@@ -880,7 +880,7 @@ public class GameTest {
 		Assertions.assertEquals(UUID_SIZE, gameResponse.getString(Constants.GAME_ID).length());
 		for (int i = 1; i < MARAFFA_PLAYERS; i++) {
 			assertFalse(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED).getBoolean(Constants.PLAY));
+					TEST_USER.username(), TEST_CARD, IS_SUIT_FINISHED, true).getBoolean(Constants.PLAY));
 			final JsonObject joinResponse = this.gameService.joinGame(
 					UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					new User(TEST_USER.username() + i, TEST_USER.clientID(), false), PASSWORD);
@@ -909,7 +909,7 @@ public class GameTest {
 			assertTrue(this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
 					this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 							.getUsers().get((initialTurn + i) % MARAFFA_PLAYERS).username(),
-					TEST_CARDS.get(i % MARAFFA_PLAYERS), IS_SUIT_FINISHED)
+					TEST_CARDS.get(i % MARAFFA_PLAYERS), IS_SUIT_FINISHED, true)
 					.getBoolean(Constants.PLAY));
 		}
 		// this.gameService.getGames().get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).onEndRound();

@@ -89,15 +89,15 @@ public class StatisticMongoTest {
 
 		this.gameService.chooseTrump(gameId, this.cardTest.cardSuit().toString(), this.userTest.username());
 		this.gameService.playCard(gameId, this.userTest.username(), new Card<>(CardValue.ONE, CardSuit.CLUBS),
-				this.isSuitFinished);
+				this.isSuitFinished, true);
 		this.gameService.playCard(gameId, this.userTest.username() + "2", new Card<>(CardValue.TWO, CardSuit.CLUBS),
-				this.isSuitFinished);
+				this.isSuitFinished, true);
 		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.THREE, CardSuit.CLUBS),
-				this.isSuitFinished);
+				this.isSuitFinished, true);
 		this.gameService.playCard(gameId, this.userTest.username() + "4", new Card<>(CardValue.FOUR, CardSuit.CLUBS),
-				this.isSuitFinished);
+				this.isSuitFinished, true);
 		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.KING, CardSuit.CLUBS),
-				this.isSuitFinished);
+				this.isSuitFinished, true);
 	}
 
 

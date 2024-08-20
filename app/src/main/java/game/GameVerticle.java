@@ -735,6 +735,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 */
 	public boolean isGameEnded() {
 		System.out.println("endA" + this.teams.get(0).score() / 3 + "endB" + this.teams.get(1).score() / 3);
+		LOGGER.info("[ isGameEnded ] teamA" + this.teams.get(0).score() / 3 + "teamB" + this.teams.get(1).score() / 3);
+		LOGGER.info("Asking isGameEnded: " + (this.teams.get(0).score() / 3 >= this.expectedScore
+				|| this.teams.get(1).score() / 3 >= this.expectedScore));
 		return this.teams.get(0).score() / 3 >= this.expectedScore
 				|| this.teams.get(1).score() / 3 >= this.expectedScore;
 	}
@@ -963,7 +966,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 							this.onPlayCard();
 							this.clearIsSuitFinished();
 							if (this.isGameEnded()) {
-								System.out.println("GameEnded");
+								LOGGER.info("GameEnded OK");
 								this.onEndGame();
 							}
 						} else {
@@ -1001,8 +1004,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 
 	@Override
 	public void onEndGame() {
+		this.onExitGame();
 		if (this.webSocket != null) {
 			for (final var user : this.users) {
+				LOGGER.info("Signaling websocket end game");
 				this.webSocket.sendMessageToClient(user.clientID(),
 						new JsonObject().put("gameID", this.id.toString())
 								.put("event", "endGame")
@@ -1072,6 +1077,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public void onNewGame(final String newGameID) {
 		if (this.webSocket != null) {
 			for (final var user : this.users) {
+				LOGGER.info("Signaling websocket new game !");
 				this.webSocket.sendMessageToClient(user.clientID(),
 						new JsonObject().put("gameID", this.id.toString())
 								.put("event", "newGame")

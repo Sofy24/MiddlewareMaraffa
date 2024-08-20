@@ -160,10 +160,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * 
 	 * @param card to be added to the trick
 	 */
-	public boolean addCard(final Card<CardValue, CardSuit> card, final String username) {
+	public boolean addCard(final Card<CardValue, CardSuit> card, final String username, final Boolean isSuitAdded) {
 		if (this.turn >= 0) {
 			LOGGER.info("GAME " + this.id + " addCard: " + card.toString() + " by " + username + " suitFinished arrat: " + this.isSuitFinished.toString());
-			if (this.canStart() && this.users.get(this.turn).username().equals(username)) {
+			if (this.canStart() && this.users.get(this.turn).username().equals(username) && isSuitAdded) {
 				if (this.currentTrick == null) {
 					this.currentTrick = this.states.getOrDefault(this.currentState.get(),
 							new TrickImpl(this.numberOfPlayers, this.trump));
@@ -401,18 +401,32 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	 * 
 	 * @return true if the value is setted
 	 */
-	public boolean setIsSuitFinished(final Boolean value) {
+	public boolean setIsSuitFinished(final Boolean value, final String username, final Boolean isValid) {
+		LOGGER.info("Before:  setIsSuitFinished, " + this.isSuitFinished.toString());
+		LOGGER.info("Is valid to set isSuitFinished: " + isValid);
+		LOGGER.info("Current user: " + this.users.get((this.turn)).username());
+		LOGGER.info("played by: " + username);
+		if (
+		( GameMode.ELEVEN2ZERO
+											.equals(this.gameMode)
+											||	
+		isValid
+		)
+		&& this.users.get((this.turn)).username().equals(username)) {
 		LOGGER.info("Calling:  setIsSuitFinished, " + this.isSuitFinished.toString());
 		if (this.isSuitFinished.size() == this.numberOfPlayers) {
 			LOGGER.info("isSuitFinished is full, clearing it");
 			this.isSuitFinished = new ArrayList<>();
 		}
-		try {
+		// try {
 			this.isSuitFinished.add(value);
-		} catch (final IndexOutOfBoundsException e) {
-			return false;
-		}
+			LOGGER.info("After:  setIsSuitFinished, " + this.isSuitFinished.toString());
+		// } catch (final IndexOutOfBoundsException e) {
+		// 	return false;
+		// }
 		return true;
+		}
+		return false;
 	}
 
 

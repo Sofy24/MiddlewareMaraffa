@@ -269,12 +269,13 @@ public class GameServiceDecorator {
 							.whenComplete((res, err) -> {
 								if (err == null) {
 									response.put("mode", this.gameService.getGames().get(gameID).getGameMode() );
-									if (GameMode.ELEVEN2ZERO
+									if (
+										GameMode.ELEVEN2ZERO
 											.equals(this.gameService.getGames().get(gameID).getGameMode())
 											|| res.getBoolean("valid")) {
 										final JsonObject playCardResponse = this.gameService.playCard(gameID, username,
 												card,
-												isSuitFinishedByPlayer);
+												isSuitFinishedByPlayer, res.getBoolean("valid") );
 										if (!this.gameService.getGames().get(gameID).isUserIn(username)
 												|| !playCardResponse.getBoolean(Constants.PLAY)) {
 											response.put(Constants.ERROR, "Non è il turno di " + username
@@ -283,6 +284,7 @@ public class GameServiceDecorator {
 													+ " or the trump is not setted or the teams are not balanced or the system doesn't know who has the 4 of coins");
 											context.response().setStatusCode(417).end(response.toBuffer());
 										} else {
+											// this.games.get(gameID).setIsSuitFinished(isSuitFinishedByPlayer);
 											System.out.println("answer by decorator = current state "
 													+ this.gameService.getGames().get(gameID).getCurrentState());
 											System.out.println("answer by decorator = turn "

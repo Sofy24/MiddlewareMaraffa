@@ -335,9 +335,9 @@ public class BusinessLogicTestIntegration {
 		}
 		final List<Boolean> isSuitFinishedList = List.of(true, true, true, true);
 		this.businessLogicController
-				.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trick.getCardsAndUsers(), trump.value.toString(),
+				.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trick.getCards().stream().mapToInt(Integer::parseInt).toArray() ,trick.getCardsAndUsers(), trump.value.toString(),
 						GameMode.ELEVEN2ZERO.name(),
-						isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+						isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID)), 0)
 				.whenComplete((res, err) -> {
 					context.verify(() -> {
 						assertNull(res.getString("error"));

@@ -102,7 +102,7 @@ public class BusinessLogicController {
 					final Integer firstPlayer = result.getInteger("firstPlayer");
 					startResponse.put("deck", deck);
 					startResponse.put("firstPlayer", firstPlayer);
-					// LOGGER.info("The first player is: " + firstPlayer);
+					LOGGER.info("The first player is: " + firstPlayer);
 					startResponse.put(Constants.START_ATTR, true);
 					// this.gameService.getGames().get(gameID).setInitialTurn(firstPlayer);
 				}
@@ -194,9 +194,9 @@ public class BusinessLogicController {
 							LOGGER.info("Game: " + gameID + " ended: cause 11 to zero");
 							this.gameService.getGames().get(gameID).onStartGame();
 						} else {
-							this.gameService.getGames().get(gameID).setScore(handler.result().body().getInteger("score") ,firstTeam, true);
 							this.gameService.getGames().get(gameID)
 									.setTurnWithUser(users.get(String.valueOf(cards[winningPosition])));
+							this.gameService.getGames().get(gameID).setScore(handler.result().body().getInteger("score") ,firstTeam, true);
 // 							this.gameService.getGames().get(gameID)
 // this.teams.stream().filter(t -> t.players().contains(this.users.get(this.turn)))
 // 							.findFirst();

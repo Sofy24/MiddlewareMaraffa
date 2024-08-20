@@ -499,9 +499,6 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			// LOGGER.info("GAME " + this.id + " score before ultima presa: " +
 			// currentTeam.nameOfTeam() + " : "
 			// + currentTeam.score());
-			this.onEndRound();
-			this.startNewRound();
-			this.onStartGame();
 			this.teams.set(index,
 					new Team(currentTeam.players(), currentTeam.nameOfTeam(),
 							currentTeam.score(), (currentTeam.currentScore() - currentTeam.currentScore() % 3) + 3));
@@ -526,6 +523,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			this.setInitialTurn(this.initialTurn);
 			this.setTurn(this.initialTurn);
 			this.checkMaraffa = true;
+			this.onEndRound();
+			this.startNewRound();
+			this.onStartGame();
+
 			LOGGER.info(
 				"I choose you : " + this.users.get(this.initialTurn) + ", pick a trump"
 			);

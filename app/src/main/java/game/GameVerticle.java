@@ -186,9 +186,12 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 				LOGGER.info("GAME " + this.id + " currentTrick: " + this.currentTrick.toString());
 				this.turn = (this.turn + 1) % this.numberOfPlayers;
 				this.removeFromHand(card, username);
+				LOGGER.info("Checking trick is completed: " + this.currentTrick.isCompleted());
 				if (this.currentTrick.isCompleted()) {
+					LOGGER.info("Yes it is");
 					this.getStates().put(this.getCurrentState().get(), this.getCurrentTrick());
 				} else {
+					LOGGER.info("NO it isnnnnn");
 					this.onPlayCard();
 				}
 				return true;
@@ -297,6 +300,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 			this.currentTrick = this.states.getOrDefault(this.currentState.get(),
 					new TrickImpl(this.numberOfPlayers, this.trump));
 		}
+		LOGGER.info("this.users.stream().map(User::username).toList().get(this.turn).equals(username):  "
+				+ this.users.stream().map(User::username).toList().get(this.turn).equals(username));
 		if (this.users.stream().map(User::username).toList().get(this.turn).equals(username)) {
 			this.currentTrick.setCall(call, username);
 			this.onMakeCall(call);
@@ -462,7 +467,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		// System.out.println("after score: " + currentTeam.score() +
 		// currentTeam.nameOfTeam());
 		// System.out.println("after score: " + invTeam.score() + invTeam.nameOfTeam());
-		if (this.currentState.get() == (int) this.numberOfTricksInRound - 1) { //TODO SOFY qui ho diminuito di 1 ma va bene ????
+		if (this.currentState.get() == (int) this.numberOfTricksInRound) { //TODO SOFY qui ho diminuito di 1 ma va bene ????
 			// LOGGER.info("GAME " + this.id + " score before ultima presa: " +
 			// currentTeam.nameOfTeam() + " : "
 			// + currentTeam.score());
@@ -886,12 +891,28 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		final int[] cardArray = latestTrick.getCards().stream().mapToInt(Integer::parseInt).toArray();
 		System.out.println("the result i want, on trick" + Arrays.toString(cardArray));
 		if (this.getVertx() != null) {
+			LOGGER.info("Team A cardsSsss: " + Arrays.toString(latestTrick.getCardsAndUsers().entrySet()
+							.stream()
+							.filter(e -> this.teams.get(0).players().stream().map(User::username).toList()
+									.contains(e.getValue()))
+							.map(Map.Entry::getKey)
+							.mapToInt(Integer::parseInt).toArray())
+							);
 			this.getVertx().eventBus().request("game-trickCommpleted:onTrickCommpleted", new JsonObject()
 					.put(Constants.GAME_ID, this.id.toString())
 					.put(Constants.TRICK, Arrays.toString(cardArray))
 					.put("userList", new Gson().toJson(this.currentTrick.getCardsAndUsers()))
 					.put(Constants.GAME_MODE, this.gameMode.toString())
 					.put(Constants.IS_SUIT_FINISHED, this.getIsSuitFinished().toString())
+					.put("turn", (this.turn + 1) % this.numberOfPlayers)
+					.put("teamACards", latestTrick.getCardsAndUsers().entrySet()
+							.stream()
+							.filter(e -> this.teams.get(0).players().stream().map(User::username).toList()
+									.contains(e.getValue()))
+							.map(Map.Entry::getKey)
+.mapToInt(Integer::parseInt).toArray()
+
+					)
 					.put(Constants.TRUMP, this.trump.getValue()).toString(), reply -> {
 						System.out.println("succe" + reply.succeeded());
 						System.out.println("reply" + reply.toString());

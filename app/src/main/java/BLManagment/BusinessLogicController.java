@@ -133,12 +133,14 @@ public class BusinessLogicController {
 			final String trump = body.getString(Constants.TRUMP);
 			final String mode = body.getString(Constants.GAME_MODE);
 			final int[] cards = new Gson().fromJson(body.getString(Constants.TRICK), int[].class);
+			final int[] teamACards = new Gson().fromJson(body.getString("teamACards"), int[].class);
+			final int turn = body.getInteger("turn");
 			final Map<String, String> users = new Gson().fromJson(body.getString("userList"),
 					new TypeToken<Map<String, String>>() {
 					}.getType());
 			System.out.println("int cards" + Arrays.toString(cards));
-			this.computeScore(cards, users, trump, mode,
-					this.gameService.getGames().get(gameID).getIsSuitFinished(), gameID)
+			this.computeScore(cards, teamACards, users, trump, mode,
+					this.gameService.getGames().get(gameID).getIsSuitFinished(), gameID, turn)
 					.whenComplete((result, error) -> {
 						if (!result.containsKey("error")) {
 							message.reply(result);
@@ -154,14 +156,17 @@ public class BusinessLogicController {
 		});
 	}
 
-	public CompletableFuture<JsonObject> computeScore(final int[] cards, final Map<String, String> users,
+	public CompletableFuture<JsonObject> computeScore(final int[] cards, final int[] teamACards,final Map<String, String> users,
 			final String trump,
 			final String mode,
-			final List<Boolean> isSuitFinishedList, final UUID gameID) {
+			final List<Boolean> isSuitFinishedList,
+			final UUID gameID, 
+			final int turn) {
 		final boolean[] isSuitFinished = Booleans.toArray(isSuitFinishedList);
 		final JsonObject requestBody = new JsonObject()
 				.put("trick", cards)
 				.put("trump", Integer.parseInt(trump))
+				.put("teamACards", teamACards )
 				.put("mode", mode)
 				.put("isSuitFinished", isSuitFinished);
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();

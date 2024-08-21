@@ -278,8 +278,8 @@ public class GameServiceDecorator {
 												isSuitFinishedByPlayer, res.getBoolean("valid") );
 										if (!this.gameService.getGames().get(gameID).isUserIn(username)
 												|| !playCardResponse.getBoolean(Constants.PLAY)) {
-											response.put(Constants.ERROR, "Non è il turno di " + username
-													+ " o non è stata scelta la briscola o i team non sono bilanciati o il sistema non sa chi ha il 4 di denari");
+											response.put(Constants.ERROR, "Non e' il turno di " + username
+													+ " o non e' stata scelta la briscola o i team non sono bilanciati o il sistema non sa chi ha il 4 di denari");
 											response.put(Constants.MESSAGE, "Is not the turn of " + username
 													+ " or the trump is not setted or the teams are not balanced or the system doesn't know who has the 4 of coins");
 											context.response().setStatusCode(417).end(response.toBuffer());

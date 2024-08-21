@@ -1065,11 +1065,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.put("trumpSelected", this.trump.toString())
 								.toString());
 			}
-			// this.webSocket.sendMessageToClient(this.users.get(this.turn).clientID(),
-			// new JsonObject().put("gameID", this.id.toString())
-			// .put("event", "userTurn")
-			// .put("turn", this.turn)
-			// .put("userTurn", this.users.get(this.turn).username()).toString());
+
 		}
 	}
 

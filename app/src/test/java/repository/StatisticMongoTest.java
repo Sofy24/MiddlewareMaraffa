@@ -2,9 +2,7 @@ package repository;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import java.util.UUID;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -29,7 +27,7 @@ import io.vertx.junit5.VertxExtension;
 @TestInstance(Lifecycle.PER_CLASS)
 @ExtendWith(VertxExtension.class)
 public class StatisticMongoTest {
-	private static final int TRICKS = 10;
+	private static final int FIRST_PLAYER = 0;
 	private final User userTest = new User("user", UUID.randomUUID(), false);
 	private static final int MARAFFA_PLAYERS = 4;
 	private static final int EXPECTED_SCORE = 11;
@@ -37,7 +35,6 @@ public class StatisticMongoTest {
 	private static final GameMode GAME_MODE = GameMode.CLASSIC;
 	private Vertx vertx;
 	private GameService gameService;
-	private static final CardSuit UNDEFINED_TRUMP = CardSuit.NONE;
 	private final Card<CardSuit, CardValue> cardTest = new Card<>(CardValue.THREE, CardSuit.CLUBS);
 	private final Boolean isSuitFinished = true;
 	private final MongoStatisticManager mongoStatisticManager = new MongoStatisticManager(
@@ -77,7 +74,6 @@ public class StatisticMongoTest {
 
 	@Test
 	public void playCard() {
-		// TODO not finished
 		final String gameID = this.gameService
 				.createGame(MARAFFA_PLAYERS, this.userTest, EXPECTED_SCORE, GAME_MODE.toString())
 				.getString(Constants.GAME_ID);
@@ -86,18 +82,18 @@ public class StatisticMongoTest {
 			System.out.println(this.gameService.joinGame(gameId,
 					new User(this.userTest.username() + i, this.userTest.clientID(), false), PASSWORD));
 		}
-
+		this.gameService.getGames().get(gameId).setInitialTurn(FIRST_PLAYER);
 		this.gameService.chooseTrump(gameId, this.cardTest.cardSuit().toString(), this.userTest.username());
 		this.gameService.playCard(gameId, this.userTest.username(), new Card<>(CardValue.ONE, CardSuit.CLUBS),
-				this.isSuitFinished);
+				this.isSuitFinished, true);
 		this.gameService.playCard(gameId, this.userTest.username() + "2", new Card<>(CardValue.TWO, CardSuit.CLUBS),
-				this.isSuitFinished);
+				this.isSuitFinished, true);
 		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.THREE, CardSuit.CLUBS),
-				this.isSuitFinished);
+				this.isSuitFinished, true);
 		this.gameService.playCard(gameId, this.userTest.username() + "4", new Card<>(CardValue.FOUR, CardSuit.CLUBS),
-				this.isSuitFinished);
+				this.isSuitFinished, true);
 		this.gameService.playCard(gameId, this.userTest.username() + "3", new Card<>(CardValue.KING, CardSuit.CLUBS),
-				this.isSuitFinished);
+				this.isSuitFinished, true);
 	}
 
 

@@ -145,7 +145,7 @@ public class BusinessLogicTestIntegration {
 						this.gameService.getGames()
 								.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID))).getTurn();
 						this.gameService.playCard(UUID.fromString(gameResponse.getString(Constants.GAME_ID)),
-								TEST_USER.username(), fakePlayedCard, false);
+								TEST_USER.username(), fakePlayedCard, false, true);
 						System.out.println(this.gameService.getGames()
 								.get(UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
 								.getUserCards(TEST_USER.username()).size());
@@ -258,10 +258,10 @@ public class BusinessLogicTestIntegration {
 		System.out.println(Arrays.toString(cards));
 		final List<Boolean> isSuitFinishedList = List.of(true, true, false, true);
 		this.businessLogicController
-				.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trick.getCardsAndUsers(),
+				.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trick.getCardsAndUsers(),
 						trump.value.toString(),
 						GameMode.ELEVEN2ZERO.name(),
-						isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+						isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID)), 0)
 				.whenComplete((res, err) -> {
 					context.verify(() -> {
 						assertNull(res.getString("error"));
@@ -296,9 +296,9 @@ public class BusinessLogicTestIntegration {
 		}
 		final List<Boolean> isSuitFinishedList = List.of(true, true, true, false);
 		this.businessLogicController
-				.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trick.getCardsAndUsers(), trump.value.toString(),
+				.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trick.getCardsAndUsers(), trump.value.toString(),
 						GameMode.ELEVEN2ZERO.name(),
-						isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+						isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID)), 0)
 				.whenComplete((res, err) -> {
 					context.verify(() -> {
 						assertNull(res.getString("error"));
@@ -335,9 +335,9 @@ public class BusinessLogicTestIntegration {
 		}
 		final List<Boolean> isSuitFinishedList = List.of(true, true, true, true);
 		this.businessLogicController
-				.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trick.getCardsAndUsers(), trump.value.toString(),
+				.computeScore(trick.getCards().stream().mapToInt(Integer::parseInt).toArray(), trick.getCards().stream().mapToInt(Integer::parseInt).toArray() ,trick.getCardsAndUsers(), trump.value.toString(),
 						GameMode.ELEVEN2ZERO.name(),
-						isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID)))
+						isSuitFinishedList, UUID.fromString(gameResponse.getString(Constants.GAME_ID)), 0)
 				.whenComplete((res, err) -> {
 					context.verify(() -> {
 						assertNull(res.getString("error"));

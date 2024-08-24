@@ -167,7 +167,7 @@ public class GameService {
 		final JsonObject jsonPlayCard = new JsonObject();
 		if (this.games.get(gameID) != null && this.games.get(gameID).canStart()) {
 			final GameVerticle game = this.games.get(gameID);
-			game.setIsSuitFinished(isSuitFinishedByPlayer);
+			// this.games.get(gameID).setIsSuitFinished(isSuitFinishedByPlayer);
 			if (CardSuit.NONE.equals(game.getTrump())) {
 				jsonPlayCard.put(Constants.PLAY, false);
 				jsonPlayCard.put(Constants.ERROR, "La briscola non è stata scelta");
@@ -183,12 +183,15 @@ public class GameService {
 	}
 
 	public JsonObject playCard(final UUID gameID, final String username, final Card<CardValue, CardSuit> card,
-			final Boolean isSuitFinishedByPlayer) {
+			final Boolean isSuitFinishedByPlayer, final Boolean isValid) {
 		final JsonObject jsonPlayCard = new JsonObject();
 		// game.canPlayCard(card, username);
 		// if (game.canPlayCard(card, username)) {
+
+		// this.setIsSuitFinished(isSuitFinishedByPlayer);
 		final GameVerticle game = this.games.get(gameID);
-		final Boolean play = game.addCard(card, username);
+		final var isSuitAdded = game.setIsSuitFinished(isSuitFinishedByPlayer, username, isValid);
+		final Boolean play = game.addCard(card, username, isSuitAdded );
 		jsonPlayCard.put(Constants.PLAY, play);
 		// System.out.println("(service), play: " + play);
 		// System.out.println("after play card trick is : " + game.getLatestTrick().toString());
@@ -205,16 +208,17 @@ public class GameService {
 				// .whenComplete((result, error) -> {
 					game.setCurrentTrick(new TrickImpl(game.getMaxNumberOfPlayers(), game.getTrump()));
 					game.getTricks().add(game.getCurrentTrick());
-					game.incrementCurrentState();
+							// if (!game.isRoundEnded())
+								// game.incrementCurrentState("NON e' finito");
 					System.out.println("la seconda, prima = incremeted game service" + game.getCurrentState());
 					game.onPlayCard();
-					if (game.isRoundEnded()) {
-						System.out.println("RoundEnded");
-						game.onEndRound();
-						game.startNewRound();
-						System.out.println("game ended" + game.isGameEnded());
-						game.onStartGame();
-					}
+					// if (game.isRoundEnded()) {
+					// 	System.out.println("RoundEnded");
+					// 	game.onEndRound();
+					// 	game.startNewRound();
+					// 	System.out.println("game ended" + game.isGameEnded());
+					// 	game.onStartGame();
+					// }
 					System.out.println("incremented game service" + game.getCurrentState());
 				// });
 			} catch (final Exception e) {

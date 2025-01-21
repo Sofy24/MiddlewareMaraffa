@@ -26,6 +26,8 @@ public class ChatService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChatService.class);
 	private final WebSocketVertx webSocketVertx;
 	private final Map<UUID, GameVerticle> gamesMap;
+	private static final Integer MAX_TIMEOUT_MS = 2000;
+	private static final Integer MAX_RETRIES = 5;
 
 	public ChatService(final Vertx vertx, final WebSocketVertx WebSocketVertx, final Map<UUID, GameVerticle> map) {
 		// super(vertx);
@@ -85,10 +87,10 @@ public class ChatService {
 				.put("message", msg);
 		if (gameID.isPresent()) {
 			this.gamesMap.get(gameID.get()).getUsers().forEach(user -> {
-				this.webSocketVertx.sendMessageToClient(user.clientID(), message.toString());
+				this.webSocketVertx.sendMessageToClientWithRetry(user.clientID(), message.toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 			});
 		} else {
-			this.webSocketVertx.broadcastToEveryone(message.toString());
+			this.webSocketVertx.broadcastToEveryoneWithRetry(message.toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 		}
 	}
 
@@ -102,10 +104,10 @@ public class ChatService {
 				.put("message", msg);
 		if (gameID.isPresent()) {
 			this.gamesMap.get(gameID.get()).getUsers().forEach(user -> {
-				this.webSocketVertx.sendMessageToClient(user.clientID(), message.toString());
+				this.webSocketVertx.sendMessageToClientWithRetry(user.clientID(), message.toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 			});
 		} else {
-			this.webSocketVertx.broadcastToEveryone(message.toString());
+			this.webSocketVertx.broadcastToEveryoneWithRetry(message.toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 		}
 	}
 }

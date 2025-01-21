@@ -31,6 +31,7 @@ public class MongoStatisticManager extends AbstractStatisticManager {
 	public MongoStatisticManager(final String user, final String password, final String host, final int port,
 			final String collectionName) {
 		final String uri = "mongodb://" + user + ":" + password + "@" + host + ":" + port;
+		System.out.println("URI: " + uri);
 		this.collectionName = collectionName;
 		try {
 

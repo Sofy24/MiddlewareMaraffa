@@ -71,6 +71,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	// public GameSchema getGameSchema() {
 	// return this.gameSchema0
 	// }
+	private static final Integer MAX_TIMEOUT_MS = 2000;
+	private static final Integer MAX_RETRIES = 5;
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(GameVerticle.class);
 
 	public GameVerticle(final UUID id, final User user, final int numberOfPlayers, final int expectedScore,
@@ -127,13 +130,13 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		if (!this.users.stream().map(User::username).toList().contains(user.username())) {
 			this.users.add(user);
 			this.status = this.canStart() ? Status.STARTING : Status.WAITING_PLAYERS;
-			this.onJoinGame(user);
 			final Team currentTeam = this.teams.get(this.teamPos % 2);
 			final List<User> updatePlayers = new ArrayList<>(currentTeam.players());
 			updatePlayers.add(user);
 			this.teams.set(this.teamPos % 2, new Team(updatePlayers, currentTeam.nameOfTeam(), currentTeam.score(), currentTeam.currentScore()));
 			LOGGER.info("GAME " + this.id + " joined: " + user.toString());
 			this.teamPos += 1;
+			this.onJoinGame(user);
 			return true;
 		}
 		return false;
@@ -812,7 +815,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		// }
 		if (this.webSocket != null) {
 			for (final var player : this.users) {
-				this.webSocket.sendMessageToClient(player.clientID(),
+				this.webSocket.sendMessageToClientWithRetry(player.clientID(),
 						new JsonObject().put("gameID", this.id.toString())
 								.put("event", "userJoin")
 								.put("username", user.username())
@@ -821,7 +824,8 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 								.put("teamB", this.teams.get(1))
 								// .put("teamA", this.teams.get(0).players().stream().map(User::username).toList())
 								// .put("teamB", this.teams.get(1).players().stream().map(User::username).toList())
-								.put("status", this.status.toString()).toString());
+								.put("status", this.status.toString()).toString(),
+								MAX_TIMEOUT_MS, MAX_RETRIES);
 			}
 		}
 
@@ -839,12 +843,12 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 							if (this.webSocket != null) {
 								for (final var user : this.users) {
 									System.out.println(this.users.toString());
-									this.webSocket.sendMessageToClient(user.clientID(),
+									this.webSocket.sendMessageToClientWithRetry(user.clientID(),
 											new JsonObject()
 													.put("event", "startGame")
 													.put("firstPlayer", this.users.get(this.turn).username())
 													.put("gameID", this.id.toString())
-													.toString());
+													.toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 								}
 								// this.webSocket.sendMessageToClient(this.users.get(this.turn).clientID(),
 								// new JsonObject().put("gameID", this.id.toString())
@@ -891,13 +895,12 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public void onChangeTeam() {
 		if (this.webSocket != null) {
 			for (final var user : this.users) {
-				this.webSocket.sendMessageToClient(user.clientID(),
+				this.webSocket.sendMessageToClientWithRetry(user.clientID(),
 						new JsonObject().put("gameID", this.id.toString())
-								// .put("teamA", this.teams.get(0).players().stream().map(User::username).toList())
-								// .put("teamB", this.teams.get(1).players().stream().map(User::username).toList())
 								.put("teamA", this.teams.get(0))
 								.put("teamB", this.teams.get(1))
-								.put("event", "changeTeam").toString());
+								.put("event", "changeTeam").toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
+
 			}
 		}
 	}
@@ -907,7 +910,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		// Websocket
 		if (this.webSocket != null) {
 			for (final var user : this.users) {
-				this.webSocket.sendMessageToClient(user.clientID(),
+				this.webSocket.sendMessageToClientWithRetry(user.clientID(),
 						new JsonObject().put("gameID", this.id.toString())
 								.put("event", "userTurn")
 								.put("turn", this.turn)
@@ -919,7 +922,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 														: null)
 				.put("teamAScore", (this.teams.get(0).score() + this.teams.get(0).currentScore()) / 3)
 				.put("teamBScore", (this.teams.get(1).score() +this.teams.get(1).currentScore()) / 3)
-								.put("userTurn", this.users.get(this.turn).username()).toString());
+								.put("userTurn", this.users.get(this.turn).username()).toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 			}
 
 			System.out.println("PLAY CARD teamAScore" + this.teams.get(0).score() / 3);
@@ -987,7 +990,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public void onEndRound() {
 		if (this.webSocket != null) {
 			for (final var user : this.users) {
-				this.webSocket.sendMessageToClient(user.clientID(),
+				this.webSocket.sendMessageToClientWithRetry(user.clientID(),
 						new JsonObject().put("gameID", this.id.toString())
 								.put("event", "endRound")
 								.put("teamA", this.teams.get(0).players().stream().map(User::username).toList())
@@ -996,7 +999,7 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 										this.users.get(this.initialTurn >= 0 ? this.initialTurn : 0).username())
 				.put("teamAScore", (this.teams.get(0).score() + this.teams.get(0).currentScore()) / 3)
 				.put("teamBScore", (this.teams.get(1).score() +this.teams.get(1).currentScore()) / 3)
-								.toString());
+								.toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 
 			}
 		}
@@ -1008,14 +1011,14 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		if (this.webSocket != null) {
 			for (final var user : this.users) {
 				LOGGER.info("Signaling websocket end game");
-				this.webSocket.sendMessageToClient(user.clientID(),
+				this.webSocket.sendMessageToClientWithRetry(user.clientID(),
 						new JsonObject().put("gameID", this.id.toString())
 								.put("event", "endGame")
 								.put("teamA", this.teams.get(0).players().stream().map(User::username).toList())
 								.put("teamB", this.teams.get(1).players().stream().map(User::username).toList())
 				.put("teamAScore", (this.teams.get(0).score() + this.teams.get(0).currentScore()) / 3)
 				.put("teamBScore", (this.teams.get(1).score() +this.teams.get(1).currentScore()) / 3)
-								.toString());
+								.toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 			}
 		}
 		// if (this.vertx != null)
@@ -1038,11 +1041,11 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		if (this.webSocket != null) {
 			for (final var player : this.users) {
 				if (player != this.getUsers().get(this.turn)) {
-					this.webSocket.sendMessageToClient(player.clientID(),
+					this.webSocket.sendMessageToClientWithRetry(player.clientID(),
 							new JsonObject().put("gameID", this.id.toString())
 									.put("event", "call")
 									.put("username", this.getUsers().get(this.turn).username())
-									.put("call", call.toString()).toString());
+									.put("call", call.toString()).toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 
 				}
 			}
@@ -1058,12 +1061,12 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		}
 		if (this.webSocket != null) {
 			for (final var user : this.users) {
-				this.webSocket.sendMessageToClient(user.clientID(),
+				this.webSocket.sendMessageToClientWithRetry(user.clientID(),
 						new JsonObject()
 								.put("event", "trumpEvent")
 								.put("username", this.users.get(this.initialTurn).username())
 								.put("trumpSelected", this.trump.toString())
-								.toString());
+								.toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 			}
 
 		}
@@ -1074,10 +1077,10 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		if (this.webSocket != null) {
 			for (final var user : this.users) {
 				LOGGER.info("Signaling websocket new game !");
-				this.webSocket.sendMessageToClient(user.clientID(),
+				this.webSocket.sendMessageToClientWithRetry(user.clientID(),
 						new JsonObject().put("gameID", this.id.toString())
 								.put("event", "newGame")
-								.put("newGameID", newGameID).toString());
+								.put("newGameID", newGameID).toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 			}
 		}
 	}
@@ -1090,9 +1093,9 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public void onRemoveUser() {
 		if (this.webSocket != null) {
 			for (final var user : this.users) {
-				this.webSocket.sendMessageToClient(user.clientID(),
+				this.webSocket.sendMessageToClientWithRetry(user.clientID(),
 						new JsonObject().put("gameID", this.id.toString())
-								.put("event", "userRemoved").toString());
+								.put("event", "userRemoved").toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 			}
 		}
 	}
@@ -1100,12 +1103,12 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 	public void messageReceived(final String msg, final String type, final UUID gameID, final String author) {
 		if (this.webSocket != null) {
 			for (final var user : this.users) {
-				this.webSocket.sendMessageToClient(user.clientID(),
+				this.webSocket.sendMessageToClientWithRetry(user.clientID(),
 						new JsonObject()
 								.put("event", "onMessage")
 								.put("message", msg)
 								.put("author", author)
-								.toString());
+								.toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 			}
 		}
 	}
@@ -1136,12 +1139,12 @@ public class GameVerticle extends AbstractVerticle implements IGameAgent {
 		LOGGER.info("game " + this.id + " is exiting");
 		if (this.webSocket != null) {
 			for (final var user : this.users) {
-				this.webSocket.sendMessageToClient(user.clientID(),
+				this.webSocket.sendMessageToClientWithRetry(user.clientID(),
 						new JsonObject()
-								.put("event", "exitGame").toString());
+								.put("event", "exitGame").toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 			}
-			this.webSocket.broadcastToEveryone(new JsonObject()
-			.put("event", "gameRemoved").toString());
+			this.webSocket.broadcastToEveryoneWithRetry(new JsonObject()
+			.put("event", "gameRemoved").toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 		}
 		this.vertx.setTimer(5000, event -> {
 			try {

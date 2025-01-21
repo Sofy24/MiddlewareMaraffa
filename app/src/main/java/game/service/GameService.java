@@ -31,7 +31,8 @@ public class GameService {
 	private final Vertx vertx;
 	private WebSocketVertx webSocket;
 	private final static Boolean DEBUG = false;
-
+	private static final Integer MAX_TIMEOUT_MS = 2000;
+	private static final Integer MAX_RETRIES = 5;
 	private AbstractStatisticManager statisticManager;
 
 	public GameService(final Vertx vertx) {
@@ -71,10 +72,10 @@ public class GameService {
 		// TODO molto poco bello..... ma per ora funziona
 		if (this.webSocket != null) {
 			this.webSocket
-					.broadcastToEveryone(new JsonObject()
+					.broadcastToEveryoneWithRetry(new JsonObject()
 							.put("event", "gameList")
 							.put(Constants.GAME, this.games.values().stream().map(GameVerticle::toJson).toList())
-							.toString());
+							.toString(), MAX_TIMEOUT_MS, MAX_RETRIES);
 		}
 		// this.webSocket.addConnetedUser(user, newId);
 		// this.vertx.setPeriodic(2000, id -> {

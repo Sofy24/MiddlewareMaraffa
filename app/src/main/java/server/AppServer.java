@@ -22,19 +22,22 @@ public class AppServer extends AbstractVerticle {
 	private final int port = Integer.parseInt(System.getenv().getOrDefault("MIDDLEWARE_PORT", "3003"));
 	private HttpServer server;
 
-	AbstractStatisticManager mongoStatisticManager = new MongoStatisticManager(
-			System.getenv().getOrDefault("MONGO_USER", "your_mongo_user"),
-			System.getenv().getOrDefault("MONGO_PASSWORD", "your_mongo_password"),
-			System.getenv().getOrDefault("MONGO_HOST", "127.0.0.1"),
-			Integer.parseInt(System.getenv().getOrDefault("MONGO_PORT", "27012")),
-			System.getenv().getOrDefault("MONGO_DATABASE", "MaraffaStatisticsDB"));
+	AbstractStatisticManager mongoStatisticManager = null;
+	
+	//TODO decomment
+	// new MongoStatisticManager(
+	// 		System.getenv().getOrDefault("MONGO_USER", "admin"),
+	// 		System.getenv().getOrDefault("MONGO_PASSWORD", "adminpassword"),
+	// 		System.getenv().getOrDefault("MONGO_HOST", "localhost"),
+	// 		Integer.parseInt(System.getenv().getOrDefault("MONGO_PORT", "27017")),
+	// 		System.getenv().getOrDefault("MONGO_DATABASE", "MaraffaStatisticsDB"));
 
 	public AppServer() {
 	}
 
 	@Override
 	public void start() throws Exception {
-		final WebSocketVertx webSocket = new WebSocketVertx();
+		final WebSocketVertx webSocket = new WebSocketVertx(this.vertx);
 		final GameServiceDecorator gameServiceDecorator = new GameServiceDecorator(this.vertx,
 				this.mongoStatisticManager, webSocket);
 		final RouterConfig routerConfig = new RouterConfig(this.port,

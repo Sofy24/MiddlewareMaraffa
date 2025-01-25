@@ -41,12 +41,18 @@ public class WebSocketVertx {
 
         webSocket.handler(buffer -> {
             // Handle incoming message
-            final String message = buffer.toString();
+            // Convert buffer to string
+            String message = buffer.toString();
             System.out.println("Received message from " + webSocket.path().split("/")[1] + ": " + message);
 
+            if (message.startsWith("\"") && message.endsWith("\"")) {
+                message = message.substring(1, message.length() - 1).replace("\\\"", "\"");
+            }
+
+            // Parse JSON string
             final JsonObject jsonMessage = new JsonObject(message);
 
-
+            System.out.println("Decoded " + webSocket.path().split("/")[1] + ": " + jsonMessage.toString());
             if ("ack".equals(jsonMessage.getString("type")) && jsonMessage.containsKey("messageId")) {
             final String messageId = jsonMessage.getString("messageId");
 
